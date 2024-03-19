@@ -1,35 +1,12 @@
-﻿using OCC.AIS;
-using OCC.BRepBuilderAPI;
+﻿using OCC.BRepBuilderAPI;
 using OCC.gp;
 using OCC.TopoDS;
 using System.Drawing;
-using System.Windows.Forms;
 
-namespace MyTubeCutting
+namespace Core
 {
-	public partial class Form1 : Form
+	public class OCCTool
 	{
-		OCCViewer m_Viewer;
-		public Form1()
-		{
-			InitializeComponent();
-			m_Viewer = new OCCViewer();
-			bool isSuccess = m_Viewer.InitViewer( this.Handle );
-			if( isSuccess == false ) {
-				MessageBox.Show( "init failed" );
-			}
-			m_Viewer.SetBackgroundColor( 0, 0, 0 );
-			m_Viewer.TopView();
-
-			Rectangle rect = new Rectangle( 0, 0, 200, 200 );
-			TopoDS_Shape shape = GetSquare( rect );
-			AIS_Shape aisShape = new AIS_Shape( shape );
-			m_Viewer.GetAISContext().Display( aisShape, true );
-			m_Viewer.ZoomAllView();
-
-			Paint += new PaintEventHandler( Form1_Paint );
-		}
-
 		public static TopoDS_Shape GetSquare( Rectangle rect )
 		{
 			BRepBuilderAPI_MakeWire makeWire = new BRepBuilderAPI_MakeWire();
@@ -50,10 +27,6 @@ namespace MyTubeCutting
 			tEdge = makeEdge.Edge();
 			makeWire.Add( tEdge );
 			return makeWire.Wire();
-		}
-		void Form1_Paint( object sender, PaintEventArgs e )
-		{
-			m_Viewer.UpdateView();
 		}
 	}
 }

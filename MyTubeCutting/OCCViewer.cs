@@ -26,20 +26,14 @@ using OCC.BRepTools;
 using OCC.Graphic3d;
 using OCC.IFSelect;
 using OCC.IGESControl;
-using OCC.Interface;
 using OCC.OpenGl;
 using OCC.Quantity;
-using OCC.SelectMgr;
 using OCC.Standard;
 using OCC.STEPControl;
-using OCC.StlAPI;
-using OCC.TopAbs;
 using OCC.TopoDS;
 using OCC.V3d;
-using OCC.VrmlAPI;
 using OCC.WNT;
 using System;
-using System.Collections.Generic;
 
 public class OCCViewer : IDisposable
 {

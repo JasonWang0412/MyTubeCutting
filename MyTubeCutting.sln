@@ -5,6 +5,8 @@ VisualStudioVersion = 17.8.34601.278
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyTubeCutting", "MyTubeCutting\MyTubeCutting.csproj", "{BFF7C63C-3306-49FC-A435-9F8AC0DE001E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core", "OCCTool\Core.csproj", "{52544577-E29B-4144-B8D6-6C858674EA20}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{BFF7C63C-3306-49FC-A435-9F8AC0DE001E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BFF7C63C-3306-49FC-A435-9F8AC0DE001E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BFF7C63C-3306-49FC-A435-9F8AC0DE001E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{52544577-E29B-4144-B8D6-6C858674EA20}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{52544577-E29B-4144-B8D6-6C858674EA20}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{52544577-E29B-4144-B8D6-6C858674EA20}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{52544577-E29B-4144-B8D6-6C858674EA20}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
