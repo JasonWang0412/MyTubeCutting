@@ -4,8 +4,10 @@ using OCC.AIS;
 using OCC.BRepAlgoAPI;
 using OCC.BRepBuilderAPI;
 using OCC.BRepPrimAPI;
+using OCC.Geom;
 using OCC.gp;
 using OCC.TopoDS;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -73,12 +75,26 @@ namespace MyTubeCutting
 
 		void m_btcCircleTest_Click( object sender, System.EventArgs e )
 		{
-			CircleCrossSectionParam param = new CircleCrossSectionParam()
+			CircleCrossSectionParam crossSectionParam = new CircleCrossSectionParam()
 			{
 				Radius = 25,
 				Thickness = 2,
 			};
+			double tubeLength = 100;
 
+			TopoDS_Shape tubeShape = MakeCircleMainTube( crossSectionParam, tubeLength );
+			Geom_Plane cutPlaneGeom1 = MakeCutPlaneGeom( new gp_Pnt( 0, 0, 0 ), new gp_Dir( -1, 0, 1 ) );
+			Geom_Plane cutPlaneGeom2 = MakeCutPlaneGeom( new gp_Pnt( tubeLength, 0, 0 ), new gp_Dir( 1, 0, -1 ) );
+
+
+
+			AIS_Shape tubeAIS = new AIS_Shape( tubeShape );
+			tubeAIS.Attributes().SetDisplayMode( 1 );
+			m_Viewer.GetAISContext().Display( tubeAIS, true );
+		}
+
+		TopoDS_Shape MakeCircleMainTube( CircleCrossSectionParam param, double tubeLength )
+		{
 			gp_Circ outGP = new gp_Circ( gp.YOZ(), param.Radius );
 			BRepBuilderAPI_MakeEdge outEdgeMaker = new BRepBuilderAPI_MakeEdge( outGP );
 			BRepBuilderAPI_MakeWire outWireMaker = new BRepBuilderAPI_MakeWire( outEdgeMaker.Edge() );
@@ -90,16 +106,40 @@ namespace MyTubeCutting
 			BRepBuilderAPI_MakeFace inFaceMaker = new BRepBuilderAPI_MakeFace( inWireMaker.Wire() );
 
 			BRepAlgoAPI_Cut cut = new BRepAlgoAPI_Cut( outFaceMaker.Face(), inFaceMaker.Face() );
-			gp_Vec vec = new gp_Vec( 100, 0, 0 );
+			gp_Vec vec = new gp_Vec( tubeLength, 0, 0 );
 			BRepPrimAPI_MakePrism tubeMaker = new BRepPrimAPI_MakePrism( cut.Shape(), vec );
 
-			AIS_Shape tubeAIS = new AIS_Shape( tubeMaker.Shape() );
-			tubeAIS.Attributes().SetDisplayMode( 1 );
-			AIS_Shape outAIS = new AIS_Shape( outWireMaker.Shape() );
-			AIS_Shape inAIS = new AIS_Shape( inWireMaker.Shape() );
-			m_Viewer.GetAISContext().Display( tubeAIS, true );
-			//m_Viewer.GetAISContext().Display( outAIS, true );
-			//m_Viewer.GetAISContext().Display( inAIS, true );
+			return tubeMaker.Shape();
+		}
+
+		Geom_Plane MakeCutPlaneGeom( gp_Pnt pntCenter, gp_Dir cutPlaneDir )
+		{
+			Geom_Plane cutPlane = new Geom_Plane( pntCenter, cutPlaneDir );
+			return cutPlane;
+		}
+
+		TopoDS_Shape MakeCircleBranchTube( CircleCrossSectionParam param, double tubeLength )
+		{
+			gp_Circ outGP = new gp_Circ( gp.YOZ(), param.Radius );
+			BRepBuilderAPI_MakeEdge outEdgeMaker = new BRepBuilderAPI_MakeEdge( outGP );
+			BRepBuilderAPI_MakeWire outWireMaker = new BRepBuilderAPI_MakeWire( outEdgeMaker.Edge() );
+			BRepBuilderAPI_MakeFace outFaceMaker = new BRepBuilderAPI_MakeFace( outWireMaker.Wire() );
+
+			gp_Circ inGP = new gp_Circ( gp.YOZ(), param.Radius - param.Thickness );
+			BRepBuilderAPI_MakeEdge inEdgeMaker = new BRepBuilderAPI_MakeEdge( inGP );
+			BRepBuilderAPI_MakeWire inWireMaker = new BRepBuilderAPI_MakeWire( inEdgeMaker.Edge() );
+			BRepBuilderAPI_MakeFace inFaceMaker = new BRepBuilderAPI_MakeFace( inWireMaker.Wire() );
+
+			BRepAlgoAPI_Cut cut = new BRepAlgoAPI_Cut( outFaceMaker.Face(), inFaceMaker.Face() );
+			gp_Vec vec = new gp_Vec( tubeLength, 0, 0 );
+			BRepPrimAPI_MakePrism tubeMaker = new BRepPrimAPI_MakePrism( cut.Shape(), vec );
+
+			return tubeMaker.Shape();
+		}
+
+		TopoDS_Shape CutMainTubeByCutPlane( TopoDS_Shape mainTube, Geom_Plane cutPlaneLeft, Geom_Plane cutPlaneRight )
+		{
+			return default;
 		}
 	}
 }
