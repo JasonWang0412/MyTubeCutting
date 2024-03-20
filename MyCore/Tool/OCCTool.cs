@@ -3,7 +3,7 @@ using OCC.gp;
 using OCC.TopoDS;
 using System.Drawing;
 
-namespace Core
+namespace MyCore.Tool
 {
 	public class OCCTool
 	{

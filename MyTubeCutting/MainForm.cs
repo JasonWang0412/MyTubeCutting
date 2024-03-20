@@ -2,7 +2,9 @@
 using OCC.TopoDS;
 using System.Drawing;
 using System.Windows.Forms;
-using Core;
+using MyCore.Tool;
+using OCC.BRepPrimAPI;
+using OCC.gp;
 
 namespace MyTubeCutting
 {
@@ -29,7 +31,10 @@ namespace MyTubeCutting
 		{
 			Rectangle rect = new Rectangle( 0, 0, 200, 200 );
 			TopoDS_Shape shape = OCCTool.GetSquare( rect );
-			AIS_Shape aisShape = new AIS_Shape( shape );
+			gp_Vec vec = new gp_Vec( 0, 0, 200 );
+			BRepPrimAPI_MakePrism mp = new BRepPrimAPI_MakePrism( shape, vec );
+
+			AIS_Shape aisShape = new AIS_Shape( mp.Shape() );
 			m_Viewer.GetAISContext().Display( aisShape, true );
 		}
 
@@ -50,7 +55,12 @@ namespace MyTubeCutting
 
 		void m_PanelViewer_MouseDoubleClick( object sender, MouseEventArgs e )
 		{
-			m_Viewer.ZoomAllView();
+			if( e.Button == MouseButtons.Left ) {
+				m_Viewer.ZoomAllView();
+			}
+			else {
+				m_Viewer.TopView();
+			}
 		}
 
 		void m_PanelViewer_Paint( object sender, PaintEventArgs e )

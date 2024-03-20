@@ -87,9 +87,9 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\OCCTool\Core.csproj">
-      <Project>{52544577-e29b-4144-b8d6-6c858674ea20}</Project>
-      <Name>Core</Name>
+    <ProjectReference Include="..\MyCore\MyCore.csproj">
+      <Project>{65f21621-44bf-4e0a-b3e2-ad3cf215418a}</Project>
+      <Name>MyCore</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
