@@ -1,6 +1,6 @@
 ﻿namespace MyCore.CAD
 {
-	internal class RectangleCrossSectionParam : ICrossSectionParam
+	public class RectangleCrossSectionParam : ICrossSectionParam
 	{
 		public double Width
 		{
