@@ -27,15 +27,27 @@ namespace MyTubeCutting
 		int m_nXMousePosition = 0;
 		int m_nYMousePosition = 0;
 
+		AIS_Shape m_ais1;
+		AIS_Shape m_ais2;
+		AIS_Shape m_ais3;
+
 		void MyDraw()
 		{
-			Rectangle rect = new Rectangle( 0, 0, 200, 200 );
-			TopoDS_Shape shape = OCCTool.GetSquare( rect );
-			gp_Vec vec = new gp_Vec( 0, 0, 200 );
-			BRepPrimAPI_MakePrism mp = new BRepPrimAPI_MakePrism( shape, vec );
+			Rectangle rect1 = new Rectangle( 0, 200, 200, 200 );
+			Rectangle rect2 = new Rectangle( 0, 0, 200, 200 );
+			Rectangle rect3 = new Rectangle( 200, 0, 200, 200 );
 
-			AIS_Shape aisShape = new AIS_Shape( mp.Shape() );
-			m_Viewer.GetAISContext().Display( aisShape, true );
+			TopoDS_Shape shape1 = OCCTool.GetSquare( rect1 );
+			TopoDS_Shape shape2 = OCCTool.GetSquare( rect2 );
+			TopoDS_Shape shape3 = OCCTool.GetSquare( rect3 );
+
+			m_ais1 = new AIS_Shape( shape1 );
+			m_ais2 = new AIS_Shape( shape2 );
+			m_ais3 = new AIS_Shape( shape3 );
+
+			m_Viewer.GetAISContext().Display( m_ais1, false );
+			m_Viewer.GetAISContext().Display( m_ais2, false );
+			m_Viewer.GetAISContext().Display( m_ais3, false );
 		}
 
 		void m_PanelViewer_MouseDown( object sender, MouseEventArgs e )
@@ -66,6 +78,28 @@ namespace MyTubeCutting
 		void m_PanelViewer_Paint( object sender, PaintEventArgs e )
 		{
 			m_Viewer.UpdateView();
+		}
+
+		private void button1_Click( object sender, System.EventArgs e )
+		{
+			m_Viewer.GetAISContext().Remove( m_ais1, false );
+			m_Viewer.GetAISContext().Remove( m_ais3, false );
+		}
+
+		private void button2_Click( object sender, System.EventArgs e )
+		{
+			m_Viewer.GetAISContext().UpdateCurrentViewer();
+			m_Viewer.GetAISContext().Display( m_ais1, false );
+		}
+
+		private void button3_Click( object sender, System.EventArgs e )
+		{
+			m_Viewer.GetAISContext().UpdateCurrentViewer();
+		}
+
+		private void button4_Click( object sender, System.EventArgs e )
+		{
+
 		}
 	}
 }
