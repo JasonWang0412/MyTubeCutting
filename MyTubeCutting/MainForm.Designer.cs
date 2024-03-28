@@ -29,9 +29,9 @@
 		{
 			this.m_panViewer = new System.Windows.Forms.Panel();
 			this.m_panMainTubeParam = new System.Windows.Forms.Panel();
-			this.m_panBranchTubeParam = new System.Windows.Forms.Panel();
-			this.m_btcCircleTest = new System.Windows.Forms.Button();
 			this.m_btnRectangleTest = new System.Windows.Forms.Button();
+			this.m_btcCircleTest = new System.Windows.Forms.Button();
+			this.m_panBranchTubeParam = new System.Windows.Forms.Panel();
 			this.m_panMainTubeParam.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -56,12 +56,14 @@
 			this.m_panMainTubeParam.Size = new System.Drawing.Size(300, 300);
 			this.m_panMainTubeParam.TabIndex = 1;
 			// 
-			// m_panBranchTubeParam
+			// m_btnRectangleTest
 			// 
-			this.m_panBranchTubeParam.Location = new System.Drawing.Point(500, 300);
-			this.m_panBranchTubeParam.Name = "m_panBranchTubeParam";
-			this.m_panBranchTubeParam.Size = new System.Drawing.Size(300, 300);
-			this.m_panBranchTubeParam.TabIndex = 2;
+			this.m_btnRectangleTest.Location = new System.Drawing.Point(7, 43);
+			this.m_btnRectangleTest.Name = "m_btnRectangleTest";
+			this.m_btnRectangleTest.Size = new System.Drawing.Size(75, 23);
+			this.m_btnRectangleTest.TabIndex = 1;
+			this.m_btnRectangleTest.Text = "Rectangle";
+			this.m_btnRectangleTest.UseVisualStyleBackColor = true;
 			// 
 			// m_btcCircleTest
 			// 
@@ -73,14 +75,12 @@
 			this.m_btcCircleTest.UseVisualStyleBackColor = true;
 			this.m_btcCircleTest.Click += new System.EventHandler(this.m_btcCircleTest_Click);
 			// 
-			// m_btnRectangleTest
+			// m_panBranchTubeParam
 			// 
-			this.m_btnRectangleTest.Location = new System.Drawing.Point(7, 43);
-			this.m_btnRectangleTest.Name = "m_btnRectangleTest";
-			this.m_btnRectangleTest.Size = new System.Drawing.Size(75, 23);
-			this.m_btnRectangleTest.TabIndex = 1;
-			this.m_btnRectangleTest.Text = "Rectangle";
-			this.m_btnRectangleTest.UseVisualStyleBackColor = true;
+			this.m_panBranchTubeParam.Location = new System.Drawing.Point(500, 300);
+			this.m_panBranchTubeParam.Name = "m_panBranchTubeParam";
+			this.m_panBranchTubeParam.Size = new System.Drawing.Size(300, 300);
+			this.m_panBranchTubeParam.TabIndex = 2;
 			// 
 			// MainForm
 			// 

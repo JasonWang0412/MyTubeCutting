@@ -90,7 +90,7 @@ namespace MyTubeCutting
 			TopoDS_Shape cutterR = MakeEndCutter( new gp_Pnt( dTubeLength - dRadius, 0, 0 ), new gp_Dir( 1, 0, -1 ) );
 
 			// make branch tube
-			TopoDS_Shape branch = MakeCircleBranchTube( new gp_Pnt( dTubeLength / 2, 0, 0 ), new gp_Dir( 0, 0, 1 ), new BG_Circle() { Radius = 5 } );
+			TopoDS_Shape branch = MakeCircleBranchTube( new gp_Pnt( 60, 0, 0 ), new gp_Dir( 0, 0, 1 ), new BG_Circle() { Radius = 5 } );
 
 			// cut main tube by end cutters
 			BRepAlgoAPI_Cut cutL = new BRepAlgoAPI_Cut( tubeShape, cutterL );
@@ -142,11 +142,6 @@ namespace MyTubeCutting
 			BRepPrimAPI_MakePrism tubeMaker = new BRepPrimAPI_MakePrism( outFaceMaker.Shape(), vec );
 
 			return tubeMaker.Shape();
-		}
-
-		TopoDS_Shape CutMainTubeByCutPlane( TopoDS_Shape mainTube, Geom_Plane cutPlaneLeft, Geom_Plane cutPlaneRight )
-		{
-			return default;
 		}
 	}
 }
