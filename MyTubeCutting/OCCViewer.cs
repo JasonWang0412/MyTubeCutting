@@ -253,10 +253,10 @@ public class OCCViewer : IDisposable
 		}
 	}
 
-	public void AxoView()
+	public void IsometricView()
 	{
 		if( myView != null ) {
-			myView.SetProj( V3d_TypeOfOrientation.V3d_XposYnegZpos );
+			myView.SetProj( V3d_TypeOfOrientation.V3d_XnegYnegZpos );
 		}
 	}
 

@@ -45,9 +45,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CAD\CircleCrossSectionParam.cs" />
-    <Compile Include="CAD\ICrossSectionParam.cs" />
-    <Compile Include="CAD\RectangleCrossSectionParam.cs" />
+    <Compile Include="CAD\BasicGeom\BG_Circle.cs" />
+    <Compile Include="CAD\BasicGeom\BG_Rectangle.cs" />
+    <Compile Include="CAD\BasicGeom\BG_Type.cs" />
+    <Compile Include="CAD\CrossSection\CS_Circle.cs" />
+    <Compile Include="CAD\CrossSection\CS_Type.cs" />
+    <Compile Include="CAD\CrossSection\ICrossSection.cs" />
+    <Compile Include="CAD\BasicGeom\IBasicGeom.cs" />
+    <Compile Include="CAD\CrossSection\CS_Rectangle.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Tool\OCCTool.cs" />
   </ItemGroup>
