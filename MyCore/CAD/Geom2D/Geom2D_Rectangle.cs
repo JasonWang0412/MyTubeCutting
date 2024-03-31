@@ -47,6 +47,11 @@ namespace MyCore.CAD
 				return false;
 			}
 
+			// fillet should be less than half of the width and height
+			if( Fillet >= Width / 2 || Fillet >= Height / 2 ) {
+				return false;
+			}
+
 			return true;
 		}
 	}
