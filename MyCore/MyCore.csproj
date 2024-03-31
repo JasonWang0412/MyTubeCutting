@@ -45,15 +45,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CAD\CrossSection\CS_Base.cs" />
+    <Compile Include="CAD\CrossSection\CrossSection.cs" />
     <Compile Include="CAD\Geom2D\Geom2D_Circle.cs" />
     <Compile Include="CAD\Geom2D\Geom2D_Rectangle.cs" />
     <Compile Include="CAD\Geom2D\Geom2D_Type.cs" />
-    <Compile Include="CAD\CrossSection\CS_Circle.cs" />
-    <Compile Include="CAD\CrossSection\CS_Type.cs" />
     <Compile Include="CAD\CrossSection\ICrossSection.cs" />
     <Compile Include="CAD\Geom2D\IGeom2D.cs" />
-    <Compile Include="CAD\CrossSection\CS_Rectangle.cs" />
     <Compile Include="CAD\TubeMaker\BranchTubeParam.cs" />
     <Compile Include="CAD\TubeMaker\EndCutterParam.cs" />
     <Compile Include="CAD\TubeMaker\ITubeMakeParam.cs" />

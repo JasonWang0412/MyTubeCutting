@@ -62,11 +62,19 @@ namespace MyTubeCutting
 			}
 
 			// set main tube parameter
-			double dRadius = 25;
+			//double dRadius = 25;
+			//double dThickness = 2;
+			//double dTubeLength = 100;
+			//Geom2D_Circle shape = new Geom2D_Circle( dRadius );
+			//CS_Circle crossSection = new CS_Circle( shape, dThickness );
+			//MainTubeParam mainTubeParam = new MainTubeParam( crossSection, dTubeLength );
+			double dWidth = 50;
+			double dHeight = 50;
+			double dFillet = 5;
 			double dThickness = 2;
 			double dTubeLength = 100;
-			Geom2D_Circle shape = new Geom2D_Circle( dRadius );
-			CS_Circle crossSection = new CS_Circle( shape, dThickness );
+			Geom2D_Rectangle shape = new Geom2D_Rectangle( dWidth, dHeight, dFillet );
+			CrossSection crossSection = new CrossSection( shape, dThickness );
 			MainTubeParam mainTubeParam = new MainTubeParam( crossSection, dTubeLength );
 
 			// set main tube to tube editor
@@ -92,8 +100,23 @@ namespace MyTubeCutting
 		void m_btnBranchTube_Click( object sender, System.EventArgs e )
 		{
 			// set branch tube 1 parameter
-			double dRadius = 10;
-			BranchTubeParam branch1TubeParam = new BranchTubeParam()
+			//double dRadius = 10;
+			//BranchTubeParam branchTubeParam = new BranchTubeParam()
+			//{
+			//	Center_X = 0,
+			//	Center_Y = 50,
+			//	Center_Z = 0,
+			//	Dir_X = 0,
+			//	Dir_Y = 0,
+			//	Dir_Z = 1,
+			//	IntersectDir = BranchIntersectDir.Positive,
+			//	Length = 50,
+			//	Shape = new Geom2D_Circle( dRadius ),
+			//};
+			double dWidth = 20;
+			double dHeight = 20;
+			double dFillet = 5;
+			BranchTubeParam branchTubeParam = new BranchTubeParam()
 			{
 				Center_X = 0,
 				Center_Y = 50,
@@ -103,9 +126,9 @@ namespace MyTubeCutting
 				Dir_Z = 1,
 				IntersectDir = BranchIntersectDir.Positive,
 				Length = 50,
-				Shape = new Geom2D_Circle( dRadius ),
+				Shape = new Geom2D_Rectangle( dWidth, dHeight, dFillet ),
 			};
-			m_TubeCADEditor.AddBranchTube( branch1TubeParam );
+			m_TubeCADEditor.AddBranchTube( branchTubeParam );
 		}
 
 		void m_treeObjBrowser_NodeMouseClick( object sender, TreeNodeMouseClickEventArgs e )

@@ -2,11 +2,6 @@
 {
 	public interface ICrossSection
 	{
-		CS_Type Type
-		{
-			get;
-		}
-
 		IGeom2D Shape
 		{
 			get;

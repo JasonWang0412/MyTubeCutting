@@ -5,6 +5,13 @@ namespace MyCore.CAD
 	[Serializable]
 	public class Geom2D_Rectangle : IGeom2D
 	{
+		public Geom2D_Rectangle( double dWidth, double dHeight, double dFillet )
+		{
+			Width = dWidth;
+			Height = dHeight;
+			Fillet = dFillet;
+		}
+
 		public Geom2D_Type Type
 		{
 			get

@@ -5,12 +5,18 @@ namespace MyCore.CAD
 {
 	[Serializable]
 	[TypeConverter( typeof( ExpandableObjectConverter ) )]
-	public class CS_Base
+	public class CrossSection : ICrossSection
 	{
+		public CrossSection( IGeom2D shape, double thickness )
+		{
+			Shape = shape;
+			Thickness = thickness;
+		}
+
 		[TypeConverter( typeof( ExpandableObjectConverter ) )]
 		public virtual IGeom2D Shape
 		{
-			get; protected set;
+			get;
 		}
 
 		public virtual double Thickness
