@@ -4,7 +4,6 @@ using System.ComponentModel;
 namespace MyCore.CAD
 {
 	[Serializable]
-	[TypeConverter( typeof( ExpandableObjectConverter ) )]
 	public class CrossSection : ICrossSection
 	{
 		public CrossSection( IGeom2D shape, double thickness )

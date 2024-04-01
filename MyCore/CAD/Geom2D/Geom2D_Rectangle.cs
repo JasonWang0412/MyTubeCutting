@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 
 namespace MyCore.CAD
 {
@@ -12,6 +13,7 @@ namespace MyCore.CAD
 			Fillet = dFillet;
 		}
 
+		[Browsable( false )]
 		public Geom2D_Type Type
 		{
 			get

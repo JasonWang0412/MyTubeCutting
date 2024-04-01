@@ -76,7 +76,7 @@ namespace MyCore.CAD
 			TopoDS_Wire innerWire = OCCTool.MakeWire( mainTubeParam.CrossSection.Shape, mainTubeParam.CrossSection.Thickness, center, dir );
 
 			// Get solid shape by wire
-			return GetMainTubeShape( outerWire, innerWire, mainTubeParam.Length );
+			return OCCTool.MakeRawTubeShape( outerWire, innerWire, mainTubeParam.Length );
 		}
 
 		// make end cutters
@@ -187,24 +187,6 @@ namespace MyCore.CAD
 			}
 
 			return branchTubeMaker.Shape();
-		}
-
-		static TopoDS_Shape GetMainTubeShape( TopoDS_Wire outerWire, TopoDS_Wire innerWire, double tubeLength )
-		{
-			BRepBuilderAPI_MakeFace outerFaceMaker = new BRepBuilderAPI_MakeFace( outerWire );
-			BRepBuilderAPI_MakeFace innerFaceMaker = new BRepBuilderAPI_MakeFace( innerWire );
-
-			// cut outer face by inner face
-			BRepAlgoAPI_Cut cut = new BRepAlgoAPI_Cut( outerFaceMaker.Face(), innerFaceMaker.Face() );
-
-			// make tube
-			gp_Vec vec = new gp_Vec( 0, tubeLength, 0 );
-			BRepPrimAPI_MakePrism tubeMaker = new BRepPrimAPI_MakePrism( cut.Shape(), vec );
-			if( tubeMaker.IsDone() == false ) {
-				return null;
-			}
-
-			return tubeMaker.Shape();
 		}
 	}
 }

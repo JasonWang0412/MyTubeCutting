@@ -3,8 +3,9 @@ using System.ComponentModel;
 
 namespace MyCore.CAD
 {
+
+	// TODO: dont know shit about this
 	[Serializable]
-	[TypeConverter( typeof( ExpandableObjectConverter ) )]
 	public class MainTubeParam : ITubeMakeParam
 	{
 		public MainTubeParam( ICrossSection crossSection, double length )
@@ -13,7 +14,8 @@ namespace MyCore.CAD
 			Length = length;
 		}
 
-		[Category( "CrossSection" )]
+
+		// TODO: dont know shit about this
 		[TypeConverter( typeof( ExpandableObjectConverter ) )]
 		public ICrossSection CrossSection
 		{
@@ -21,7 +23,6 @@ namespace MyCore.CAD
 			set;
 		}
 
-		[Category( "Property" )]
 		public double Length
 		{
 			get;

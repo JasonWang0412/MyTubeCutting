@@ -1,5 +1,7 @@
 ﻿using MyCore.CAD;
+using OCC.BRepAlgoAPI;
 using OCC.BRepBuilderAPI;
+using OCC.BRepPrimAPI;
 using OCC.Geom;
 using OCC.gp;
 using OCC.TopoDS;
@@ -48,6 +50,7 @@ namespace MyCore.Tool
 			}
 
 			BRepBuilderAPI_MakeWire wireMaker = new BRepBuilderAPI_MakeWire();
+			gp_Dir normalDir = new gp_Dir( 0, 0, 1 );
 
 			// the fillets
 			BRepBuilderAPI_MakeEdge fillet1 = null;
@@ -57,12 +60,12 @@ namespace MyCore.Tool
 
 			// the order is clockwise and start from the first quadrant
 			if( fillet > 0 ) {
-				gp_Dir normalDir = new gp_Dir( 0, 0, 1 );
 				Geom_Circle circle1 = new Geom_Circle( new gp_Ax2( new gp_Pnt( width / 2 - fillet, height / 2 - fillet, 0 ), normalDir ), fillet );
 				Geom_Circle circle2 = new Geom_Circle( new gp_Ax2( new gp_Pnt( width / 2 - fillet, -height / 2 + fillet, 0 ), normalDir ), fillet );
 				Geom_Circle circle3 = new Geom_Circle( new gp_Ax2( new gp_Pnt( -width / 2 + fillet, -height / 2 + fillet, 0 ), normalDir ), fillet );
 				Geom_Circle circle4 = new Geom_Circle( new gp_Ax2( new gp_Pnt( -width / 2 + fillet, height / 2 - fillet, 0 ), normalDir ), fillet );
 
+				//TODO: how it works?
 				Geom_TrimmedCurve trim1 = new Geom_TrimmedCurve( circle1, 0, Math.PI / 2, true );
 				Geom_TrimmedCurve trim2 = new Geom_TrimmedCurve( circle2, 3 * Math.PI / 2, Math.PI * 2, true );
 				Geom_TrimmedCurve trim3 = new Geom_TrimmedCurve( circle3, Math.PI, 3 * Math.PI / 2, true );
@@ -118,7 +121,7 @@ namespace MyCore.Tool
 			// TODO: dont know shit about this
 			// rotate wire from Z to dir
 			gp_Trsf transformR = new gp_Trsf();
-			gp_Quaternion quaternion = new gp_Quaternion( new gp_Vec( 0, 0, 1 ), new gp_Vec( dir ) );
+			gp_Quaternion quaternion = new gp_Quaternion( new gp_Vec( normalDir ), new gp_Vec( dir ) );
 			transformR.SetRotation( quaternion );
 			BRepBuilderAPI_Transform wireTransformR = new BRepBuilderAPI_Transform( wireMaker.Wire(), transformR );
 			if( wireTransformR.IsDone() == false ) {
@@ -135,6 +138,25 @@ namespace MyCore.Tool
 
 			TopoDS_Wire wire = TopoDS.ToWire( wireTransformT.Shape() );
 			return wire;
+		}
+
+		// make tube
+		public static TopoDS_Shape MakeRawTubeShape( TopoDS_Wire outerWire, TopoDS_Wire innerWire, double tubeLength )
+		{
+			BRepBuilderAPI_MakeFace outerFaceMaker = new BRepBuilderAPI_MakeFace( outerWire );
+			BRepBuilderAPI_MakeFace innerFaceMaker = new BRepBuilderAPI_MakeFace( innerWire );
+
+			// cut outer face by inner face
+			BRepAlgoAPI_Cut cut = new BRepAlgoAPI_Cut( outerFaceMaker.Face(), innerFaceMaker.Face() );
+
+			// make tube
+			gp_Vec vec = new gp_Vec( 0, tubeLength, 0 );
+			BRepPrimAPI_MakePrism tubeMaker = new BRepPrimAPI_MakePrism( cut.Shape(), vec );
+			if( tubeMaker.IsDone() == false ) {
+				return null;
+			}
+
+			return tubeMaker.Shape();
 		}
 	}
 }
