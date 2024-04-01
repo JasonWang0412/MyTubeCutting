@@ -16,9 +16,8 @@ namespace MyCore.CAD
 			Center_X = 0;
 			Center_Y = 0;
 			Center_Z = 0;
-			Dir_X = 0;
-			Dir_Y = -1;
-			Dir_Z = 0;
+			TiltAngle_deg = 90;
+			RotateAngle_deg = 0;
 			Side = EEndSide.Left;
 		}
 
@@ -40,19 +39,13 @@ namespace MyCore.CAD
 			set;
 		}
 
-		public double Dir_X
+		public double TiltAngle_deg
 		{
 			get;
 			set;
 		}
 
-		public double Dir_Y
-		{
-			get;
-			set;
-		}
-
-		public double Dir_Z
+		public double RotateAngle_deg
 		{
 			get;
 			set;
@@ -66,8 +59,13 @@ namespace MyCore.CAD
 
 		public bool IsValid()
 		{
-			// end cutter direction should not be zero
-			if( Dir_X == 0 && Dir_Y == 0 && Dir_Z == 0 ) {
+			// tilt angle should be in range [-90, 90]
+			if( TiltAngle_deg < -90 || TiltAngle_deg > 90 ) {
+				return false;
+			}
+
+			// rotate angle should be in range [-360, 360]
+			if( RotateAngle_deg < -360 || RotateAngle_deg > 360 ) {
 				return false;
 			}
 

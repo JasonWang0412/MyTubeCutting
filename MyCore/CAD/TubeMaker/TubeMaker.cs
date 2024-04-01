@@ -72,8 +72,8 @@ namespace MyCore.CAD
 			// Make outer wire and inner wire
 			gp_Pnt center = new gp_Pnt( 0, 0, 0 );
 			gp_Dir dir = new gp_Dir( 0, 1, 0 );
-			TopoDS_Wire outerWire = OCCTool.MakeWire( mainTubeParam.CrossSection.Shape, 0, center, dir );
-			TopoDS_Wire innerWire = OCCTool.MakeWire( mainTubeParam.CrossSection.Shape, mainTubeParam.CrossSection.Thickness, center, dir );
+			TopoDS_Wire outerWire = OCCTool.MakeWire( mainTubeParam.CrossSection.Shape, 0, center, dir, 0 );
+			TopoDS_Wire innerWire = OCCTool.MakeWire( mainTubeParam.CrossSection.Shape, mainTubeParam.CrossSection.Thickness, center, dir, 0 );
 
 			// Get solid shape by wire
 			return OCCTool.MakeRawTubeShape( outerWire, innerWire, mainTubeParam.Length );
@@ -110,7 +110,7 @@ namespace MyCore.CAD
 
 			// get plane
 			gp_Pnt center = new gp_Pnt( endCutterParam.Center_X, endCutterParam.Center_Y, endCutterParam.Center_Z );
-			gp_Dir dir = new gp_Dir( endCutterParam.Dir_X, endCutterParam.Dir_Y, endCutterParam.Dir_Z );
+			OCCTool.GetEndCutterDir( endCutterParam.TiltAngle_deg, endCutterParam.RotateAngle_deg, out gp_Dir dir );
 			gp_Pln cutPlane = new gp_Pln( center, dir );
 			BRepBuilderAPI_MakeFace makeFace = new BRepBuilderAPI_MakeFace( cutPlane );
 			if( makeFace.IsDone() == false ) {
@@ -160,7 +160,7 @@ namespace MyCore.CAD
 
 			// calculate prism vector
 			gp_Pnt center;
-			gp_Dir dir = new gp_Dir( branchTubeParam.Dir_X, branchTubeParam.Dir_Y, branchTubeParam.Dir_Z );
+			OCCTool.GetBranchTubeDir( branchTubeParam.AAngle_deg, branchTubeParam.BAngle_deg, out gp_Dir dir );
 			gp_Vec prismVec = new gp_Vec( dir );
 			if( branchTubeParam.IntersectDir == BranchIntersectDir.Positive
 				|| branchTubeParam.IntersectDir == BranchIntersectDir.Negative ) {
@@ -169,14 +169,14 @@ namespace MyCore.CAD
 			}
 			else {
 				center = new gp_Pnt(
-					branchTubeParam.Center_X - branchTubeParam.Dir_X * branchTubeParam.Length,
-					branchTubeParam.Center_Y - branchTubeParam.Dir_Y * branchTubeParam.Length,
-					branchTubeParam.Center_Z - branchTubeParam.Dir_Z * branchTubeParam.Length );
+					branchTubeParam.Center_X - dir.x * branchTubeParam.Length,
+					branchTubeParam.Center_Y - dir.y * branchTubeParam.Length,
+					branchTubeParam.Center_Z - dir.z * branchTubeParam.Length );
 				prismVec.Multiply( branchTubeParam.Length * 2 );
 			}
 
 			// make branch tube
-			TopoDS_Wire outerWire = OCCTool.MakeWire( branchTubeParam.Shape, 0, center, dir );
+			TopoDS_Wire outerWire = OCCTool.MakeWire( branchTubeParam.Shape, 0, center, dir, branchTubeParam.SelfRotateAngle_deg );
 			BRepBuilderAPI_MakeFace branchFaceMaker = new BRepBuilderAPI_MakeFace( outerWire );
 			if( branchFaceMaker.IsDone() == false ) {
 				return null;

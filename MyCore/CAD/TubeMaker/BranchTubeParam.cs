@@ -18,9 +18,9 @@ namespace MyCore.CAD
 			Center_X = 0;
 			Center_Y = 50;
 			Center_Z = 0;
-			Dir_X = 0;
-			Dir_Y = 0;
-			Dir_Z = 1;
+			SelfRotateAngle_deg = 0;
+			AAngle_deg = 0;
+			BAngle_deg = 0;
 			Shape = null;
 			IntersectDir = BranchIntersectDir.Positive;
 			Length = 50;
@@ -44,19 +44,19 @@ namespace MyCore.CAD
 			set;
 		}
 
-		public double Dir_X
+		public double SelfRotateAngle_deg
 		{
 			get;
 			set;
 		}
 
-		public double Dir_Y
+		public double AAngle_deg
 		{
 			get;
 			set;
 		}
 
-		public double Dir_Z
+		public double BAngle_deg
 		{
 			get;
 			set;
@@ -83,12 +83,22 @@ namespace MyCore.CAD
 
 		public bool IsValid()
 		{
-			// branch tube direction should not be zero
-			if( Dir_X == 0 && Dir_Y == 0 && Dir_Z == 0 ) {
+			// self rotate angle should be in range [0, 360]
+			if( SelfRotateAngle_deg < 0 || SelfRotateAngle_deg > 360 ) {
 				return false;
 			}
 
-			// branch tube shape should not be null
+			// A angle should be in range [-360, 360]
+			if( AAngle_deg < -360 || AAngle_deg > 360 ) {
+				return false;
+			}
+
+			// B angle should be in range [-360, 360]
+			if( BAngle_deg < -360 || BAngle_deg > 360 ) {
+				return false;
+			}
+
+			// shape should not be null
 			if( Shape == null ) {
 				return false;
 			}
@@ -98,7 +108,7 @@ namespace MyCore.CAD
 				return false;
 			}
 
-			// branch tube length should be positive
+			// length should be positive
 			if( Length <= 0 ) {
 				return false;
 			}

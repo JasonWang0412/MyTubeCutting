@@ -66,7 +66,7 @@ namespace MyTubeCutting
 			//double dThickness = 2;
 			//double dTubeLength = 100;
 			//Geom2D_Circle shape = new Geom2D_Circle( dRadius );
-			//CS_Circle crossSection = new CS_Circle( shape, dThickness );
+			//CrossSection crossSection = new CrossSection( shape, dThickness );
 			//MainTubeParam mainTubeParam = new MainTubeParam( crossSection, dTubeLength );
 			double dWidth = 50;
 			double dHeight = 50;
@@ -89,9 +89,8 @@ namespace MyTubeCutting
 				Center_X = 0,
 				Center_Y = 0,
 				Center_Z = 0,
-				Dir_X = 0,
-				Dir_Y = -1,
-				Dir_Z = 1,
+				TiltAngle_deg = 0,
+				RotateAngle_deg = 0,
 				Side = EEndSide.Left
 			};
 			m_TubeCADEditor.AddEndCutter( endCutterParam );
@@ -106,9 +105,9 @@ namespace MyTubeCutting
 			//	Center_X = 0,
 			//	Center_Y = 50,
 			//	Center_Z = 0,
-			//	Dir_X = 0,
-			//	Dir_Y = 0,
-			//	Dir_Z = 1,
+			//	SelfRotateAngle = 0,
+			//	AAngle = 0,
+			//	BAngle = 0,
 			//	IntersectDir = BranchIntersectDir.Positive,
 			//	Length = 50,
 			//	Shape = new Geom2D_Circle( dRadius ),
@@ -121,9 +120,9 @@ namespace MyTubeCutting
 				Center_X = 0,
 				Center_Y = 50,
 				Center_Z = 0,
-				Dir_X = 0,
-				Dir_Y = 0,
-				Dir_Z = 1,
+				SelfRotateAngle_deg = 0,
+				AAngle_deg = 0,
+				BAngle_deg = 0,
 				IntersectDir = BranchIntersectDir.Positive,
 				Length = 50,
 				Shape = new Geom2D_Rectangle( dWidth, dHeight, dFillet ),

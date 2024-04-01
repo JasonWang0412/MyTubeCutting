@@ -227,7 +227,7 @@ namespace MyTubeCutting
 		AIS_Plane MakeCutterAIS( EndCutterParam endCutterParam )
 		{
 			gp_Pnt center = new gp_Pnt( endCutterParam.Center_X, endCutterParam.Center_Y, endCutterParam.Center_Z );
-			gp_Dir dir = new gp_Dir( endCutterParam.Dir_X, endCutterParam.Dir_Y, endCutterParam.Dir_Z );
+			OCCTool.GetEndCutterDir( endCutterParam.TiltAngle_deg, endCutterParam.RotateAngle_deg, out gp_Dir dir );
 			Geom_Plane cutPlane = new Geom_Plane( center, dir );
 			return new AIS_Plane( cutPlane );
 		}
