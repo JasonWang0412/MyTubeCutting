@@ -3,5 +3,10 @@
 	public interface ITubeMakeParam
 	{
 		bool IsValid();
+
+		TubeMakeParamType Type
+		{
+			get;
+		}
 	}
 }

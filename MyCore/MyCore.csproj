@@ -55,6 +55,7 @@
     <Compile Include="CAD\TubeMaker\EndCutterParam.cs" />
     <Compile Include="CAD\TubeMaker\ITubeMakeParam.cs" />
     <Compile Include="CAD\TubeMaker\MainTubeParam.cs" />
+    <Compile Include="CAD\TubeMaker\TubeMakeParam_Type.cs" />
     <Compile Include="CAD\TubeMaker\TubeMaker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Tool\CloneHelper.cs" />

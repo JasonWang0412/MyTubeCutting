@@ -57,6 +57,14 @@ namespace MyCore.CAD
 			set;
 		}
 
+		public TubeMakeParamType Type
+		{
+			get
+			{
+				return TubeMakeParamType.EndCutter;
+			}
+		}
+
 		public bool IsValid()
 		{
 			// tilt angle should be in range [-90, 90]

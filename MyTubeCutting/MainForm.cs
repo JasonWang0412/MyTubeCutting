@@ -144,7 +144,7 @@ namespace MyTubeCutting
 		private void m_treeObjBrowser_KeyUp( object sender, KeyEventArgs e )
 		{
 			if( e.KeyCode == Keys.Delete ) {
-				m_TubeCADEditor.RemoveObject();
+				m_TubeCADEditor.RemoveCADFeature();
 			}
 		}
 	}

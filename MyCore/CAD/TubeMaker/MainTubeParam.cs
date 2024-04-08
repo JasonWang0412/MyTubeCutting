@@ -29,6 +29,14 @@ namespace MyCore.CAD
 			set;
 		}
 
+		public TubeMakeParamType Type
+		{
+			get
+			{
+				return TubeMakeParamType.MainTube;
+			}
+		}
+
 		public bool IsValid()
 		{
 			// cross section should not be null

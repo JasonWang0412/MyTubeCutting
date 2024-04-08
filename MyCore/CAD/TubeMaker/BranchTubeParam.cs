@@ -81,6 +81,14 @@ namespace MyCore.CAD
 			set;
 		}
 
+		public TubeMakeParamType Type
+		{
+			get
+			{
+				return TubeMakeParamType.BranchTube;
+			}
+		}
+
 		public bool IsValid()
 		{
 			// self rotate angle should be in range [0, 360]

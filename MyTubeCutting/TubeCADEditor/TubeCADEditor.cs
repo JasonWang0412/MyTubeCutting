@@ -1,8 +1,6 @@
 ﻿using MyCore.CAD;
 using MyCore.Tool;
 using OCC.AIS;
-using OCC.Geom;
-using OCC.gp;
 using OCC.Graphic3d;
 using OCC.Quantity;
 using OCC.TopoDS;
@@ -21,13 +19,11 @@ namespace MyTubeCutting
 
 		// parameter map
 		MainTubeParam m_MainTubeParam;
-		Dictionary<string, EndCutterParam> m_EndCutterNameParamMap = new Dictionary<string, EndCutterParam>();
-		Dictionary<string, BranchTubeParam> m_BranchTubeNameParamMap = new Dictionary<string, BranchTubeParam>();
+		Dictionary<string, ITubeMakeParam> m_CADFeatureNameParamMap = new Dictionary<string, ITubeMakeParam>();
 
 		// display shape map
 		AIS_Shape m_ResultTubeAIS;
-		Dictionary<string, AIS_Plane> m_EndCutterNameAISMap = new Dictionary<string, AIS_Plane>();
-		Dictionary<string, AIS_Shape> m_BranchTubeNameAISMap = new Dictionary<string, AIS_Shape>();
+		Dictionary<string, AIS_Shape> m_CADFeatureNameAISMap = new Dictionary<string, AIS_Shape>();
 
 		// object browser map
 		TreeNode m_MainTubeNode;
@@ -59,26 +55,25 @@ namespace MyTubeCutting
 		internal void AddEndCutter( EndCutterParam endCutterParam )
 		{
 			string szName = GetNewEndCutterName();
-			AddEndCutter( szName, endCutterParam );
+			AddCADFeature( szName, endCutterParam );
 		}
 
 		internal void AddBranchTube( BranchTubeParam branchTubeParam )
 		{
 			string szName = GetNewBranchTubeName();
-			AddBranchTube( szName, branchTubeParam );
+			AddCADFeature( szName, branchTubeParam );
 		}
 
-		internal void RemoveObject()
+		internal void RemoveCADFeature()
 		{
 			// cannot remove main tube
 			if( m_szEditObjName == MAIN_TUBE_NAME ) {
 				return;
 			}
-			else if( m_EndCutterNameParamMap.ContainsKey( m_szEditObjName ) ) {
-				RemoveEndCutter( m_szEditObjName );
-			}
-			else if( m_BranchTubeNameParamMap.ContainsKey( m_szEditObjName ) ) {
-				RemoveBranchTube( m_szEditObjName );
+
+			// remove cad feature
+			else if( m_CADFeatureNameParamMap.ContainsKey( m_szEditObjName ) ) {
+				RemoveCADFeature( m_szEditObjName );
 			}
 		}
 
@@ -105,46 +100,35 @@ namespace MyTubeCutting
 				return;
 			}
 
+			// main tube
 			if( m_szEditObjName == MAIN_TUBE_NAME ) {
 				m_MainTubeParam = (MainTubeParam)( CloneHelper.Clone( m_EdiObjParam ) );
 				UpdateAndRedrawResultTube();
 				return;
 			}
-			else if( m_EndCutterNameParamMap.ContainsKey( m_szEditObjName ) ) {
-				m_EndCutterNameParamMap[ m_szEditObjName ] = (EndCutterParam)( CloneHelper.Clone( m_EdiObjParam ) );
+
+			// cad feature
+			else if( m_CADFeatureNameParamMap.ContainsKey( m_szEditObjName ) ) {
+				m_CADFeatureNameParamMap[ m_szEditObjName ] = CloneHelper.Clone( m_EdiObjParam );
 
 				// get ais from map
-				AIS_Plane cutPlaneAIS = m_EndCutterNameAISMap[ m_szEditObjName ];
+				AIS_Shape cadFeatureAIS = m_CADFeatureNameAISMap[ m_szEditObjName ];
 
 				// remove old ais from viewer
-				m_Viewer.GetAISContext().Remove( cutPlaneAIS, false );
+				m_Viewer.GetAISContext().Remove( cadFeatureAIS, false );
 
 				// create new ais
-				EndCutterParam endCutterParam = m_EndCutterNameParamMap[ m_szEditObjName ];
-				cutPlaneAIS = MakeCutterAIS( endCutterParam );
+				ITubeMakeParam cadFeatureParam = m_CADFeatureNameParamMap[ m_szEditObjName ];
+				cadFeatureAIS = MakeCADFeatureAIS( cadFeatureParam );
 
 				// update ais map
-				m_EndCutterNameAISMap[ m_szEditObjName ] = cutPlaneAIS;
-			}
-			else if( m_BranchTubeNameParamMap.ContainsKey( m_szEditObjName ) ) {
-				m_BranchTubeNameParamMap[ m_szEditObjName ] = (BranchTubeParam)( CloneHelper.Clone( m_EdiObjParam ) );
+				m_CADFeatureNameAISMap[ m_szEditObjName ] = cadFeatureAIS;
 
-				// get ais from map
-				AIS_Shape branchTubeAIS = m_BranchTubeNameAISMap[ m_szEditObjName ];
-
-				// remove old ais from viewer
-				m_Viewer.GetAISContext().Remove( branchTubeAIS, false );
-
-				// create new ais
-				BranchTubeParam branchTubeParam = m_BranchTubeNameParamMap[ m_szEditObjName ];
-				branchTubeAIS = MakeBranchTubeAIS( branchTubeParam );
-
-				// update ais map
-				m_BranchTubeNameAISMap[ m_szEditObjName ] = branchTubeAIS;
+				// display new ais
+				m_Viewer.GetAISContext().Display( cadFeatureAIS, false );
 			}
 
-			// display new ais and redraw result tube
-			DisplayObjectShape();
+			// redraw result tube
 			UpdateAndRedrawResultTube();
 		}
 
@@ -161,8 +145,12 @@ namespace MyTubeCutting
 			}
 
 			// make new tube
-			List<EndCutterParam> endCutterParams = m_EndCutterNameParamMap.Select( pair => pair.Value ).ToList();
-			List<BranchTubeParam> branchTubeParamList = m_BranchTubeNameParamMap.Select( pair => pair.Value ).ToList();
+			List<EndCutterParam> endCutterParams = m_CADFeatureNameParamMap
+				.Where( pair => pair.Value.Type == TubeMakeParamType.EndCutter )
+				.Select( endCutterPair => (EndCutterParam)endCutterPair.Value ).ToList();
+			List<BranchTubeParam> branchTubeParamList = m_CADFeatureNameParamMap
+				.Where( pair => pair.Value.Type == TubeMakeParamType.BranchTube )
+				.Select( branchTubePair => (BranchTubeParam)branchTubePair.Value ).ToList();
 			TopoDS_Shape tubeShape = TubeMaker.MakeResultTube( m_MainTubeParam, endCutterParams, branchTubeParamList );
 
 			// display new tube
@@ -174,43 +162,36 @@ namespace MyTubeCutting
 			m_Viewer.UpdateView();
 		}
 
-		void AddEndCutter( string szName, EndCutterParam endCutterParam )
-		{
-			AIS_Plane cutPlaneAIS = MakeCutterAIS( endCutterParam );
 
-			m_EndCutterNameParamMap.Add( szName, endCutterParam );
+		void AddCADFeature( string szName, ITubeMakeParam cadFeatureParam )
+		{
+			AIS_Shape cadFeatureAIS = MakeCADFeatureAIS( cadFeatureParam );
+
+			// add into object browser
 			m_MainTubeNode.Nodes.Add( szName, szName );
-			m_EndCutterNameAISMap.Add( szName, cutPlaneAIS );
+
+			// add into map
+			m_CADFeatureNameAISMap.Add( szName, cadFeatureAIS );
+			m_CADFeatureNameParamMap.Add( szName, cadFeatureParam );
+
+			// set edit object (display)
 			SetEditObject( szName );
 			UpdateAndRedrawResultTube();
 		}
 
-		void AddBranchTube( string szName, BranchTubeParam branchTubeParam )
+		void RemoveCADFeature( string szName )
 		{
-			AIS_Shape branchTubeAIS = MakeBranchTubeAIS( branchTubeParam );
+			// remove from display
+			m_Viewer.GetAISContext().Remove( m_CADFeatureNameAISMap[ szName ], false );
 
-			m_BranchTubeNameAISMap.Add( szName, branchTubeAIS );
-			m_MainTubeNode.Nodes.Add( szName, szName );
-			m_BranchTubeNameParamMap.Add( szName, branchTubeParam );
-			SetEditObject( szName );
-			UpdateAndRedrawResultTube();
-		}
+			// remove from map
+			m_CADFeatureNameParamMap.Remove( szName );
+			m_CADFeatureNameAISMap.Remove( szName );
 
-		void RemoveEndCutter( string szName )
-		{
-			m_Viewer.GetAISContext().Remove( m_EndCutterNameAISMap[ szName ], false );
-			m_EndCutterNameParamMap.Remove( szName );
-			m_EndCutterNameAISMap.Remove( szName );
+			// remove from object browser
 			m_MainTubeNode.Nodes.RemoveByKey( szName );
-			UpdateAndRedrawResultTube();
-		}
 
-		void RemoveBranchTube( string szName )
-		{
-			m_Viewer.GetAISContext().Remove( m_BranchTubeNameAISMap[ szName ], false );
-			m_BranchTubeNameParamMap.Remove( szName );
-			m_BranchTubeNameAISMap.Remove( szName );
-			m_MainTubeNode.Nodes.RemoveByKey( szName );
+			// update display
 			UpdateAndRedrawResultTube();
 		}
 
@@ -224,23 +205,24 @@ namespace MyTubeCutting
 			return "BranchTube" + m_nBranchTubeCount++;
 		}
 
-		AIS_Plane MakeCutterAIS( EndCutterParam endCutterParam )
+		AIS_Shape MakeCADFeatureAIS( ITubeMakeParam cadFeatureParam )
 		{
-			gp_Pnt center = new gp_Pnt( endCutterParam.Center_X, endCutterParam.Center_Y, endCutterParam.Center_Z );
-			OCCTool.GetEndCutterDir( endCutterParam.TiltAngle_deg, endCutterParam.RotateAngle_deg, out gp_Dir dir );
-			Geom_Plane cutPlane = new Geom_Plane( center, dir );
-			return new AIS_Plane( cutPlane );
-		}
-
-		AIS_Shape MakeBranchTubeAIS( BranchTubeParam branchTubeParam )
-		{
-			AIS_Shape branchTubeAIS = new AIS_Shape( TubeMaker.MakeBranchTube( branchTubeParam ) );
+			AIS_Shape cadFeatureAIS = null;
+			if( cadFeatureParam.Type == TubeMakeParamType.EndCutter ) {
+				cadFeatureAIS = new AIS_Shape( TubeMaker.MakeEndCutter( (EndCutterParam)cadFeatureParam ) );
+			}
+			else if( cadFeatureParam.Type == TubeMakeParamType.BranchTube ) {
+				cadFeatureAIS = new AIS_Shape( TubeMaker.MakeBranchTube( (BranchTubeParam)cadFeatureParam ) );
+			}
+			else {
+				return cadFeatureAIS;
+			}
 			Graphic3d_MaterialAspect aspect = new Graphic3d_MaterialAspect( Graphic3d_NameOfMaterial.Graphic3d_NOM_STONE );
 			aspect.SetTransparency( 0.5f );
 			aspect.SetColor( new Quantity_Color( Quantity_NameOfColor.Quantity_NOC_GREEN4 ) );
-			branchTubeAIS.SetMaterial( aspect );
-			branchTubeAIS.SetDisplayMode( 1 );
-			return branchTubeAIS;
+			cadFeatureAIS.SetMaterial( aspect );
+			cadFeatureAIS.SetDisplayMode( 1 );
+			return cadFeatureAIS;
 		}
 
 		void DisplayObjectShape()
@@ -253,35 +235,30 @@ namespace MyTubeCutting
 			}
 
 			// display selected object shape
-			if( m_EndCutterNameAISMap.ContainsKey( m_szEditObjName ) ) {
-				m_Viewer.GetAISContext().Display( m_EndCutterNameAISMap[ m_szEditObjName ], false );
+			if( m_CADFeatureNameAISMap.ContainsKey( m_szEditObjName ) == false ) {
+				return;
 			}
-			else if( m_BranchTubeNameAISMap.ContainsKey( m_szEditObjName ) ) {
-				m_Viewer.GetAISContext().Display( m_BranchTubeNameAISMap[ m_szEditObjName ], false );
-			}
+			m_Viewer.GetAISContext().Display( m_CADFeatureNameAISMap[ m_szEditObjName ], false );
 			m_Viewer.UpdateView();
 		}
 
 		void ShowObjectProperty()
 		{
+			// main tube
 			if( m_szEditObjName == MAIN_TUBE_NAME ) {
 				m_EdiObjParam = CloneHelper.Clone( m_MainTubeParam );
 			}
-			else if( m_EndCutterNameParamMap.ContainsKey( m_szEditObjName ) ) {
-				m_EdiObjParam = CloneHelper.Clone( m_EndCutterNameParamMap[ m_szEditObjName ] );
-			}
-			else if( m_BranchTubeNameParamMap.ContainsKey( m_szEditObjName ) ) {
-				m_EdiObjParam = CloneHelper.Clone( m_BranchTubeNameParamMap[ m_szEditObjName ] );
+
+			// cad feature
+			else if( m_CADFeatureNameParamMap.ContainsKey( m_szEditObjName ) ) {
+				m_EdiObjParam = CloneHelper.Clone( m_CADFeatureNameParamMap[ m_szEditObjName ] );
 			}
 			m_propgrdPropertyBar.SelectedObject = m_EdiObjParam;
 		}
 
 		void HideAllShapeExceptMainTube()
 		{
-			foreach( KeyValuePair<string, AIS_Plane> pair in m_EndCutterNameAISMap ) {
-				m_Viewer.GetAISContext().Erase( pair.Value, false );
-			}
-			foreach( KeyValuePair<string, AIS_Shape> pair in m_BranchTubeNameAISMap ) {
+			foreach( KeyValuePair<string, AIS_Shape> pair in m_CADFeatureNameAISMap ) {
 				m_Viewer.GetAISContext().Erase( pair.Value, false );
 			}
 			m_Viewer.UpdateView();
