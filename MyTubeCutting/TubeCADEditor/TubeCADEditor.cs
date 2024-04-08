@@ -18,8 +18,8 @@ namespace MyTubeCutting
 		PropertyGrid m_propgrdPropertyBar;
 
 		// parameter map
-		MainTubeParam m_MainTubeParam;
-		Dictionary<string, ITubeMakeParam> m_CADFeatureNameParamMap = new Dictionary<string, ITubeMakeParam>();
+		CADft_MainTubeParam m_MainTubeParam;
+		Dictionary<string, ICADFeatureParam> m_CADFeatureNameParamMap = new Dictionary<string, ICADFeatureParam>();
 
 		// display shape map
 		AIS_Shape m_ResultTubeAIS;
@@ -33,7 +33,7 @@ namespace MyTubeCutting
 		int m_nBranchTubeCount = 1;
 		const string MAIN_TUBE_NAME = "MainTube";
 		string m_szEditObjName;
-		ITubeMakeParam m_EdiObjParam;
+		ICADFeatureParam m_EdiObjParam;
 
 		internal TubeCADEditor( OCCViewer viewer, TreeView treeObjBrowser, PropertyGrid propertyGrid )
 		{
@@ -42,7 +42,7 @@ namespace MyTubeCutting
 			m_propgrdPropertyBar = propertyGrid;
 		}
 
-		internal void SetMainTube( MainTubeParam mainTubeParam )
+		internal void SetMainTube( CADft_MainTubeParam mainTubeParam )
 		{
 			if( m_MainTubeNode == null ) {
 				m_MainTubeNode = m_treeObjBrowser.Nodes.Add( MAIN_TUBE_NAME, MAIN_TUBE_NAME );
@@ -52,13 +52,13 @@ namespace MyTubeCutting
 			UpdateAndRedrawResultTube();
 		}
 
-		internal void AddEndCutter( EndCutterParam endCutterParam )
+		internal void AddEndCutter( CADft_EndCutterParam endCutterParam )
 		{
 			string szName = GetNewEndCutterName();
 			AddCADFeature( szName, endCutterParam );
 		}
 
-		internal void AddBranchTube( BranchTubeParam branchTubeParam )
+		internal void AddBranchTube( CADft_BranchTubeParam branchTubeParam )
 		{
 			string szName = GetNewBranchTubeName();
 			AddCADFeature( szName, branchTubeParam );
@@ -102,7 +102,7 @@ namespace MyTubeCutting
 
 			// main tube
 			if( m_szEditObjName == MAIN_TUBE_NAME ) {
-				m_MainTubeParam = (MainTubeParam)( CloneHelper.Clone( m_EdiObjParam ) );
+				m_MainTubeParam = (CADft_MainTubeParam)( CloneHelper.Clone( m_EdiObjParam ) );
 				UpdateAndRedrawResultTube();
 				return;
 			}
@@ -118,7 +118,7 @@ namespace MyTubeCutting
 				m_Viewer.GetAISContext().Remove( cadFeatureAIS, false );
 
 				// create new ais
-				ITubeMakeParam cadFeatureParam = m_CADFeatureNameParamMap[ m_szEditObjName ];
+				ICADFeatureParam cadFeatureParam = m_CADFeatureNameParamMap[ m_szEditObjName ];
 				cadFeatureAIS = MakeCADFeatureAIS( cadFeatureParam );
 
 				// update ais map
@@ -145,12 +145,12 @@ namespace MyTubeCutting
 			}
 
 			// make new tube
-			List<EndCutterParam> endCutterParams = m_CADFeatureNameParamMap
-				.Where( pair => pair.Value.Type == TubeMakeParamType.EndCutter )
-				.Select( endCutterPair => (EndCutterParam)endCutterPair.Value ).ToList();
-			List<BranchTubeParam> branchTubeParamList = m_CADFeatureNameParamMap
-				.Where( pair => pair.Value.Type == TubeMakeParamType.BranchTube )
-				.Select( branchTubePair => (BranchTubeParam)branchTubePair.Value ).ToList();
+			List<CADft_EndCutterParam> endCutterParams = m_CADFeatureNameParamMap
+				.Where( pair => pair.Value.Type == CADFeatureType.EndCutter )
+				.Select( endCutterPair => (CADft_EndCutterParam)endCutterPair.Value ).ToList();
+			List<CADft_BranchTubeParam> branchTubeParamList = m_CADFeatureNameParamMap
+				.Where( pair => pair.Value.Type == CADFeatureType.BranchTube )
+				.Select( branchTubePair => (CADft_BranchTubeParam)branchTubePair.Value ).ToList();
 			TopoDS_Shape tubeShape = TubeMaker.MakeResultTube( m_MainTubeParam, endCutterParams, branchTubeParamList );
 
 			// display new tube
@@ -163,7 +163,7 @@ namespace MyTubeCutting
 		}
 
 
-		void AddCADFeature( string szName, ITubeMakeParam cadFeatureParam )
+		void AddCADFeature( string szName, ICADFeatureParam cadFeatureParam )
 		{
 			AIS_Shape cadFeatureAIS = MakeCADFeatureAIS( cadFeatureParam );
 
@@ -205,14 +205,14 @@ namespace MyTubeCutting
 			return "BranchTube" + m_nBranchTubeCount++;
 		}
 
-		AIS_Shape MakeCADFeatureAIS( ITubeMakeParam cadFeatureParam )
+		AIS_Shape MakeCADFeatureAIS( ICADFeatureParam cadFeatureParam )
 		{
 			AIS_Shape cadFeatureAIS = null;
-			if( cadFeatureParam.Type == TubeMakeParamType.EndCutter ) {
-				cadFeatureAIS = new AIS_Shape( TubeMaker.MakeEndCutter( (EndCutterParam)cadFeatureParam ) );
+			if( cadFeatureParam.Type == CADFeatureType.EndCutter ) {
+				cadFeatureAIS = new AIS_Shape( TubeMaker.MakeEndCutter( (CADft_EndCutterParam)cadFeatureParam ) );
 			}
-			else if( cadFeatureParam.Type == TubeMakeParamType.BranchTube ) {
-				cadFeatureAIS = new AIS_Shape( TubeMaker.MakeBranchTube( (BranchTubeParam)cadFeatureParam ) );
+			else if( cadFeatureParam.Type == CADFeatureType.BranchTube ) {
+				cadFeatureAIS = new AIS_Shape( TubeMaker.MakeBranchTube( (CADft_BranchTubeParam)cadFeatureParam ) );
 			}
 			else {
 				return cadFeatureAIS;

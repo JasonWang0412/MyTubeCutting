@@ -10,19 +10,19 @@ namespace MyCore.CAD
 {
 	public class TubeMaker
 	{
-		public static TopoDS_Shape MakeResultTube( MainTubeParam mainTubeParam,
-			List<EndCutterParam> endCutterParamList,
-			List<BranchTubeParam> branchTubeParamList )
+		public static TopoDS_Shape MakeResultTube( CADft_MainTubeParam mainTubeParam,
+			List<CADft_EndCutterParam> endCutterParamList,
+			List<CADft_BranchTubeParam> branchTubeParamList )
 		{
 			// data protection
 			if( mainTubeParam == null ) {
 				return null;
 			}
 			if( endCutterParamList == null ) {
-				endCutterParamList = new List<EndCutterParam>();
+				endCutterParamList = new List<CADft_EndCutterParam>();
 			}
 			if( branchTubeParamList == null ) {
-				branchTubeParamList = new List<BranchTubeParam>();
+				branchTubeParamList = new List<CADft_BranchTubeParam>();
 			}
 
 			// make main tube
@@ -59,7 +59,7 @@ namespace MyCore.CAD
 		}
 
 		// make main tube
-		public static TopoDS_Shape MakeMainTube( MainTubeParam mainTubeParam )
+		public static TopoDS_Shape MakeMainTube( CADft_MainTubeParam mainTubeParam )
 		{
 			// data protection
 			if( mainTubeParam == null ) {
@@ -80,7 +80,7 @@ namespace MyCore.CAD
 		}
 
 		// make end cutters
-		public static List<TopoDS_Shape> MakeEndCutters( List<EndCutterParam> endCutterParamList )
+		public static List<TopoDS_Shape> MakeEndCutters( List<CADft_EndCutterParam> endCutterParamList )
 		{
 			// data protection
 			if( endCutterParamList == null ) {
@@ -88,7 +88,7 @@ namespace MyCore.CAD
 			}
 
 			List<TopoDS_Shape> cutters = new List<TopoDS_Shape>();
-			foreach( EndCutterParam endCutterParam in endCutterParamList ) {
+			foreach( CADft_EndCutterParam endCutterParam in endCutterParamList ) {
 				TopoDS_Shape oneEndCutter = MakeEndCutter( endCutterParam );
 				if( oneEndCutter == null ) {
 					continue;
@@ -98,7 +98,7 @@ namespace MyCore.CAD
 			return cutters;
 		}
 
-		public static TopoDS_Shape MakeEndCutter( EndCutterParam endCutterParam )
+		public static TopoDS_Shape MakeEndCutter( CADft_EndCutterParam endCutterParam )
 		{
 			// data protection
 			if( endCutterParam == null ) {
@@ -130,7 +130,7 @@ namespace MyCore.CAD
 		}
 
 		// make branch tubes
-		public static List<TopoDS_Shape> MakeBranchTubes( List<BranchTubeParam> branchTubeParamList )
+		public static List<TopoDS_Shape> MakeBranchTubes( List<CADft_BranchTubeParam> branchTubeParamList )
 		{
 			// data protection
 			if( branchTubeParamList == null ) {
@@ -138,7 +138,7 @@ namespace MyCore.CAD
 			}
 
 			List<TopoDS_Shape> branchTubes = new List<TopoDS_Shape>();
-			foreach( BranchTubeParam branchTubeParam in branchTubeParamList ) {
+			foreach( CADft_BranchTubeParam branchTubeParam in branchTubeParamList ) {
 				TopoDS_Shape oneBranchTube = MakeBranchTube( branchTubeParam );
 				if( oneBranchTube == null ) {
 					continue;
@@ -148,7 +148,7 @@ namespace MyCore.CAD
 			return branchTubes;
 		}
 
-		public static TopoDS_Shape MakeBranchTube( BranchTubeParam branchTubeParam )
+		public static TopoDS_Shape MakeBranchTube( CADft_BranchTubeParam branchTubeParam )
 		{
 			// data protection
 			if( branchTubeParam == null ) {

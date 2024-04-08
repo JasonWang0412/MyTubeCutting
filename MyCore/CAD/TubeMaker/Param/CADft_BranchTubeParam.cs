@@ -11,9 +11,9 @@ namespace MyCore.CAD
 	}
 
 	[Serializable]
-	public class BranchTubeParam : ITubeMakeParam
+	public class CADft_BranchTubeParam : ICADFeatureParam
 	{
-		public BranchTubeParam()
+		public CADft_BranchTubeParam()
 		{
 			Center_X = 0;
 			Center_Y = 50;
@@ -81,11 +81,11 @@ namespace MyCore.CAD
 			set;
 		}
 
-		public TubeMakeParamType Type
+		public CADFeatureType Type
 		{
 			get
 			{
-				return TubeMakeParamType.BranchTube;
+				return CADFeatureType.BranchTube;
 			}
 		}
 

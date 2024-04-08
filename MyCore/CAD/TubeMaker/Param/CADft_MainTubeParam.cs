@@ -6,9 +6,9 @@ namespace MyCore.CAD
 
 	// TODO: dont know shit about this
 	[Serializable]
-	public class MainTubeParam : ITubeMakeParam
+	public class CADft_MainTubeParam : ICADFeatureParam
 	{
-		public MainTubeParam( ICrossSection crossSection, double length )
+		public CADft_MainTubeParam( ICrossSection crossSection, double length )
 		{
 			CrossSection = crossSection;
 			Length = length;
@@ -29,11 +29,11 @@ namespace MyCore.CAD
 			set;
 		}
 
-		public TubeMakeParamType Type
+		public CADFeatureType Type
 		{
 			get
 			{
-				return TubeMakeParamType.MainTube;
+				return CADFeatureType.MainTube;
 			}
 		}
 

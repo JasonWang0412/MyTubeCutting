@@ -9,9 +9,9 @@ namespace MyCore.CAD
 	}
 
 	[Serializable]
-	public class EndCutterParam : ITubeMakeParam
+	public class CADft_EndCutterParam : ICADFeatureParam
 	{
-		public EndCutterParam()
+		public CADft_EndCutterParam()
 		{
 			Center_X = 0;
 			Center_Y = 0;
@@ -57,11 +57,11 @@ namespace MyCore.CAD
 			set;
 		}
 
-		public TubeMakeParamType Type
+		public CADFeatureType Type
 		{
 			get
 			{
-				return TubeMakeParamType.EndCutter;
+				return CADFeatureType.EndCutter;
 			}
 		}
 

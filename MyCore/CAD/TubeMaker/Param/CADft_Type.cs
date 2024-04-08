@@ -1,6 +1,6 @@
 ﻿namespace MyCore.CAD
 {
-	public enum TubeMakeParamType
+	public enum CADFeatureType
 	{
 		MainTube = 0,
 		EndCutter = 1,

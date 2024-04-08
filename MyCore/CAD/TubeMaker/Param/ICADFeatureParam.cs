@@ -1,10 +1,10 @@
 ﻿namespace MyCore.CAD
 {
-	public interface ITubeMakeParam
+	public interface ICADFeatureParam
 	{
 		bool IsValid();
 
-		TubeMakeParamType Type
+		CADFeatureType Type
 		{
 			get;
 		}

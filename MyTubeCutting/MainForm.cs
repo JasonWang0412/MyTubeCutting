@@ -75,7 +75,7 @@ namespace MyTubeCutting
 			double dTubeLength = 100;
 			Geom2D_Rectangle shape = new Geom2D_Rectangle( dWidth, dHeight, dFillet );
 			CrossSection crossSection = new CrossSection( shape, dThickness );
-			MainTubeParam mainTubeParam = new MainTubeParam( crossSection, dTubeLength );
+			CADft_MainTubeParam mainTubeParam = new CADft_MainTubeParam( crossSection, dTubeLength );
 
 			// set main tube to tube editor
 			m_TubeCADEditor.SetMainTube( mainTubeParam );
@@ -84,7 +84,7 @@ namespace MyTubeCutting
 		void m_btnEndCutter_Click( object sender, System.EventArgs e )
 		{
 			// set end cutter parameter
-			EndCutterParam endCutterParam = new EndCutterParam()
+			CADft_EndCutterParam endCutterParam = new CADft_EndCutterParam()
 			{
 				Center_X = 0,
 				Center_Y = 0,
@@ -115,7 +115,7 @@ namespace MyTubeCutting
 			double dWidth = 20;
 			double dHeight = 20;
 			double dFillet = 5;
-			BranchTubeParam branchTubeParam = new BranchTubeParam()
+			CADft_BranchTubeParam branchTubeParam = new CADft_BranchTubeParam()
 			{
 				Center_X = 0,
 				Center_Y = 50,
