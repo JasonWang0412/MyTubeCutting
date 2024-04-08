@@ -130,12 +130,6 @@ namespace MyTubeCutting
 			m_TubeCADEditor.AddBranchTube( branchTubeParam );
 		}
 
-		void m_treeObjBrowser_NodeMouseClick( object sender, TreeNodeMouseClickEventArgs e )
-		{
-			string szObjectName = e.Node.Text;
-			m_TubeCADEditor.SetEditObject( szObjectName );
-		}
-
 		void m_propgrdPropertyBar_PropertyValueChanged( object s, PropertyValueChangedEventArgs e )
 		{
 			m_TubeCADEditor.UpdateObjectProperty( s, e );
@@ -146,6 +140,12 @@ namespace MyTubeCutting
 			if( e.KeyCode == Keys.Delete ) {
 				m_TubeCADEditor.RemoveCADFeature();
 			}
+		}
+
+		private void m_treeObjBrowser_AfterSelect( object sender, TreeViewEventArgs e )
+		{
+			string szObjectName = e.Node.Text;
+			m_TubeCADEditor.SetEditObject( szObjectName );
 		}
 	}
 }

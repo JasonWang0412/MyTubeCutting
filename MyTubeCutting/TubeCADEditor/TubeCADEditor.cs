@@ -165,17 +165,21 @@ namespace MyTubeCutting
 
 		void AddCADFeature( string szName, ICADFeatureParam cadFeatureParam )
 		{
+			// make AIS
 			AIS_Shape cadFeatureAIS = MakeCADFeatureAIS( cadFeatureParam );
 
-			// add into object browser
-			m_MainTubeNode.Nodes.Add( szName, szName );
+			// add node into object browser
+			TreeNode newNode =  m_MainTubeNode.Nodes.Add( szName, szName );
 
 			// add into map
 			m_CADFeatureNameAISMap.Add( szName, cadFeatureAIS );
 			m_CADFeatureNameParamMap.Add( szName, cadFeatureParam );
 
-			// set edit object (display)
-			SetEditObject( szName );
+			// these will call SetEditObject
+			m_treeObjBrowser.Focus();
+			m_treeObjBrowser.SelectedNode = newNode;
+
+			// update display
 			UpdateAndRedrawResultTube();
 		}
 

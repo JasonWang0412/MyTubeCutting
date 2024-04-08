@@ -99,7 +99,7 @@
 			this.m_treeObjBrowser.Name = "m_treeObjBrowser";
 			this.m_treeObjBrowser.Size = new System.Drawing.Size(300, 300);
 			this.m_treeObjBrowser.TabIndex = 0;
-			this.m_treeObjBrowser.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.m_treeObjBrowser_NodeMouseClick);
+			this.m_treeObjBrowser.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.m_treeObjBrowser_AfterSelect);
 			this.m_treeObjBrowser.KeyUp += new System.Windows.Forms.KeyEventHandler(this.m_treeObjBrowser_KeyUp);
 			// 
 			// m_panBranchTubeParam
