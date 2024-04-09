@@ -209,10 +209,10 @@ namespace MyCore.CAD
 				dWidth = ( (Geom2D_Rectangle)( mainTubeParam.CrossSection.Shape ) ).Width * 2;
 				dHeight = ( (Geom2D_Rectangle)( mainTubeParam.CrossSection.Shape ) ).Height * 2;
 			}
-			double dLength = mainTubeParam.Length * 4;
+			double dLength = mainTubeParam.Length * 2;
 
 			// make XZ plane wire
-			gp_Pnt center = new gp_Pnt( 0, -mainTubeParam.Length * 2, 0 );
+			gp_Pnt center = new gp_Pnt( 0, -mainTubeParam.Length / 2, 0 );
 			gp_Dir dir = new gp_Dir( 0, 1, 0 );
 			Geom2D_Rectangle rect = new Geom2D_Rectangle( dWidth, dHeight, 0 );
 			TopoDS_Wire baseWire = OCCTool.MakeWire( rect, 0, center, dir, 0 );

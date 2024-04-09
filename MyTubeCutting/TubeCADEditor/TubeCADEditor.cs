@@ -1,10 +1,15 @@
 ﻿using MyCore.CAD;
 using MyCore.Tool;
 using OCC.AIS;
+using OCC.BRep;
 using OCC.BRepAlgoAPI;
+using OCC.BRepBuilderAPI;
 using OCC.BRepTools;
+using OCC.Geom;
 using OCC.Graphic3d;
 using OCC.Quantity;
+using OCC.TopAbs;
+using OCC.TopExp;
 using OCC.TopoDS;
 using System.Collections.Generic;
 using System.Linq;
@@ -221,19 +226,35 @@ namespace MyTubeCutting
 
 				// make the face
 				TopoDS_Face thePlane = TubeMaker.MakeEndCutterFace( (CADft_EndCutterParam)cadFeatureParam );
-				BRepTools.Write( thePlane, "0plane.brep" );
 
 				// make the extend bounding box of main tube
 				TopoDS_Shape extendBndBox = TubeMaker.MakeExtendBoundingBox( m_MainTubeParam );
-				BRepTools.Write( extendBndBox, "0extend.brep" );
 
-				// find the intersection of the face and the extend bounding box
-				BRepAlgoAPI_Section section = new BRepAlgoAPI_Section( thePlane, extendBndBox );
-				if( section.IsDone() == false ) {
+				// find the common part of the face and the extend bounding box
+				BRepAlgoAPI_Common common = new BRepAlgoAPI_Common( thePlane, extendBndBox );
+				if( common.IsDone() == false ) {
 					return cadFeatureAIS;
 				}
-				cadFeatureAIS = new AIS_Shape( section.Shape() );
-				BRepTools.Write( section.Shape(), "0section.brep" );
+
+				// retrive the geom surface and uv boundary from the section shape
+				TopoDS_Face commonFace;
+				TopExp_Explorer explorer = new TopExp_Explorer( common.Shape(), TopAbs_ShapeEnum.TopAbs_FACE );
+				if( explorer.More() ) {
+					commonFace = TopoDS.ToFace( explorer.Current() );
+				}
+				else {
+					return cadFeatureAIS;
+				}
+				Geom_Surface commonSurface = BRep_Tool.Surface( commonFace );
+				double Umin = 0;
+				double Umax = 0;
+				double Vmin = 0;
+				double Vmax = 0;
+				BRepTools.UVBounds( commonFace, ref Umin, ref Umax, ref Vmin, ref Vmax );
+				Geom_RectangularTrimmedSurface refinedSurface = new Geom_RectangularTrimmedSurface( commonSurface, Umin, Umax, Vmin, Vmax );
+				BRepBuilderAPI_MakeFace refinedFaceMaker = new BRepBuilderAPI_MakeFace( refinedSurface, 0.001 );
+
+				cadFeatureAIS = new AIS_Shape( refinedFaceMaker.Face() );
 			}
 			else if( cadFeatureParam.Type == CADFeatureType.BranchTube ) {
 				cadFeatureAIS = new AIS_Shape( TubeMaker.MakeBranchTube( (CADft_BranchTubeParam)cadFeatureParam ) );
