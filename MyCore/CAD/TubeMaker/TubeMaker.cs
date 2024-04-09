@@ -109,6 +109,22 @@ namespace MyCore.CAD
 			}
 
 			// get plane
+			TopoDS_Face thePlane = MakeEndCutterFace( endCutterParam );
+
+			// get point on cut side
+			double dYpos = endCutterParam.Side == EEndSide.Left ? endCutterParam.Center_Y - 1 : endCutterParam.Center_Y + 1;
+
+			// make cutter half space
+			gp_Pnt pointOnCutSide = new gp_Pnt( 0, dYpos, 0 );
+			BRepPrimAPI_MakeHalfSpace halfSpace = new BRepPrimAPI_MakeHalfSpace( thePlane, pointOnCutSide );
+			if( halfSpace.IsDone() == false ) {
+				return null;
+			}
+			return halfSpace.Shape();
+		}
+
+		public static TopoDS_Face MakeEndCutterFace( CADft_EndCutterParam endCutterParam )
+		{
 			gp_Pnt center = new gp_Pnt( endCutterParam.Center_X, endCutterParam.Center_Y, endCutterParam.Center_Z );
 			OCCTool.GetEndCutterDir( endCutterParam.TiltAngle_deg, endCutterParam.RotateAngle_deg, out gp_Dir dir );
 			gp_Pln cutPlane = new gp_Pln( center, dir );
@@ -116,17 +132,7 @@ namespace MyCore.CAD
 			if( makeFace.IsDone() == false ) {
 				return null;
 			}
-
-			// get point on cut side
-			double dYpos = endCutterParam.Side == EEndSide.Left ? endCutterParam.Center_Y - 1 : endCutterParam.Center_Y + 1;
-
-			// make cutter half space
-			gp_Pnt pointOnCutSide = new gp_Pnt( 0, dYpos, 0 );
-			BRepPrimAPI_MakeHalfSpace halfSpace = new BRepPrimAPI_MakeHalfSpace( makeFace.Face(), pointOnCutSide );
-			if( halfSpace.IsDone() == false ) {
-				return null;
-			}
-			return halfSpace.Shape();
+			return makeFace.Face();
 		}
 
 		// make branch tubes
@@ -187,6 +193,43 @@ namespace MyCore.CAD
 			}
 
 			return branchTubeMaker.Shape();
+		}
+
+		// make extend bounding box
+		public static TopoDS_Shape MakeExtendBoundingBox( CADft_MainTubeParam mainTubeParam )
+		{
+			// calculate bounding box size
+			double dWidth = 0;
+			double dHeight = 0;
+			if( mainTubeParam.CrossSection.Shape.Type == Geom2D_Type.Circle ) {
+				dWidth = ( (Geom2D_Circle)( mainTubeParam.CrossSection.Shape ) ).Radius * 4;
+				dHeight = dWidth;
+			}
+			else if( mainTubeParam.CrossSection.Shape.Type == Geom2D_Type.Rectangle ) {
+				dWidth = ( (Geom2D_Rectangle)( mainTubeParam.CrossSection.Shape ) ).Width * 2;
+				dHeight = ( (Geom2D_Rectangle)( mainTubeParam.CrossSection.Shape ) ).Height * 2;
+			}
+			double dLength = mainTubeParam.Length * 4;
+
+			// make XZ plane wire
+			gp_Pnt center = new gp_Pnt( 0, -mainTubeParam.Length * 2, 0 );
+			gp_Dir dir = new gp_Dir( 0, 1, 0 );
+			Geom2D_Rectangle rect = new Geom2D_Rectangle( dWidth, dHeight, 0 );
+			TopoDS_Wire baseWire = OCCTool.MakeWire( rect, 0, center, dir, 0 );
+
+			// make the face
+			BRepBuilderAPI_MakeFace faceMaker = new BRepBuilderAPI_MakeFace( baseWire );
+			if( faceMaker.IsDone() == false ) {
+				return null;
+			}
+
+			// make prism
+			gp_Vec vec = new gp_Vec( 0, dLength, 0 );
+			BRepPrimAPI_MakePrism prismMaker = new BRepPrimAPI_MakePrism( faceMaker.Face(), vec );
+			if( prismMaker.IsDone() == false ) {
+				return null;
+			}
+			return prismMaker.Shape();
 		}
 	}
 }

@@ -1,6 +1,8 @@
 ﻿using MyCore.CAD;
 using MyCore.Tool;
 using OCC.AIS;
+using OCC.BRepAlgoAPI;
+using OCC.BRepTools;
 using OCC.Graphic3d;
 using OCC.Quantity;
 using OCC.TopoDS;
@@ -103,6 +105,9 @@ namespace MyTubeCutting
 			// main tube
 			if( m_szEditObjName == MAIN_TUBE_NAME ) {
 				m_MainTubeParam = (CADft_MainTubeParam)( CloneHelper.Clone( m_EdiObjParam ) );
+
+				// need to refresh cut plane shape when main tube size changed
+				RefreshCutPlaneShape();
 				UpdateAndRedrawResultTube();
 				return;
 			}
@@ -169,7 +174,7 @@ namespace MyTubeCutting
 			AIS_Shape cadFeatureAIS = MakeCADFeatureAIS( cadFeatureParam );
 
 			// add node into object browser
-			TreeNode newNode =  m_MainTubeNode.Nodes.Add( szName, szName );
+			TreeNode newNode = m_MainTubeNode.Nodes.Add( szName, szName );
 
 			// add into map
 			m_CADFeatureNameAISMap.Add( szName, cadFeatureAIS );
@@ -213,7 +218,22 @@ namespace MyTubeCutting
 		{
 			AIS_Shape cadFeatureAIS = null;
 			if( cadFeatureParam.Type == CADFeatureType.EndCutter ) {
-				cadFeatureAIS = new AIS_Shape( TubeMaker.MakeEndCutter( (CADft_EndCutterParam)cadFeatureParam ) );
+
+				// make the face
+				TopoDS_Face thePlane = TubeMaker.MakeEndCutterFace( (CADft_EndCutterParam)cadFeatureParam );
+				BRepTools.Write( thePlane, "0plane.brep" );
+
+				// make the extend bounding box of main tube
+				TopoDS_Shape extendBndBox = TubeMaker.MakeExtendBoundingBox( m_MainTubeParam );
+				BRepTools.Write( extendBndBox, "0extend.brep" );
+
+				// find the intersection of the face and the extend bounding box
+				BRepAlgoAPI_Section section = new BRepAlgoAPI_Section( thePlane, extendBndBox );
+				if( section.IsDone() == false ) {
+					return cadFeatureAIS;
+				}
+				cadFeatureAIS = new AIS_Shape( section.Shape() );
+				BRepTools.Write( section.Shape(), "0section.brep" );
 			}
 			else if( cadFeatureParam.Type == CADFeatureType.BranchTube ) {
 				cadFeatureAIS = new AIS_Shape( TubeMaker.MakeBranchTube( (CADft_BranchTubeParam)cadFeatureParam ) );
@@ -265,6 +285,28 @@ namespace MyTubeCutting
 			foreach( KeyValuePair<string, AIS_Shape> pair in m_CADFeatureNameAISMap ) {
 				m_Viewer.GetAISContext().Erase( pair.Value, false );
 			}
+			m_Viewer.UpdateView();
+		}
+
+		void RefreshCutPlaneShape()
+		{
+			foreach( KeyValuePair<string, ICADFeatureParam> pair in m_CADFeatureNameParamMap ) {
+				if( pair.Value.Type != CADFeatureType.EndCutter ) {
+					continue;
+				}
+
+				// remove old ais from viewer
+				m_Viewer.GetAISContext().Remove( m_CADFeatureNameAISMap[ pair.Key ], false );
+
+				// create new ais
+				ICADFeatureParam cadFeatureParam = m_CADFeatureNameParamMap[ pair.Key ];
+				AIS_Shape cadFeatureAIS = MakeCADFeatureAIS( cadFeatureParam );
+
+				// update ais map
+				m_CADFeatureNameAISMap[ pair.Key ] = cadFeatureAIS;
+			}
+
+			// update display
 			m_Viewer.UpdateView();
 		}
 	}

@@ -45,6 +45,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CAD\BoundingBox\BoundingBox.cs" />
     <Compile Include="CAD\CrossSection\CrossSection.cs" />
     <Compile Include="CAD\Geom2D\Geom2D_Circle.cs" />
     <Compile Include="CAD\Geom2D\Geom2D_Rectangle.cs" />
