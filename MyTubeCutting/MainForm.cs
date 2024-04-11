@@ -31,6 +31,10 @@ namespace MyTubeCutting
 
 			// initialize tube editor
 			m_TubeCADEditor = new TubeCADEditor( m_Viewer, m_treeObjBrowser, m_propgrdPropertyBar );
+
+			// key event
+			m_panViewer.KeyDown += m_panViewer_KeyDown;
+			m_treeObjBrowser.KeyDown += m_treeObjBrowser_KeyDown;
 		}
 
 		void m_panViewer_MouseDown( object sender, MouseEventArgs e )
@@ -135,17 +139,37 @@ namespace MyTubeCutting
 			m_TubeCADEditor.UpdateObjectProperty( s, e );
 		}
 
-		private void m_treeObjBrowser_KeyUp( object sender, KeyEventArgs e )
+		void m_treeObjBrowser_AfterSelect( object sender, TreeViewEventArgs e )
+		{
+			string szObjectName = e.Node.Text;
+			m_TubeCADEditor.SetEditObject( szObjectName );
+		}
+
+		void m_panViewer_KeyDown( object sender, KeyEventArgs e )
+		{
+			if( e.Modifiers == Keys.Control ) {
+				if( e.KeyCode == Keys.Z ) {
+					m_TubeCADEditor.Undo();
+				}
+				else if( e.KeyCode == Keys.Y ) {
+					m_TubeCADEditor.Redo();
+				}
+			}
+		}
+
+		void m_treeObjBrowser_KeyDown( object sender, KeyEventArgs e )
 		{
 			if( e.KeyCode == Keys.Delete ) {
 				m_TubeCADEditor.RemoveCADFeature();
 			}
-		}
-
-		private void m_treeObjBrowser_AfterSelect( object sender, TreeViewEventArgs e )
-		{
-			string szObjectName = e.Node.Text;
-			m_TubeCADEditor.SetEditObject( szObjectName );
+			else if( e.Modifiers == Keys.Control ) {
+				if( e.KeyCode == Keys.Z ) {
+					m_TubeCADEditor.Undo();
+				}
+				else if( e.KeyCode == Keys.Y ) {
+					m_TubeCADEditor.Redo();
+				}
+			}
 		}
 	}
 }

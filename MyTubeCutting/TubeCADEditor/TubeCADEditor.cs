@@ -35,12 +35,14 @@ namespace MyTubeCutting
 		// object browser map
 		TreeNode m_MainTubeNode;
 
-		// interaction
+		// action
 		int m_nEndCutterCount = 1;
 		int m_nBranchTubeCount = 1;
 		const string MAIN_TUBE_NAME = "MainTube";
 		string m_szEditObjName;
 		ICADFeatureParam m_EdiObjParam;
+		List<ICADEditCommand> m_CADEditUndoCommandQueue = new List<ICADEditCommand>();
+		List<ICADEditCommand> m_CADEditRedoCommandQueue = new List<ICADEditCommand>();
 
 		internal TubeCADEditor( OCCViewer viewer, TreeView treeObjBrowser, PropertyGrid propertyGrid )
 		{
@@ -119,32 +121,53 @@ namespace MyTubeCutting
 
 			// cad feature
 			else if( m_CADFeatureNameParamMap.ContainsKey( m_szEditObjName ) ) {
-				m_CADFeatureNameParamMap[ m_szEditObjName ] = CloneHelper.Clone( m_EdiObjParam );
 
-				// get ais from map
-				AIS_Shape cadFeatureAIS = m_CADFeatureNameAISMap[ m_szEditObjName ];
-
-				// remove old ais from viewer
-				m_Viewer.GetAISContext().Remove( cadFeatureAIS, false );
-
-				// create new ais
-				ICADFeatureParam cadFeatureParam = m_CADFeatureNameParamMap[ m_szEditObjName ];
-				cadFeatureAIS = MakeCADFeatureAIS( cadFeatureParam );
-
-				// update ais map
-				m_CADFeatureNameAISMap[ m_szEditObjName ] = cadFeatureAIS;
-
-				// display new ais
-				m_Viewer.GetAISContext().Display( cadFeatureAIS, false );
+				// set command
+				ModifyCadFeatureCommand command = new ModifyCadFeatureCommand( m_szEditObjName, CloneHelper.Clone( m_EdiObjParam ), m_CADFeatureNameParamMap );
+				DoCommand( command );
 			}
-
-			// redraw result tube
-			UpdateAndRedrawResultTube();
+			else {
+				return;
+			}
 		}
 
 		internal bool IsExistMainTube()
 		{
 			return m_MainTubeParam != null;
+		}
+
+		internal void Undo()
+		{
+			// no command to undo
+			if( m_CADEditUndoCommandQueue.Count == 0 ) {
+				return;
+			}
+
+			// undo command
+			m_CADEditUndoCommandQueue.Last().Undo();
+
+			// move command to redo queue
+			m_CADEditRedoCommandQueue.Add( m_CADEditUndoCommandQueue.Last() );
+
+			// remove command from undo queue
+			m_CADEditUndoCommandQueue.RemoveAt( m_CADEditUndoCommandQueue.Count - 1 );
+		}
+
+		internal void Redo()
+		{
+			// no command to redo
+			if( m_CADEditRedoCommandQueue.Count == 0 ) {
+				return;
+			}
+
+			// redo command
+			m_CADEditRedoCommandQueue.Last().Do();
+
+			// move command to undo queue
+			m_CADEditUndoCommandQueue.Add( m_CADEditRedoCommandQueue.Last() );
+
+			// remove command from redo queue
+			m_CADEditRedoCommandQueue.RemoveAt( m_CADEditRedoCommandQueue.Count - 1 );
 		}
 
 		void UpdateAndRedrawResultTube()
@@ -172,41 +195,18 @@ namespace MyTubeCutting
 			m_Viewer.UpdateView();
 		}
 
-
 		void AddCADFeature( string szName, ICADFeatureParam cadFeatureParam )
 		{
-			// make AIS
-			AIS_Shape cadFeatureAIS = MakeCADFeatureAIS( cadFeatureParam );
-
-			// add node into object browser
-			TreeNode newNode = m_MainTubeNode.Nodes.Add( szName, szName );
-
-			// add into map
-			m_CADFeatureNameAISMap.Add( szName, cadFeatureAIS );
-			m_CADFeatureNameParamMap.Add( szName, cadFeatureParam );
-
-			// these will call SetEditObject
-			m_treeObjBrowser.Focus();
-			m_treeObjBrowser.SelectedNode = newNode;
-
-			// update display
-			UpdateAndRedrawResultTube();
+			// set command
+			AddCadFeatureCommand command = new AddCadFeatureCommand( szName, cadFeatureParam, m_CADFeatureNameParamMap );
+			DoCommand( command );
 		}
 
 		void RemoveCADFeature( string szName )
 		{
-			// remove from display
-			m_Viewer.GetAISContext().Remove( m_CADFeatureNameAISMap[ szName ], false );
-
-			// remove from map
-			m_CADFeatureNameParamMap.Remove( szName );
-			m_CADFeatureNameAISMap.Remove( szName );
-
-			// remove from object browser
-			m_MainTubeNode.Nodes.RemoveByKey( szName );
-
-			// update display
-			UpdateAndRedrawResultTube();
+			// set command
+			RemoveCadFeatureCommand command = new RemoveCadFeatureCommand( szName, m_CADFeatureNameParamMap[ szName ], m_CADFeatureNameParamMap );
+			DoCommand( command );
 		}
 
 		string GetNewEndCutterName()
@@ -329,6 +329,59 @@ namespace MyTubeCutting
 
 			// update display
 			m_Viewer.UpdateView();
+		}
+
+		void UpdateEditorAfterCommand( EditType type, string szObjectName )
+		{
+			if( type == EditType.AddCADFeature ) {
+
+				// add node into object browser
+				TreeNode newNode = m_MainTubeNode.Nodes.Add( szObjectName, szObjectName );
+
+				// make AIS and add into map
+				AIS_Shape cadFeatureAIS = MakeCADFeatureAIS( m_CADFeatureNameParamMap[ szObjectName ] );
+				m_CADFeatureNameAISMap.Add( szObjectName, cadFeatureAIS );
+
+				// these will call SetEditObject
+				m_treeObjBrowser.Focus();
+				m_treeObjBrowser.SelectedNode = newNode;
+			}
+			else if( type == EditType.RemoveCADFeature ) {
+
+				// remove from object browser
+				m_MainTubeNode.Nodes.RemoveByKey( szObjectName );
+
+				// remove from display and map
+				m_Viewer.GetAISContext().Remove( m_CADFeatureNameAISMap[ szObjectName ], false );
+				m_CADFeatureNameAISMap.Remove( szObjectName );
+			}
+			else if( type == EditType.ModifyCADFeature ) {
+
+				// get ais from map
+				AIS_Shape cadFeatureAIS = m_CADFeatureNameAISMap[ m_szEditObjName ];
+
+				// remove old ais from viewer
+				m_Viewer.GetAISContext().Remove( cadFeatureAIS, false );
+
+				// create new ais
+				ICADFeatureParam cadFeatureParam = m_CADFeatureNameParamMap[ m_szEditObjName ];
+				cadFeatureAIS = MakeCADFeatureAIS( cadFeatureParam );
+
+				// display new ais and update ais map
+				m_Viewer.GetAISContext().Display( cadFeatureAIS, false );
+				m_CADFeatureNameAISMap[ m_szEditObjName ] = cadFeatureAIS;
+			}
+
+			// update display
+			UpdateAndRedrawResultTube();
+		}
+
+		void DoCommand( ICADEditCommand command )
+		{
+			command.EditFinished += UpdateEditorAfterCommand;
+			command.Do();
+			m_CADEditUndoCommandQueue.Add( command );
+			m_CADEditRedoCommandQueue.Clear();
 		}
 	}
 }

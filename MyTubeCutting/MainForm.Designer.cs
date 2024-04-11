@@ -31,13 +31,13 @@
 			this.m_btnBranchTube = new System.Windows.Forms.Button();
 			this.m_btnEndCutter = new System.Windows.Forms.Button();
 			this.m_btnMainTube = new System.Windows.Forms.Button();
-			this.m_panMainTubeParam = new System.Windows.Forms.Panel();
+			this.m_panObjBrowser = new System.Windows.Forms.Panel();
 			this.m_treeObjBrowser = new System.Windows.Forms.TreeView();
-			this.m_panBranchTubeParam = new System.Windows.Forms.Panel();
+			this.m_panPropertyBar = new System.Windows.Forms.Panel();
 			this.m_propgrdPropertyBar = new System.Windows.Forms.PropertyGrid();
 			this.m_panViewer.SuspendLayout();
-			this.m_panMainTubeParam.SuspendLayout();
-			this.m_panBranchTubeParam.SuspendLayout();
+			this.m_panObjBrowser.SuspendLayout();
+			this.m_panPropertyBar.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// m_panViewer
@@ -84,13 +84,13 @@
 			this.m_btnMainTube.UseVisualStyleBackColor = true;
 			this.m_btnMainTube.Click += new System.EventHandler(this.m_btnMainTube_Click);
 			// 
-			// m_panMainTubeParam
+			// m_panObjBrowser
 			// 
-			this.m_panMainTubeParam.Controls.Add(this.m_treeObjBrowser);
-			this.m_panMainTubeParam.Location = new System.Drawing.Point(500, 0);
-			this.m_panMainTubeParam.Name = "m_panMainTubeParam";
-			this.m_panMainTubeParam.Size = new System.Drawing.Size(300, 300);
-			this.m_panMainTubeParam.TabIndex = 1;
+			this.m_panObjBrowser.Controls.Add(this.m_treeObjBrowser);
+			this.m_panObjBrowser.Location = new System.Drawing.Point(500, 0);
+			this.m_panObjBrowser.Name = "m_panObjBrowser";
+			this.m_panObjBrowser.Size = new System.Drawing.Size(300, 300);
+			this.m_panObjBrowser.TabIndex = 1;
 			// 
 			// m_treeObjBrowser
 			// 
@@ -100,15 +100,14 @@
 			this.m_treeObjBrowser.Size = new System.Drawing.Size(300, 300);
 			this.m_treeObjBrowser.TabIndex = 0;
 			this.m_treeObjBrowser.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.m_treeObjBrowser_AfterSelect);
-			this.m_treeObjBrowser.KeyUp += new System.Windows.Forms.KeyEventHandler(this.m_treeObjBrowser_KeyUp);
 			// 
-			// m_panBranchTubeParam
+			// m_panPropertyBar
 			// 
-			this.m_panBranchTubeParam.Controls.Add(this.m_propgrdPropertyBar);
-			this.m_panBranchTubeParam.Location = new System.Drawing.Point(500, 300);
-			this.m_panBranchTubeParam.Name = "m_panBranchTubeParam";
-			this.m_panBranchTubeParam.Size = new System.Drawing.Size(300, 300);
-			this.m_panBranchTubeParam.TabIndex = 2;
+			this.m_panPropertyBar.Controls.Add(this.m_propgrdPropertyBar);
+			this.m_panPropertyBar.Location = new System.Drawing.Point(500, 300);
+			this.m_panPropertyBar.Name = "m_panPropertyBar";
+			this.m_panPropertyBar.Size = new System.Drawing.Size(300, 300);
+			this.m_panPropertyBar.TabIndex = 2;
 			// 
 			// m_propgrdPropertyBar
 			// 
@@ -125,14 +124,14 @@
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.AutoSize = true;
 			this.ClientSize = new System.Drawing.Size(801, 601);
-			this.Controls.Add(this.m_panBranchTubeParam);
-			this.Controls.Add(this.m_panMainTubeParam);
+			this.Controls.Add(this.m_panPropertyBar);
+			this.Controls.Add(this.m_panObjBrowser);
 			this.Controls.Add(this.m_panViewer);
 			this.Name = "MainForm";
 			this.Text = "Form1";
 			this.m_panViewer.ResumeLayout(false);
-			this.m_panMainTubeParam.ResumeLayout(false);
-			this.m_panBranchTubeParam.ResumeLayout(false);
+			this.m_panObjBrowser.ResumeLayout(false);
+			this.m_panPropertyBar.ResumeLayout(false);
 			this.ResumeLayout(false);
 
 		}
@@ -140,8 +139,8 @@
 		#endregion
 
 		private System.Windows.Forms.Panel m_panViewer;
-		private System.Windows.Forms.Panel m_panMainTubeParam;
-		private System.Windows.Forms.Panel m_panBranchTubeParam;
+		private System.Windows.Forms.Panel m_panObjBrowser;
+		private System.Windows.Forms.Panel m_panPropertyBar;
 		private System.Windows.Forms.Button m_btnMainTube;
 		private System.Windows.Forms.TreeView m_treeObjBrowser;
 		private System.Windows.Forms.PropertyGrid m_propgrdPropertyBar;
