@@ -184,7 +184,7 @@ namespace MyTubeCutting
 			List<CADft_BranchTubeParam> branchTubeParamList = m_CADFeatureNameParamMap
 				.Where( pair => pair.Value.Type == CADFeatureType.BranchTube )
 				.Select( branchTubePair => (CADft_BranchTubeParam)branchTubePair.Value ).ToList();
-			TopoDS_Shape tubeShape = TubeMaker.MakeResultTube( m_MainTubeParam, endCutterParams, branchTubeParamList );
+			TopoDS_Shape tubeShape = CADFeatureMaker.MakeResultTube( m_MainTubeParam, endCutterParams, branchTubeParamList );
 
 			// display new tube
 			m_ResultTubeAIS = new AIS_Shape( tubeShape );
@@ -225,10 +225,10 @@ namespace MyTubeCutting
 			if( cadFeatureParam.Type == CADFeatureType.EndCutter ) {
 
 				// make the face
-				TopoDS_Face thePlane = TubeMaker.MakeEndCutterFace( (CADft_EndCutterParam)cadFeatureParam );
+				TopoDS_Face thePlane = CADFeatureMaker.MakeEndCutterFace( (CADft_EndCutterParam)cadFeatureParam );
 
 				// make the extend bounding box of main tube
-				TopoDS_Shape extendBndBox = TubeMaker.MakeExtendBoundingBox( m_MainTubeParam );
+				TopoDS_Shape extendBndBox = CADFeatureMaker.MakeExtendBoundingBox( m_MainTubeParam );
 
 				// find the common part of the face and the extend bounding box
 				BRepAlgoAPI_Common common = new BRepAlgoAPI_Common( thePlane, extendBndBox );
@@ -257,7 +257,7 @@ namespace MyTubeCutting
 				cadFeatureAIS = new AIS_Shape( refinedFaceMaker.Face() );
 			}
 			else if( cadFeatureParam.Type == CADFeatureType.BranchTube ) {
-				cadFeatureAIS = new AIS_Shape( TubeMaker.MakeBranchTube( (CADft_BranchTubeParam)cadFeatureParam ) );
+				cadFeatureAIS = new AIS_Shape( CADFeatureMaker.MakeBranchTube( (CADft_BranchTubeParam)cadFeatureParam ) );
 			}
 			else {
 				return cadFeatureAIS;

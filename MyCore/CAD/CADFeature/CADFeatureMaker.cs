@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 namespace MyCore.CAD
 {
-	public class TubeMaker
+	public class CADFeatureMaker
 	{
 		public static TopoDS_Shape MakeResultTube( CADft_MainTubeParam mainTubeParam,
 			List<CADft_EndCutterParam> endCutterParamList,
