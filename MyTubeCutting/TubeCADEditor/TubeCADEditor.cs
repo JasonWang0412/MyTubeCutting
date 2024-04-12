@@ -41,6 +41,8 @@ namespace MyTubeCutting
 		const string MAIN_TUBE_NAME = "MainTube";
 		string m_szEditObjName;
 		ICADFeatureParam m_EdiObjParam;
+
+		// command
 		List<ICADEditCommand> m_CADEditUndoCommandQueue = new List<ICADEditCommand>();
 		List<ICADEditCommand> m_CADEditRedoCommandQueue = new List<ICADEditCommand>();
 
