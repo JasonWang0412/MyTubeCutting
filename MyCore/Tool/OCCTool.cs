@@ -12,20 +12,29 @@ namespace MyCore.Tool
 	public class OCCTool
 	{
 		// make wire
-		public static TopoDS_Wire MakeWire( IGeom2D basicGeom, double dNeckin, gp_Pnt center, gp_Dir dir, double dRotation )
+		public static TopoDS_Wire MakeBaseWire( IGeom2D basicGeom, double dNeckin, gp_Pnt center, gp_Dir dir, double dRotation )
 		{
+			TopoDS_Wire wireXOY = new TopoDS_Wire();
 			if( basicGeom.Type == Geom2D_Type.Circle ) {
-				return MakeCircleWire( (Geom2D_Circle)basicGeom, dNeckin, center, dir, dRotation );
+				wireXOY = MakeXOYCircleWire( (Geom2D_Circle)basicGeom, dNeckin, center, dir, dRotation );
 			}
 			else if( basicGeom.Type == Geom2D_Type.Rectangle ) {
-				return MakeRectangleWire( (Geom2D_Rectangle)basicGeom, dNeckin, center, dir, dRotation );
+				wireXOY = MakeXOYRectangleWire( (Geom2D_Rectangle)basicGeom, dNeckin, center, dir, dRotation );
 			}
 			else {
 				throw new System.Exception( "Not supported cross section type" );
 			}
+
+			// transform wire
+			TopoDS_Shape transformedShape = TransformXOYBaseShape( wireXOY, center, dir, dRotation );
+			if( transformedShape == null ) {
+				return null;
+			}
+			TopoDS_Wire resultWire = TopoDS.ToWire( transformedShape );
+			return resultWire;
 		}
 
-		static TopoDS_Wire MakeCircleWire( Geom2D_Circle circleParam, double dNeckin, gp_Pnt center, gp_Dir dir, double dRotation )
+		static TopoDS_Wire MakeXOYCircleWire( Geom2D_Circle circleParam, double dNeckin, gp_Pnt center, gp_Dir dir, double dRotation )
 		{
 			// get radius
 			double dRadius = circleParam.Radius - dNeckin;
@@ -35,16 +44,14 @@ namespace MyCore.Tool
 			BRepBuilderAPI_MakeEdge edgeMaker = new BRepBuilderAPI_MakeEdge( gpCircle );
 			BRepBuilderAPI_MakeWire wireMaker = new BRepBuilderAPI_MakeWire( edgeMaker.Edge() );
 
-			// transform wire
-			TopoDS_Shape transformedShape = TransformBasicShape( wireMaker.Wire(), center, dir, dRotation );
-			if( transformedShape == null ) {
+			// data protection
+			if( wireMaker.IsDone() == false ) {
 				return null;
 			}
-			TopoDS_Wire wire = TopoDS.ToWire( transformedShape );
-			return wire;
+			return wireMaker.Wire();
 		}
 
-		static TopoDS_Wire MakeRectangleWire( Geom2D_Rectangle rectParam, double dNeckin, gp_Pnt center, gp_Dir dir, double dRotation )
+		static TopoDS_Wire MakeXOYRectangleWire( Geom2D_Rectangle rectParam, double dNeckin, gp_Pnt center, gp_Dir dir, double dRotation )
 		{
 			// get width and height
 			double width = rectParam.Width - 2 * dNeckin;
@@ -124,14 +131,7 @@ namespace MyCore.Tool
 			if( wireMaker.IsDone() == false ) {
 				return null;
 			}
-
-			// transform wire
-			TopoDS_Shape transformedShape = TransformBasicShape( wireMaker.Wire(), center, dir, dRotation );
-			if( transformedShape == null ) {
-				return null;
-			}
-			TopoDS_Wire wire = TopoDS.ToWire( transformedShape );
-			return wire;
+			return wireMaker.Wire();
 		}
 
 		// make tube
@@ -162,12 +162,13 @@ namespace MyCore.Tool
 			// rotate around X axis by A angle in radian
 			gp_Trsf transformA = new gp_Trsf();
 			transformA.SetRotation( new gp_Ax1( new gp_Pnt( 0, 0, 0 ), new gp_Dir( 1, 0, 0 ) ), dA_deg * Math.PI / 180 );
-			gp_Dir dirA = dirInit.Transformed( transformA );
 
 			// rotate around Y axis by B angle in radian
 			gp_Trsf transformB = new gp_Trsf();
 			transformB.SetRotation( new gp_Ax1( new gp_Pnt( 0, 0, 0 ), new gp_Dir( 0, 1, 0 ) ), dB_deg * Math.PI / 180 );
-			dir = dirA.Transformed( transformB );
+
+			gp_Trsf trsfFinal = transformB.Multiplied( transformA );
+			dir = dirInit.Transformed( trsfFinal );
 		}
 
 		public static void GetEndCutterDir( double dTilt_deg, double dRotate_deg, out gp_Dir dir )
@@ -178,43 +179,39 @@ namespace MyCore.Tool
 			// rotate around X axis by tilt angle in radian
 			gp_Trsf transformTilt = new gp_Trsf();
 			transformTilt.SetRotation( new gp_Ax1( new gp_Pnt( 0, 0, 0 ), new gp_Dir( 1, 0, 0 ) ), dTilt_deg * Math.PI / 180 );
-			gp_Dir dirTilt = dirInit.Transformed( transformTilt );
 
 			// rotate around Y axis by rotate angle in radian
 			gp_Trsf transformRotate = new gp_Trsf();
 			transformRotate.SetRotation( new gp_Ax1( new gp_Pnt( 0, 0, 0 ), new gp_Dir( 0, 1, 0 ) ), dRotate_deg * Math.PI / 180 );
-			dir = dirTilt.Transformed( transformRotate );
+
+			gp_Trsf trsfFinal = transformRotate.Multiplied( transformTilt );
+			dir = dirInit.Transformed( trsfFinal );
 		}
 
-		static TopoDS_Shape TransformBasicShape( TopoDS_Shape shapeToTransform, gp_Pnt targetCenter, gp_Dir targetDir, double dRotation )
+		static TopoDS_Shape TransformXOYBaseShape( TopoDS_Shape shapeToTransform, gp_Pnt targetCenter, gp_Dir targetDir, double dRotation )
 		{
-			// TODO: dont know shit about this
 			// rotate shape aroud Z axis by dRotation
 			gp_Trsf transformR = new gp_Trsf();
 			transformR.SetRotation( new gp_Ax1( new gp_Pnt( 0, 0, 0 ), new gp_Dir( 0, 0, 1 ) ), dRotation );
-			BRepBuilderAPI_Transform shapeTransformR = new BRepBuilderAPI_Transform( shapeToTransform, transformR );
-			if( shapeTransformR.IsDone() == false ) {
-				return null;
-			}
 
 			// rotate shape from Z to dir
 			gp_Quaternion quaternion = new gp_Quaternion( new gp_Vec( new gp_Dir( 0, 0, 1 ) ), new gp_Vec( targetDir ) );
 			gp_Trsf transformD = new gp_Trsf();
 			transformD.SetRotation( quaternion );
-			BRepBuilderAPI_Transform shapeTransformD = new BRepBuilderAPI_Transform( shapeTransformR.Shape(), transformD );
-			if( shapeTransformD.IsDone() == false ) {
-				return null;
-			}
 
 			// translate shape from XY origin to target center
 			gp_Trsf transformC = new gp_Trsf();
 			transformC.SetTranslation( new gp_Vec( targetCenter.XYZ() ) );
-			BRepBuilderAPI_Transform shapeTransformC = new BRepBuilderAPI_Transform( shapeTransformD.Shape(), transformC );
-			if( shapeTransformC.IsDone() == false ) {
+
+			// combine all transformations
+			gp_Trsf trsfFinal = transformC.Multiplied( transformD ).Multiplied( transformR );
+			BRepBuilderAPI_Transform shapeTrsfFinal = new BRepBuilderAPI_Transform( shapeToTransform, trsfFinal );
+
+			// data protection
+			if( shapeTrsfFinal.IsDone() == false ) {
 				return null;
 			}
-
-			return shapeTransformC.Shape();
+			return shapeTrsfFinal.Shape();
 		}
 	}
 }
