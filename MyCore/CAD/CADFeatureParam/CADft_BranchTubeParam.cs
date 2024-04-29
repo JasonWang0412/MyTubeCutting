@@ -81,6 +81,13 @@ namespace MyCore.CAD
 			set;
 		}
 
+		[TypeConverter( typeof( ExpandableObjectConverter ) )]
+		ArrayParam ArrayParam
+		{
+			get;
+			set;
+		}
+
 		public CADFeatureType Type
 		{
 			get
@@ -118,6 +125,16 @@ namespace MyCore.CAD
 
 			// length should be positive
 			if( Length <= 0 ) {
+				return false;
+			}
+
+			// array param should not be null
+			if( ArrayParam == null ) {
+				return false;
+			}
+
+			// array param should be valid
+			if( ArrayParam.IsValid() == false ) {
 				return false;
 			}
 
