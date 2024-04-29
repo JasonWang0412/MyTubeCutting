@@ -8,7 +8,7 @@ namespace MyCore.CAD
 		public ArrayParam()
 		{
 			LinearCount = 1;
-			LinerDistance = 10;
+			LinearDistance = 10;
 			AngularCount = 1;
 			AngularDistance = 30;
 		}
@@ -19,7 +19,7 @@ namespace MyCore.CAD
 			set;
 		}
 
-		public double LinerDistance
+		public double LinearDistance
 		{
 			get;
 			set;
@@ -39,7 +39,7 @@ namespace MyCore.CAD
 
 		public bool IsValid()
 		{
-			if( LinearCount < 1 || LinerDistance <= 0 || AngularCount < 1 || AngularDistance <= 0 ) {
+			if( LinearCount < 1 || LinearDistance <= 0 || AngularCount < 1 || AngularDistance <= 0 ) {
 				return false;
 			}
 			return true;

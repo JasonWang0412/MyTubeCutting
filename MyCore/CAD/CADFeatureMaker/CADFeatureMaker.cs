@@ -192,7 +192,15 @@ namespace MyCore.CAD
 				return null;
 			}
 
-			return branchTubeMaker.Shape();
+			if( branchTubeParam.ArrayParam.LinearCount <= 1 ) {
+				return branchTubeMaker.Shape();
+			}
+
+			// make array
+			// TODO: refine code
+			TopoDS_Shape oneBranchTube = branchTubeMaker.Shape();
+			TopoDS_Shape arrayBranchTube = OCCTool.MakeArrayCompound( oneBranchTube, branchTubeParam.ArrayParam );
+			return arrayBranchTube;
 		}
 
 		// make extend bounding box

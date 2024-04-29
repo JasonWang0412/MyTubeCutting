@@ -1,4 +1,5 @@
 ﻿using MyCore.CAD;
+using OCC.BRep;
 using OCC.BRepAlgoAPI;
 using OCC.BRepBuilderAPI;
 using OCC.BRepPrimAPI;
@@ -186,6 +187,34 @@ namespace MyCore.Tool
 
 			gp_Trsf trsfFinal = transformRotate.Multiplied( transformTilt );
 			dir = dirInit.Transformed( trsfFinal );
+		}
+
+		// make array
+		public static TopoDS_Shape MakeArrayCompound( TopoDS_Shape oneBranchTube, ArrayParam arrayParam )
+		{
+			// make array
+			TopoDS_Compound compound = new TopoDS_Compound();
+			TopoDS_Shape compoundShape = compound;
+			BRep_Builder builder = new BRep_Builder();
+			builder.MakeCompound( ref compound );
+			builder.Add( ref compoundShape, oneBranchTube );
+
+			// make array
+			for( int i = 1; i < arrayParam.LinearCount; i++ ) {
+
+				// caluculate the offset distance
+				double dOffset = arrayParam.LinearDistance * i;
+
+				// get the transformation along Y axis
+				gp_Trsf trsf = new gp_Trsf();
+				trsf.SetTranslation( new gp_Vec( 0, dOffset, 0 ) );
+				TopoDS_Shape oneCopy = oneBranchTube.Moved( new OCC.TopLoc.TopLoc_Location( trsf ) );
+
+				// make the tube
+				builder.Add( ref compoundShape, oneCopy );
+			}
+
+			return compound;
 		}
 
 		static TopoDS_Shape TransformXOYBaseShape( TopoDS_Shape shapeToTransform, gp_Pnt targetCenter, gp_Dir targetDir, double dRotation )

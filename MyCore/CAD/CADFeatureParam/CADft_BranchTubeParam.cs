@@ -24,6 +24,7 @@ namespace MyCore.CAD
 			Shape = null;
 			IntersectDir = BranchIntersectDir.Positive;
 			Length = 50;
+			ArrayParam = new ArrayParam();
 		}
 
 		public double Center_X
@@ -82,7 +83,7 @@ namespace MyCore.CAD
 		}
 
 		[TypeConverter( typeof( ExpandableObjectConverter ) )]
-		ArrayParam ArrayParam
+		public ArrayParam ArrayParam
 		{
 			get;
 			set;

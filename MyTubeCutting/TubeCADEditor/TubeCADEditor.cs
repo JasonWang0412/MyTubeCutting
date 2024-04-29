@@ -55,6 +55,7 @@ namespace MyTubeCutting
 
 		internal void SetMainTube( CADft_MainTubeParam mainTubeParam )
 		{
+			// TODO: undo/ redo
 			if( m_MainTubeNode == null ) {
 				m_MainTubeNode = m_treeObjBrowser.Nodes.Add( MAIN_TUBE_NAME, MAIN_TUBE_NAME );
 			}
@@ -113,6 +114,8 @@ namespace MyTubeCutting
 
 			// main tube
 			if( m_szEditObjName == MAIN_TUBE_NAME ) {
+
+				// TODO: undo/ redo
 				m_MainTubeParam = (CADft_MainTubeParam)( CloneHelper.Clone( m_EdiObjParam ) );
 
 				// need to refresh cut plane shape when main tube size changed
@@ -223,6 +226,7 @@ namespace MyTubeCutting
 
 		AIS_Shape MakeCADFeatureAIS( ICADFeatureParam cadFeatureParam )
 		{
+			// TODO: let CADFeatureMaker to do this
 			AIS_Shape cadFeatureAIS = null;
 			if( cadFeatureParam.Type == CADFeatureType.EndCutter ) {
 
