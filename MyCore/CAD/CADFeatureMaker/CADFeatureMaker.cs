@@ -3,6 +3,7 @@ using OCC.BRepAlgoAPI;
 using OCC.BRepBuilderAPI;
 using OCC.BRepPrimAPI;
 using OCC.gp;
+using OCC.TopAbs;
 using OCC.TopoDS;
 using System.Collections.Generic;
 
@@ -47,11 +48,25 @@ namespace MyCore.CAD
 			List<TopoDS_Shape> branchTubes = MakeBranchTubes( branchTubeParamList );
 			if( branchTubes != null && branchTubes.Count != 0 ) {
 				foreach( TopoDS_Shape branchTube in branchTubes ) {
-					BRepAlgoAPI_Cut cut = new BRepAlgoAPI_Cut( mainTube, branchTube );
-					if( cut.IsDone() == false ) {
-						continue;
+
+					// find all shapes in branchTube if it is compound
+					// u'll meet some bug (from OCC maybe) if u use compound shape directly
+					if( branchTube.ShapeType() == TopAbs_ShapeEnum.TopAbs_COMPOUND ) {
+						foreach( TopoDS_Shape oneBranchTube in branchTube.elementsAsList ) {
+							BRepAlgoAPI_Cut cut = new BRepAlgoAPI_Cut( mainTube, oneBranchTube );
+							if( cut.IsDone() == false ) {
+								continue;
+							}
+							mainTube = cut.Shape();
+						}
 					}
-					mainTube = cut.Shape();
+					else {
+						BRepAlgoAPI_Cut cut = new BRepAlgoAPI_Cut( mainTube, branchTube );
+						if( cut.IsDone() == false ) {
+							continue;
+						}
+						mainTube = cut.Shape();
+					}
 				}
 			}
 
@@ -192,12 +207,11 @@ namespace MyCore.CAD
 				return null;
 			}
 
-			if( branchTubeParam.ArrayParam.LinearCount <= 1 ) {
+			if( branchTubeParam.ArrayParam.LinearCount <= 1 && branchTubeParam.ArrayParam.AngularCount <= 1 ) {
 				return branchTubeMaker.Shape();
 			}
 
 			// make array
-			// TODO: refine code
 			TopoDS_Shape oneBranchTube = branchTubeMaker.Shape();
 			TopoDS_Shape arrayBranchTube = OCCTool.MakeArrayCompound( oneBranchTube, branchTubeParam.ArrayParam );
 			return arrayBranchTube;

@@ -7,6 +7,7 @@ using OCC.Geom;
 using OCC.gp;
 using OCC.TopoDS;
 using System;
+using System.Collections.Generic;
 
 namespace MyCore.Tool
 {
@@ -192,26 +193,53 @@ namespace MyCore.Tool
 		// make array
 		public static TopoDS_Shape MakeArrayCompound( TopoDS_Shape oneBranchTube, ArrayParam arrayParam )
 		{
-			// make array
+			// create compound
 			TopoDS_Compound compound = new TopoDS_Compound();
 			TopoDS_Shape compoundShape = compound;
 			BRep_Builder builder = new BRep_Builder();
 			builder.MakeCompound( ref compound );
-			builder.Add( ref compoundShape, oneBranchTube );
 
-			// make array
+			// make linear array
+			List<TopoDS_Shape> linearArrayShapeList = new List<TopoDS_Shape>();
+			linearArrayShapeList.Add( oneBranchTube );
 			for( int i = 1; i < arrayParam.LinearCount; i++ ) {
 
-				// caluculate the offset distance
+				// caluculate the linear offset distance
 				double dOffset = arrayParam.LinearDistance * i;
 
 				// get the transformation along Y axis
 				gp_Trsf trsf = new gp_Trsf();
 				trsf.SetTranslation( new gp_Vec( 0, dOffset, 0 ) );
-				TopoDS_Shape oneCopy = oneBranchTube.Moved( new OCC.TopLoc.TopLoc_Location( trsf ) );
+				TopoDS_Shape oneLinearCopy = oneBranchTube.Moved( new OCC.TopLoc.TopLoc_Location( trsf ) );
 
-				// make the tube
-				builder.Add( ref compoundShape, oneCopy );
+				linearArrayShapeList.Add( oneLinearCopy );
+			}
+
+			// make angular array
+			List<List<TopoDS_Shape>> angularArrayShapeList = new List<List<TopoDS_Shape>>();
+			angularArrayShapeList.Add( linearArrayShapeList );
+			for( int i = 1; i < arrayParam.AngularCount; i++ ) {
+
+				// calculate the angular offset distance
+				double dAngle_Deg = arrayParam.AngularDistance_Deg * i;
+
+				// get the transformation around Y axis
+				gp_Trsf trsf = new gp_Trsf();
+				trsf.SetRotation( new gp_Ax1( new gp_Pnt( 0, 0, 0 ), new gp_Dir( 0, 1, 0 ) ), dAngle_Deg * Math.PI / 180 );
+
+				List<TopoDS_Shape> oneAngularArray = new List<TopoDS_Shape>();
+				foreach( TopoDS_Shape oneLinearCopy in linearArrayShapeList ) {
+					TopoDS_Shape oneAngularCopy = oneLinearCopy.Moved( new OCC.TopLoc.TopLoc_Location( trsf ) );
+					oneAngularArray.Add( oneAngularCopy );
+				}
+				angularArrayShapeList.Add( oneAngularArray );
+			}
+
+			// add all shapes to compound
+			foreach( List<TopoDS_Shape> oneAngularArray in angularArrayShapeList ) {
+				foreach( TopoDS_Shape oneLinearCopy in oneAngularArray ) {
+					builder.Add( ref compoundShape, oneLinearCopy );
+				}
 			}
 
 			return compound;

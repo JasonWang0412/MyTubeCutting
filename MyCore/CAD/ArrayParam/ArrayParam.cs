@@ -2,6 +2,12 @@
 
 namespace MyCore.CAD
 {
+	public enum ArrayDirection
+	{
+		Positive = 0,
+		Negative = 1
+	}
+
 	[Serializable]
 	public class ArrayParam
 	{
@@ -10,7 +16,7 @@ namespace MyCore.CAD
 			LinearCount = 1;
 			LinearDistance = 10;
 			AngularCount = 1;
-			AngularDistance = 30;
+			AngularDistance_Deg = 30;
 		}
 
 		public int LinearCount
@@ -31,7 +37,7 @@ namespace MyCore.CAD
 			set;
 		}
 
-		public double AngularDistance
+		public double AngularDistance_Deg
 		{
 			get;
 			set;
@@ -39,7 +45,7 @@ namespace MyCore.CAD
 
 		public bool IsValid()
 		{
-			if( LinearCount < 1 || LinearDistance <= 0 || AngularCount < 1 || AngularDistance <= 0 ) {
+			if( LinearCount < 1 || LinearDistance <= 0 || AngularCount < 1 || AngularDistance_Deg <= 0 ) {
 				return false;
 			}
 			return true;
