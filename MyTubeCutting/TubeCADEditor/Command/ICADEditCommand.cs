@@ -5,6 +5,7 @@
 	internal enum EditType
 	{
 		AddMainTube,
+		RemoveMainTube,
 		ModifyMainTube,
 		AddCADFeature,
 		RemoveCADFeature,

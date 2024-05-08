@@ -32,6 +32,6 @@ namespace MyTubeCutting
 
 		string m_szFeatureName;
 		ICADFeatureParam m_CADFeatureParam;
-		Dictionary<string, ICADFeatureParam> m_CADFeatureNameParamMap = new Dictionary<string, ICADFeatureParam>();
+		Dictionary<string, ICADFeatureParam> m_CADFeatureNameParamMap;
 	}
 }

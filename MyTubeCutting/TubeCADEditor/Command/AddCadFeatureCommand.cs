@@ -15,7 +15,6 @@ namespace MyTubeCutting
 
 		public void Do()
 		{
-			// TODO: to backup the insert index if needed
 			if( m_CADFeatureParam.IsValid() == false ) {
 				return;
 			}
@@ -36,6 +35,6 @@ namespace MyTubeCutting
 
 		string m_szFeatureName;
 		ICADFeatureParam m_CADFeatureParam;
-		Dictionary<string, ICADFeatureParam> m_CADFeatureNameParamMap = new Dictionary<string, ICADFeatureParam>();
+		Dictionary<string, ICADFeatureParam> m_CADFeatureNameParamMap;
 	}
 }
