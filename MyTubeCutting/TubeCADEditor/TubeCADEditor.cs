@@ -299,13 +299,14 @@ namespace MyTubeCutting
 
 		void ShowObjectProperty()
 		{
+			// here we need to use the pointer of the object, a null check is necessary
 			// main tube
-			if( m_szEditObjName == MAIN_TUBE_NAME ) {
+			if( m_szEditObjName == MAIN_TUBE_NAME && m_CADFeatureParamMap.MainTubeParam != null ) {
 				m_EdiObjParam = CloneHelper.Clone( m_CADFeatureParamMap.MainTubeParam );
 			}
 
 			// cad feature
-			else if( m_CADFeatureParamMap.ParamMap.ContainsKey( m_szEditObjName ) ) {
+			else if( m_CADFeatureParamMap.ParamMap.ContainsKey( m_szEditObjName ) && m_CADFeatureParamMap.ParamMap[ m_szEditObjName ] != null ) {
 				m_EdiObjParam = CloneHelper.Clone( m_CADFeatureParamMap.ParamMap[ m_szEditObjName ] );
 			}
 			m_propgrdPropertyBar.SelectedObject = m_EdiObjParam;
@@ -345,23 +346,34 @@ namespace MyTubeCutting
 		{
 			if( type == EditType.AddMainTube ) {
 
-				// remove old main tube node if exist
+				// remove old main tube node from object browser if exist, should not happen
 				if( m_MainTubeNode != null ) {
 					m_treeObjBrowser.Nodes.Remove( m_MainTubeNode );
 				}
-				m_MainTubeNode = m_treeObjBrowser.Nodes.Add( MAIN_TUBE_NAME, MAIN_TUBE_NAME );
 
+				// add new main tube node
+				m_MainTubeNode = m_treeObjBrowser.Nodes.Add( MAIN_TUBE_NAME, MAIN_TUBE_NAME );
 				m_treeObjBrowser.Focus();
 				m_treeObjBrowser.SelectedNode = m_MainTubeNode;
+
+				// update property bar
 				SetEditObject( MAIN_TUBE_NAME );
 
+				// invoke the main tube status changed event
 				MainTubeStatusChanged( true );
 			}
 			else if( type == EditType.RemoveMainTube ) {
+
+				// remove main tube node from object browser
 				m_treeObjBrowser.Nodes.Remove( m_MainTubeNode );
+
+				// set null to main tube node
 				m_MainTubeNode = null;
+
+				// update property bar, need to set null to clear the property bar
 				m_propgrdPropertyBar.SelectedObject = null;
 
+				// invoke the main tube status changed event
 				MainTubeStatusChanged( false );
 			}
 			else if( type == EditType.ModifyMainTube ) {
@@ -371,37 +383,67 @@ namespace MyTubeCutting
 			}
 			else if( type == EditType.AddCADFeature ) {
 
-				// add node into object browser
-				TreeNode newNode = m_MainTubeNode.Nodes.Add( szObjectName, szObjectName );
+				// data protection
+				if( m_CADFeatureParamMap.ParamMap.ContainsKey( szObjectName ) == false || m_CADFeatureParamMap.ParamMap[ szObjectName ] == null ) {
+					MessageBox.Show( "Error: CAD Feature param not found in map." );
+					return;
+				}
 
 				// make AIS and add into map
 				AIS_Shape cadFeatureAIS = MakeCADFeatureAIS( m_CADFeatureParamMap.ParamMap[ szObjectName ] );
+				if( cadFeatureAIS == null ) {
+					MessageBox.Show( "Error: CAD Feature AIS generated failed." );
+					return;
+				}
 				m_CADFeatureNameAISMap.Add( szObjectName, cadFeatureAIS );
 
-				// these will call SetEditObject
+				// TODO: reconstruct object browser, check main tube node first
+				TreeNode newNode = m_MainTubeNode.Nodes.Add( szObjectName, szObjectName );
+
+				// these will call SetEditObject, and expand the object browser
 				m_treeObjBrowser.Focus();
 				m_treeObjBrowser.SelectedNode = newNode;
 			}
 			else if( type == EditType.RemoveCADFeature ) {
 
-				// remove from object browser
-				m_MainTubeNode.Nodes.RemoveByKey( szObjectName );
-
 				// remove from display and map
+				if( m_CADFeatureNameAISMap.ContainsKey( szObjectName ) == false ) {
+					MessageBox.Show( "Error: CAD Feature AIS not found in map." );
+					return;
+				}
 				m_Viewer.GetAISContext().Remove( m_CADFeatureNameAISMap[ szObjectName ], false );
 				m_CADFeatureNameAISMap.Remove( szObjectName );
+
+				// TODO: reconstruct object browser, check main tube node first
+				m_MainTubeNode.Nodes.RemoveByKey( szObjectName );
+
+				// the object browser will find a node to select, so do not need to set edit object
 			}
 			else if( type == EditType.ModifyCADFeature ) {
 
-				// get ais from map
+				// get old ais from map
+				if( m_CADFeatureNameAISMap.ContainsKey( szObjectName ) == false ) {
+					MessageBox.Show( "Error: CAD Feature AIS not found in map." );
+					return;
+				}
 				AIS_Shape cadFeatureAIS = m_CADFeatureNameAISMap[ m_szEditObjName ];
 
 				// remove old ais from viewer
 				m_Viewer.GetAISContext().Remove( cadFeatureAIS, false );
 
+				// data protection
+				if( m_CADFeatureParamMap.ParamMap.ContainsKey( szObjectName ) == false || m_CADFeatureParamMap.ParamMap[ szObjectName ] == null ) {
+					MessageBox.Show( "Error: CAD Feature param not found in map." );
+					return;
+				}
+
 				// create new ais
 				ICADFeatureParam cadFeatureParam = m_CADFeatureParamMap.ParamMap[ m_szEditObjName ];
 				cadFeatureAIS = MakeCADFeatureAIS( cadFeatureParam );
+				if( cadFeatureAIS == null ) {
+					MessageBox.Show( "Error: CAD Feature AIS generated failed." );
+					return;
+				}
 
 				// display new ais and update ais map
 				m_Viewer.GetAISContext().Display( cadFeatureAIS, false );
