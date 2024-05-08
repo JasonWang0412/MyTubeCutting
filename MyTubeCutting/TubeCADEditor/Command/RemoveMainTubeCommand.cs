@@ -4,10 +4,10 @@ namespace MyTubeCutting
 {
 	internal class RemoveMainTubeCommand : ICADEditCommand
 	{
-		public RemoveMainTubeCommand( string szMainTubeName, ICADFeatureParam mainTubeParam, CADFeatureParamMap paramMap )
+		public RemoveMainTubeCommand( string szMainTubeName, CADFeatureParamMap paramMap )
 		{
 			m_szMainTubeName = szMainTubeName;
-			m_MainTubeParam = mainTubeParam;
+			m_OldMainTubeParam = paramMap.MainTubeParam;
 			m_CADFeatureParamMap = paramMap;
 		}
 
@@ -24,15 +24,14 @@ namespace MyTubeCutting
 
 		public void Undo()
 		{
-
-			m_CADFeatureParamMap.MainTubeParam = m_MainTubeParam as CADft_MainTubeParam;
+			m_CADFeatureParamMap.MainTubeParam = m_OldMainTubeParam as CADft_MainTubeParam;
 			EditFinished?.Invoke( EditType.AddMainTube, m_szMainTubeName );
 		}
 
 		public event CADEditFinishEventHandler EditFinished;
 
 		string m_szMainTubeName;
-		ICADFeatureParam m_MainTubeParam;
+		ICADFeatureParam m_OldMainTubeParam;
 		CADFeatureParamMap m_CADFeatureParamMap;
 	}
 }

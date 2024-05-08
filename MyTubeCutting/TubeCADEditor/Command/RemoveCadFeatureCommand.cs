@@ -5,11 +5,10 @@ namespace MyTubeCutting
 {
 	internal class RemoveCadFeatureCommand : ICADEditCommand
 	{
-		public RemoveCadFeatureCommand( string szFeatureName, ICADFeatureParam cadFeatureParam,
-			Dictionary<string, ICADFeatureParam> editCADFeatureNameParamMap )
+		public RemoveCadFeatureCommand( string szFeatureName, Dictionary<string, ICADFeatureParam> editCADFeatureNameParamMap )
 		{
 			m_szFeatureName = szFeatureName;
-			m_CADFeatureParam = cadFeatureParam;
+			m_OldCADFeatureParam = editCADFeatureNameParamMap[ szFeatureName ];
 			m_CADFeatureNameParamMap = editCADFeatureNameParamMap;
 		}
 
@@ -24,14 +23,14 @@ namespace MyTubeCutting
 
 		public void Undo()
 		{
-			m_CADFeatureNameParamMap.Add( m_szFeatureName, m_CADFeatureParam );
+			m_CADFeatureNameParamMap.Add( m_szFeatureName, m_OldCADFeatureParam );
 			EditFinished?.Invoke( EditType.AddCADFeature, m_szFeatureName );
 		}
 
 		public event CADEditFinishEventHandler EditFinished;
 
 		string m_szFeatureName;
-		ICADFeatureParam m_CADFeatureParam;
+		ICADFeatureParam m_OldCADFeatureParam;
 		Dictionary<string, ICADFeatureParam> m_CADFeatureNameParamMap;
 	}
 }

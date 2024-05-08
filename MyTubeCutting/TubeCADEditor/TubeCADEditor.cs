@@ -45,6 +45,10 @@ namespace MyTubeCutting
 		List<ICADEditCommand> m_CADEditUndoCommandQueue = new List<ICADEditCommand>();
 		List<ICADEditCommand> m_CADEditRedoCommandQueue = new List<ICADEditCommand>();
 
+		// main tube status changed event
+		internal delegate void MainTubeStatusChangedEventHandler( bool bExistMainTube );
+		internal event MainTubeStatusChangedEventHandler MainTubeStatusChanged;
+
 		internal TubeCADEditor( OCCViewer viewer, TreeView treeObjBrowser, PropertyGrid propertyGrid )
 		{
 			m_Viewer = viewer;
@@ -52,34 +56,44 @@ namespace MyTubeCutting
 			m_propgrdPropertyBar = propertyGrid;
 		}
 
-		internal void SetMainTube( CADft_MainTubeParam mainTubeParam )
+		internal void AddMainTube( CADft_MainTubeParam mainTubeParam )
 		{
-			// TODO: undo/ redo
-			if( m_MainTubeNode == null ) {
-				m_MainTubeNode = m_treeObjBrowser.Nodes.Add( MAIN_TUBE_NAME, MAIN_TUBE_NAME );
-			}
-			m_CADFeatureParamMap.MainTubeParam = mainTubeParam;
-			SetEditObject( MAIN_TUBE_NAME );
-			UpdateAndRedrawResultTube();
+			AddMainTubeCommand command = new AddMainTubeCommand( MAIN_TUBE_NAME, mainTubeParam, m_CADFeatureParamMap );
+			DoCommand( command );
 		}
 
 		internal void AddEndCutter( CADft_EndCutterParam endCutterParam )
 		{
+			if( m_CADFeatureParamMap.MainTubeParam == null ) {
+				MessageBox.Show( "Please add main tube first." );
+				return;
+			}
 			string szName = GetNewEndCutterName();
 			AddCADFeature( szName, endCutterParam );
 		}
 
 		internal void AddBranchTube( CADft_BranchTubeParam branchTubeParam )
 		{
+			if( m_CADFeatureParamMap.MainTubeParam == null ) {
+				MessageBox.Show( "Please add main tube first." );
+				return;
+			}
 			string szName = GetNewBranchTubeName();
 			AddCADFeature( szName, branchTubeParam );
 		}
 
 		internal void RemoveCADFeature()
 		{
-			// cannot remove main tube
+			// remove main tube
 			if( m_szEditObjName == MAIN_TUBE_NAME ) {
-				return;
+
+				// can not remove main tube when there exist CAD Features
+				if( m_CADFeatureParamMap.ParamMap.Count != 0 ) {
+					MessageBox.Show( "Cannot remove main tube when there exist CAD Features." );
+					return;
+				}
+				RemoveMainTubeCommand command = new RemoveMainTubeCommand( MAIN_TUBE_NAME, m_CADFeatureParamMap );
+				DoCommand( command );
 			}
 
 			// remove cad feature
@@ -114,30 +128,15 @@ namespace MyTubeCutting
 			// main tube
 			if( m_szEditObjName == MAIN_TUBE_NAME ) {
 
-				// TODO: undo/ redo
-				m_CADFeatureParamMap.MainTubeParam = (CADft_MainTubeParam)( CloneHelper.Clone( m_EdiObjParam ) );
-
-				// need to refresh cut plane shape when main tube size changed
-				RefreshCutPlaneShape();
-				UpdateAndRedrawResultTube();
-				return;
+				ModifyMainTubeCommand command = new ModifyMainTubeCommand( MAIN_TUBE_NAME, CloneHelper.Clone( m_EdiObjParam ), m_CADFeatureParamMap );
+				DoCommand( command );
 			}
 
 			// cad feature
 			else if( m_CADFeatureParamMap.ParamMap.ContainsKey( m_szEditObjName ) ) {
-
-				// set command
 				ModifyCadFeatureCommand command = new ModifyCadFeatureCommand( m_szEditObjName, CloneHelper.Clone( m_EdiObjParam ), m_CADFeatureParamMap.ParamMap );
 				DoCommand( command );
 			}
-			else {
-				return;
-			}
-		}
-
-		internal bool IsExistMainTube()
-		{
-			return m_CADFeatureParamMap.MainTubeParam != null;
 		}
 
 		internal void Undo()
@@ -174,8 +173,14 @@ namespace MyTubeCutting
 			m_CADEditRedoCommandQueue.RemoveAt( m_CADEditRedoCommandQueue.Count - 1 );
 		}
 
+		// TODO: refine from here
 		void UpdateAndRedrawResultTube()
 		{
+			// return when there exist no main tube
+			if( m_CADFeatureParamMap.MainTubeParam == null ) {
+				return;
+			}
+
 			// remove old tube
 			if( m_ResultTubeAIS != null ) {
 				m_Viewer.GetAISContext().Remove( m_ResultTubeAIS, false );
@@ -209,7 +214,7 @@ namespace MyTubeCutting
 		void RemoveCADFeature( string szName )
 		{
 			// set command
-			RemoveCadFeatureCommand command = new RemoveCadFeatureCommand( szName, m_CADFeatureParamMap.ParamMap[ szName ], m_CADFeatureParamMap.ParamMap );
+			RemoveCadFeatureCommand command = new RemoveCadFeatureCommand( szName, m_CADFeatureParamMap.ParamMap );
 			DoCommand( command );
 		}
 
@@ -338,7 +343,33 @@ namespace MyTubeCutting
 
 		void UpdateEditorAfterCommand( EditType type, string szObjectName )
 		{
-			if( type == EditType.AddCADFeature ) {
+			if( type == EditType.AddMainTube ) {
+
+				// remove old main tube node if exist
+				if( m_MainTubeNode != null ) {
+					m_treeObjBrowser.Nodes.Remove( m_MainTubeNode );
+				}
+				m_MainTubeNode = m_treeObjBrowser.Nodes.Add( MAIN_TUBE_NAME, MAIN_TUBE_NAME );
+
+				m_treeObjBrowser.Focus();
+				m_treeObjBrowser.SelectedNode = m_MainTubeNode;
+				SetEditObject( MAIN_TUBE_NAME );
+
+				MainTubeStatusChanged( true );
+			}
+			else if( type == EditType.RemoveMainTube ) {
+				m_treeObjBrowser.Nodes.Remove( m_MainTubeNode );
+				m_MainTubeNode = null;
+				m_propgrdPropertyBar.SelectedObject = null;
+
+				MainTubeStatusChanged( false );
+			}
+			else if( type == EditType.ModifyMainTube ) {
+
+				// need to refresh cut plane shape when main tube size changed
+				RefreshCutPlaneShape();
+			}
+			else if( type == EditType.AddCADFeature ) {
 
 				// add node into object browser
 				TreeNode newNode = m_MainTubeNode.Nodes.Add( szObjectName, szObjectName );

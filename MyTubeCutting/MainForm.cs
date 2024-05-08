@@ -31,10 +31,26 @@ namespace MyTubeCutting
 
 			// initialize tube editor
 			m_TubeCADEditor = new TubeCADEditor( m_Viewer, m_treeObjBrowser, m_propgrdPropertyBar );
+			m_TubeCADEditor.MainTubeStatusChanged += MainTubeStatusChanged;
 
 			// key event
 			m_panViewer.KeyDown += m_panViewer_KeyDown;
 			m_treeObjBrowser.KeyDown += m_treeObjBrowser_KeyDown;
+		}
+
+		void MainTubeStatusChanged( bool bExistMainTube )
+		{
+			// set button status
+			if( bExistMainTube == true ) {
+				m_btnEndCutter.Enabled = true;
+				m_btnBranchTube.Enabled = true;
+				m_btnMainTube.Enabled = false;
+			}
+			else {
+				m_btnEndCutter.Enabled = false;
+				m_btnBranchTube.Enabled = false;
+				m_btnMainTube.Enabled = true;
+			}
 		}
 
 		void m_panViewer_MouseDown( object sender, MouseEventArgs e )
@@ -59,12 +75,6 @@ namespace MyTubeCutting
 
 		void m_btnMainTube_Click( object sender, System.EventArgs e )
 		{
-			if( m_TubeCADEditor.IsExistMainTube() == false ) {
-				m_btnEndCutter.Enabled = true;
-				m_btnBranchTube.Enabled = true;
-				m_btnMainTube.Enabled = false;
-			}
-
 			// set main tube parameter
 			//double dRadius = 25;
 			//double dThickness = 2;
@@ -82,7 +92,7 @@ namespace MyTubeCutting
 			CADft_MainTubeParam mainTubeParam = new CADft_MainTubeParam( crossSection, dTubeLength );
 
 			// set main tube to tube editor
-			m_TubeCADEditor.SetMainTube( mainTubeParam );
+			m_TubeCADEditor.AddMainTube( mainTubeParam );
 		}
 
 		void m_btnEndCutter_Click( object sender, System.EventArgs e )
