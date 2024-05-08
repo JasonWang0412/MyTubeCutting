@@ -62,9 +62,12 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TubeCADEditor\CADFeatureParamMap.cs" />
     <Compile Include="TubeCADEditor\Command\AddCadFeatureCommand.cs" />
+    <Compile Include="TubeCADEditor\Command\AddMainTubeCommand.cs" />
     <Compile Include="TubeCADEditor\Command\ICADEditCommand.cs" />
     <Compile Include="TubeCADEditor\Command\ModifyCadFeatureCommand.cs" />
+    <Compile Include="TubeCADEditor\Command\ModifyMainTubeCommand.cs" />
     <Compile Include="TubeCADEditor\Command\RemoveCadFeatureCommand.cs" />
+    <Compile Include="TubeCADEditor\Command\RemoveMainTubeCommand.cs" />
     <Compile Include="TubeCADEditor\TubeCADEditor.cs" />
     <Compile Include="OCCViewer\ViewerMouseAction.cs" />
     <EmbeddedResource Include="MainForm.resx">
