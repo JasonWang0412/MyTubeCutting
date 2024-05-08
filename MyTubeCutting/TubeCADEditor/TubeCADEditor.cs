@@ -25,8 +25,7 @@ namespace MyTubeCutting
 		PropertyGrid m_propgrdPropertyBar;
 
 		// parameter map
-		CADft_MainTubeParam m_MainTubeParam;
-		Dictionary<string, ICADFeatureParam> m_CADFeatureNameParamMap = new Dictionary<string, ICADFeatureParam>();
+		CADFeatureParamMap m_CADFeatureParamMap = new CADFeatureParamMap();
 
 		// display shape map
 		AIS_Shape m_ResultTubeAIS;
@@ -59,7 +58,7 @@ namespace MyTubeCutting
 			if( m_MainTubeNode == null ) {
 				m_MainTubeNode = m_treeObjBrowser.Nodes.Add( MAIN_TUBE_NAME, MAIN_TUBE_NAME );
 			}
-			m_MainTubeParam = mainTubeParam;
+			m_CADFeatureParamMap.MainTubeParam = mainTubeParam;
 			SetEditObject( MAIN_TUBE_NAME );
 			UpdateAndRedrawResultTube();
 		}
@@ -84,7 +83,7 @@ namespace MyTubeCutting
 			}
 
 			// remove cad feature
-			else if( m_CADFeatureNameParamMap.ContainsKey( m_szEditObjName ) ) {
+			else if( m_CADFeatureParamMap.ParamMap.ContainsKey( m_szEditObjName ) ) {
 				RemoveCADFeature( m_szEditObjName );
 			}
 		}
@@ -116,7 +115,7 @@ namespace MyTubeCutting
 			if( m_szEditObjName == MAIN_TUBE_NAME ) {
 
 				// TODO: undo/ redo
-				m_MainTubeParam = (CADft_MainTubeParam)( CloneHelper.Clone( m_EdiObjParam ) );
+				m_CADFeatureParamMap.MainTubeParam = (CADft_MainTubeParam)( CloneHelper.Clone( m_EdiObjParam ) );
 
 				// need to refresh cut plane shape when main tube size changed
 				RefreshCutPlaneShape();
@@ -125,10 +124,10 @@ namespace MyTubeCutting
 			}
 
 			// cad feature
-			else if( m_CADFeatureNameParamMap.ContainsKey( m_szEditObjName ) ) {
+			else if( m_CADFeatureParamMap.ParamMap.ContainsKey( m_szEditObjName ) ) {
 
 				// set command
-				ModifyCadFeatureCommand command = new ModifyCadFeatureCommand( m_szEditObjName, CloneHelper.Clone( m_EdiObjParam ), m_CADFeatureNameParamMap );
+				ModifyCadFeatureCommand command = new ModifyCadFeatureCommand( m_szEditObjName, CloneHelper.Clone( m_EdiObjParam ), m_CADFeatureParamMap.ParamMap );
 				DoCommand( command );
 			}
 			else {
@@ -138,7 +137,7 @@ namespace MyTubeCutting
 
 		internal bool IsExistMainTube()
 		{
-			return m_MainTubeParam != null;
+			return m_CADFeatureParamMap.MainTubeParam != null;
 		}
 
 		internal void Undo()
@@ -183,13 +182,13 @@ namespace MyTubeCutting
 			}
 
 			// make new tube
-			List<CADft_EndCutterParam> endCutterParams = m_CADFeatureNameParamMap
+			List<CADft_EndCutterParam> endCutterParams = m_CADFeatureParamMap.ParamMap
 				.Where( pair => pair.Value.Type == CADFeatureType.EndCutter )
 				.Select( endCutterPair => (CADft_EndCutterParam)endCutterPair.Value ).ToList();
-			List<CADft_BranchTubeParam> branchTubeParamList = m_CADFeatureNameParamMap
+			List<CADft_BranchTubeParam> branchTubeParamList = m_CADFeatureParamMap.ParamMap
 				.Where( pair => pair.Value.Type == CADFeatureType.BranchTube )
 				.Select( branchTubePair => (CADft_BranchTubeParam)branchTubePair.Value ).ToList();
-			TopoDS_Shape tubeShape = CADFeatureMaker.MakeResultTube( m_MainTubeParam, endCutterParams, branchTubeParamList );
+			TopoDS_Shape tubeShape = CADFeatureMaker.MakeResultTube( m_CADFeatureParamMap.MainTubeParam, endCutterParams, branchTubeParamList );
 
 			// display new tube
 			m_ResultTubeAIS = new AIS_Shape( tubeShape );
@@ -203,14 +202,14 @@ namespace MyTubeCutting
 		void AddCADFeature( string szName, ICADFeatureParam cadFeatureParam )
 		{
 			// set command
-			AddCadFeatureCommand command = new AddCadFeatureCommand( szName, cadFeatureParam, m_CADFeatureNameParamMap );
+			AddCadFeatureCommand command = new AddCadFeatureCommand( szName, cadFeatureParam, m_CADFeatureParamMap.ParamMap );
 			DoCommand( command );
 		}
 
 		void RemoveCADFeature( string szName )
 		{
 			// set command
-			RemoveCadFeatureCommand command = new RemoveCadFeatureCommand( szName, m_CADFeatureNameParamMap[ szName ], m_CADFeatureNameParamMap );
+			RemoveCadFeatureCommand command = new RemoveCadFeatureCommand( szName, m_CADFeatureParamMap.ParamMap[ szName ], m_CADFeatureParamMap.ParamMap );
 			DoCommand( command );
 		}
 
@@ -234,7 +233,7 @@ namespace MyTubeCutting
 				TopoDS_Face thePlane = CADFeatureMaker.MakeEndCutterFace( (CADft_EndCutterParam)cadFeatureParam );
 
 				// make the extend bounding box of main tube
-				TopoDS_Shape extendBndBox = CADFeatureMaker.MakeExtendBoundingBox( m_MainTubeParam );
+				TopoDS_Shape extendBndBox = CADFeatureMaker.MakeExtendBoundingBox( m_CADFeatureParamMap.MainTubeParam );
 
 				// find the common part of the face and the extend bounding box
 				BRepAlgoAPI_Common common = new BRepAlgoAPI_Common( thePlane, extendBndBox );
@@ -297,12 +296,12 @@ namespace MyTubeCutting
 		{
 			// main tube
 			if( m_szEditObjName == MAIN_TUBE_NAME ) {
-				m_EdiObjParam = CloneHelper.Clone( m_MainTubeParam );
+				m_EdiObjParam = CloneHelper.Clone( m_CADFeatureParamMap.MainTubeParam );
 			}
 
 			// cad feature
-			else if( m_CADFeatureNameParamMap.ContainsKey( m_szEditObjName ) ) {
-				m_EdiObjParam = CloneHelper.Clone( m_CADFeatureNameParamMap[ m_szEditObjName ] );
+			else if( m_CADFeatureParamMap.ParamMap.ContainsKey( m_szEditObjName ) ) {
+				m_EdiObjParam = CloneHelper.Clone( m_CADFeatureParamMap.ParamMap[ m_szEditObjName ] );
 			}
 			m_propgrdPropertyBar.SelectedObject = m_EdiObjParam;
 		}
@@ -317,7 +316,7 @@ namespace MyTubeCutting
 
 		void RefreshCutPlaneShape()
 		{
-			foreach( KeyValuePair<string, ICADFeatureParam> pair in m_CADFeatureNameParamMap ) {
+			foreach( KeyValuePair<string, ICADFeatureParam> pair in m_CADFeatureParamMap.ParamMap ) {
 				if( pair.Value.Type != CADFeatureType.EndCutter ) {
 					continue;
 				}
@@ -326,7 +325,7 @@ namespace MyTubeCutting
 				m_Viewer.GetAISContext().Remove( m_CADFeatureNameAISMap[ pair.Key ], false );
 
 				// create new ais
-				ICADFeatureParam cadFeatureParam = m_CADFeatureNameParamMap[ pair.Key ];
+				ICADFeatureParam cadFeatureParam = m_CADFeatureParamMap.ParamMap[ pair.Key ];
 				AIS_Shape cadFeatureAIS = MakeCADFeatureAIS( cadFeatureParam );
 
 				// update ais map
@@ -345,7 +344,7 @@ namespace MyTubeCutting
 				TreeNode newNode = m_MainTubeNode.Nodes.Add( szObjectName, szObjectName );
 
 				// make AIS and add into map
-				AIS_Shape cadFeatureAIS = MakeCADFeatureAIS( m_CADFeatureNameParamMap[ szObjectName ] );
+				AIS_Shape cadFeatureAIS = MakeCADFeatureAIS( m_CADFeatureParamMap.ParamMap[ szObjectName ] );
 				m_CADFeatureNameAISMap.Add( szObjectName, cadFeatureAIS );
 
 				// these will call SetEditObject
@@ -370,7 +369,7 @@ namespace MyTubeCutting
 				m_Viewer.GetAISContext().Remove( cadFeatureAIS, false );
 
 				// create new ais
-				ICADFeatureParam cadFeatureParam = m_CADFeatureNameParamMap[ m_szEditObjName ];
+				ICADFeatureParam cadFeatureParam = m_CADFeatureParamMap.ParamMap[ m_szEditObjName ];
 				cadFeatureAIS = MakeCADFeatureAIS( cadFeatureParam );
 
 				// display new ais and update ais map
