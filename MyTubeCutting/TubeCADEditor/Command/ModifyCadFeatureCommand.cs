@@ -18,10 +18,12 @@ namespace MyTubeCutting
 
 		public void Do()
 		{
+			// check validility
 			if( m_newCADFeatureParam.IsValid() == false ) {
 				return;
 			}
 
+			// data protection
 			if( m_CADFeatureNameParamMap.ContainsKey( m_szFeatureName ) == false ) {
 				return;
 			}
@@ -29,19 +31,24 @@ namespace MyTubeCutting
 			// backup the old value
 			m_oldCADFeatureParam = m_CADFeatureNameParamMap[ m_szFeatureName ];
 
-			// update the new value
+			// clone and update the new value
 			m_CADFeatureNameParamMap[ m_szFeatureName ] = CloneHelper.Clone( m_newCADFeatureParam );
+
+			// invoke the event
 			EditFinished?.Invoke( EditType.ModifyCADFeature, m_szFeatureName );
 		}
 
 		public void Undo()
 		{
+			// data protection
 			if( m_CADFeatureNameParamMap.ContainsKey( m_szFeatureName ) == false ) {
 				return;
 			}
 
 			// restore the old value
 			m_CADFeatureNameParamMap[ m_szFeatureName ] = m_oldCADFeatureParam;
+
+			// invoke the event
 			EditFinished?.Invoke( EditType.ModifyCADFeature, m_szFeatureName );
 		}
 

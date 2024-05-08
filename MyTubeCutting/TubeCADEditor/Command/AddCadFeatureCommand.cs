@@ -15,19 +15,29 @@ namespace MyTubeCutting
 
 		public void Do()
 		{
+			// check validility
 			if( m_CADFeatureParam.IsValid() == false ) {
 				return;
 			}
+
+			// add the new feature
 			m_CADFeatureNameParamMap.Add( m_szFeatureName, m_CADFeatureParam );
+
+			// invoke the event
 			EditFinished?.Invoke( EditType.AddCADFeature, m_szFeatureName );
 		}
 
 		public void Undo()
 		{
+			// data protection
 			if( m_CADFeatureNameParamMap.ContainsKey( m_szFeatureName ) == false ) {
 				return;
 			}
+
+			// remove the feature
 			m_CADFeatureNameParamMap.Remove( m_szFeatureName );
+
+			// invoke the event
 			EditFinished?.Invoke( EditType.RemoveCADFeature, m_szFeatureName );
 		}
 

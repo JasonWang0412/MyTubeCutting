@@ -10,27 +10,45 @@ namespace MyTubeCutting
 		{
 			m_szMainTubeName = szMainTubeName;
 			m_NewMainTubeParam = newMainTubeParam;
+
+			// send whole param map to yield the pointer of the main tube param
 			m_CADFeatureParamMap = paramMap;
 		}
 
 		public void Do()
 		{
+			// check validility
 			if( m_NewMainTubeParam.IsValid() == false ) {
+				return;
+			}
+
+			// data protection
+			if( m_CADFeatureParamMap.MainTubeParam == null ) {
 				return;
 			}
 
 			// backup the old value
 			m_OldMainTubeParam = m_CADFeatureParamMap.MainTubeParam;
 
-			// update the new value
+			// clone and update the main tube
 			m_CADFeatureParamMap.MainTubeParam = CloneHelper.Clone( m_NewMainTubeParam ) as CADft_MainTubeParam;
+
+			// invoke the event
 			EditFinished?.Invoke( EditType.ModifyMainTube, m_szMainTubeName );
 		}
 
 		public void Undo()
 		{
+			// data protection
+			if( m_CADFeatureParamMap.MainTubeParam == null ) {
+				return;
+			}
+
+			// restore the old value
 			m_CADFeatureParamMap.MainTubeParam = m_OldMainTubeParam as CADft_MainTubeParam;
-			EditFinished?.Invoke( EditType.RemoveMainTube, m_szMainTubeName );
+
+			// invoke the event
+			EditFinished?.Invoke( EditType.ModifyMainTube, m_szMainTubeName );
 		}
 
 		public event CADEditFinishEventHandler EditFinished;
