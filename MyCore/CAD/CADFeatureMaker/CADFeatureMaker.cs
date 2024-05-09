@@ -1,20 +1,39 @@
 ﻿using MyCore.Tool;
+using OCC.AIS;
+using OCC.BRep;
 using OCC.BRepAlgoAPI;
 using OCC.BRepBuilderAPI;
 using OCC.BRepPrimAPI;
+using OCC.BRepTools;
+using OCC.Geom;
 using OCC.gp;
+using OCC.Graphic3d;
+using OCC.Quantity;
 using OCC.TopAbs;
+using OCC.TopExp;
 using OCC.TopoDS;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MyCore.CAD
 {
 	public class CADFeatureMaker
 	{
-		public static TopoDS_Shape MakeResultTube( CADft_MainTubeParam mainTubeParam,
-			List<CADft_EndCutterParam> endCutterParamList,
-			List<CADft_BranchTubeParam> branchTubeParamList )
+		public static TopoDS_Shape MakeResultTube( CADFeatureParamMap map )
 		{
+			// data protection
+			if( map == null ) {
+				return null;
+			}
+
+			CADft_MainTubeParam mainTubeParam = map.MainTubeParam;
+			List<CADft_EndCutterParam> endCutterParamList = map.ParamMap.Values
+				.Where( param => param.Type == CADFeatureType.EndCutter )
+				.Select( endCutterParam => endCutterParam as CADft_EndCutterParam ).ToList();
+			List<CADft_BranchTubeParam> branchTubeParamList = map.ParamMap.Values
+				.Where( param => param.Type == CADFeatureType.BranchTube )
+				.Select( branchTubeParam => branchTubeParam as CADft_BranchTubeParam ).ToList();
+
 			// data protection
 			if( mainTubeParam == null ) {
 				return null;
@@ -45,7 +64,7 @@ namespace MyCore.CAD
 			}
 
 			// cut main tube by branch tubes
-			List<TopoDS_Shape> branchTubes = MakeBranchTubes( branchTubeParamList );
+			List<TopoDS_Shape> branchTubes = MakeBranchTubes( branchTubeParamList, mainTubeParam );
 			if( branchTubes != null && branchTubes.Count != 0 ) {
 				foreach( TopoDS_Shape branchTube in branchTubes ) {
 
@@ -73,8 +92,32 @@ namespace MyCore.CAD
 			return mainTube;
 		}
 
-		// make main tube
-		public static TopoDS_Shape MakeMainTube( CADft_MainTubeParam mainTubeParam )
+		public static AIS_Shape MakeCADFeatureAIS( ICADFeatureParam cadFeatureParam, CADft_MainTubeParam mainTubeParam )
+		{
+			AIS_Shape cadFeatureAIS = null;
+			if( cadFeatureParam.Type == CADFeatureType.EndCutter ) {
+				cadFeatureAIS = MakeEndCutterAIS( (CADft_EndCutterParam)cadFeatureParam, mainTubeParam );
+			}
+			else if( cadFeatureParam.Type == CADFeatureType.BranchTube ) {
+				cadFeatureAIS = new AIS_Shape( MakeBranchTube( (CADft_BranchTubeParam)cadFeatureParam, mainTubeParam ) );
+			}
+			else {
+				return cadFeatureAIS;
+			}
+
+			if( cadFeatureAIS == null ) {
+				return null;
+			}
+
+			Graphic3d_MaterialAspect aspect = new Graphic3d_MaterialAspect( Graphic3d_NameOfMaterial.Graphic3d_NOM_STONE );
+			aspect.SetTransparency( 0.5f );
+			aspect.SetColor( new Quantity_Color( Quantity_NameOfColor.Quantity_NOC_GREEN4 ) );
+			cadFeatureAIS.SetMaterial( aspect );
+			cadFeatureAIS.SetDisplayMode( 1 );
+			return cadFeatureAIS;
+		}
+
+		static TopoDS_Shape MakeMainTube( CADft_MainTubeParam mainTubeParam )
 		{
 			// data protection
 			if( mainTubeParam == null ) {
@@ -94,8 +137,7 @@ namespace MyCore.CAD
 			return OCCTool.MakeRawTubeShape( outerWire, innerWire, mainTubeParam.Length );
 		}
 
-		// make end cutters
-		public static List<TopoDS_Shape> MakeEndCutters( List<CADft_EndCutterParam> endCutterParamList )
+		static List<TopoDS_Shape> MakeEndCutters( List<CADft_EndCutterParam> endCutterParamList )
 		{
 			// data protection
 			if( endCutterParamList == null ) {
@@ -113,7 +155,7 @@ namespace MyCore.CAD
 			return cutters;
 		}
 
-		public static TopoDS_Shape MakeEndCutter( CADft_EndCutterParam endCutterParam )
+		static TopoDS_Shape MakeEndCutter( CADft_EndCutterParam endCutterParam )
 		{
 			// data protection
 			if( endCutterParam == null ) {
@@ -125,6 +167,9 @@ namespace MyCore.CAD
 
 			// get plane
 			TopoDS_Face thePlane = MakeEndCutterFace( endCutterParam );
+			if( thePlane == null ) {
+				return null;
+			}
 
 			// get point on cut side
 			double dYpos = endCutterParam.Side == EEndSide.Left ? endCutterParam.Center_Y - 1 : endCutterParam.Center_Y + 1;
@@ -138,8 +183,68 @@ namespace MyCore.CAD
 			return halfSpace.Shape();
 		}
 
-		public static TopoDS_Face MakeEndCutterFace( CADft_EndCutterParam endCutterParam )
+		static AIS_Shape MakeEndCutterAIS( CADft_EndCutterParam endCutterParam, CADft_MainTubeParam mainTubeParam )
 		{
+			// data protection
+			if( endCutterParam == null || mainTubeParam == null ) {
+				return null;
+			}
+			if( endCutterParam.IsValid() == false || mainTubeParam.IsValid() == false ) {
+				return null;
+			}
+
+			// make the face
+			TopoDS_Face thePlane = MakeEndCutterFace( endCutterParam );
+			if( thePlane == null ) {
+				return null;
+			}
+
+			// make the extend bounding box of main tube
+			TopoDS_Shape extendBndBox = MakeExtendBoundingBox( mainTubeParam );
+			if( extendBndBox == null ) {
+				return null;
+			}
+
+			// find the common part of the face and the extend bounding box
+			BRepAlgoAPI_Common common = new BRepAlgoAPI_Common( thePlane, extendBndBox );
+			if( common.IsDone() == false ) {
+				return null;
+			}
+
+			// find the face inside the extend bounding box
+			TopoDS_Face commonFace;
+			TopExp_Explorer explorer = new TopExp_Explorer( common.Shape(), TopAbs_ShapeEnum.TopAbs_FACE );
+			if( explorer.More() ) {
+				commonFace = TopoDS.ToFace( explorer.Current() );
+			}
+			else {
+				return null;
+			}
+
+			// retrive the geom surface and uv boundary from the face
+			// this is to make the face a complete face (ex: tiled -45, rotate 45, retangular tube)
+			Geom_Surface commonSurface = BRep_Tool.Surface( commonFace );
+			double Umin = 0;
+			double Umax = 0;
+			double Vmin = 0;
+			double Vmax = 0;
+			BRepTools.UVBounds( commonFace, ref Umin, ref Umax, ref Vmin, ref Vmax );
+			Geom_RectangularTrimmedSurface refinedSurface = new Geom_RectangularTrimmedSurface( commonSurface, Umin, Umax, Vmin, Vmax );
+			BRepBuilderAPI_MakeFace refinedFaceMaker = new BRepBuilderAPI_MakeFace( refinedSurface, 0.001 );
+
+			return new AIS_Shape( refinedFaceMaker.Face() );
+		}
+
+		static TopoDS_Face MakeEndCutterFace( CADft_EndCutterParam endCutterParam )
+		{
+			// data protection
+			if( endCutterParam == null ) {
+				return null;
+			}
+			if( endCutterParam.IsValid() == false ) {
+				return null;
+			}
+
 			gp_Pnt center = new gp_Pnt( endCutterParam.Center_X, endCutterParam.Center_Y, endCutterParam.Center_Z );
 			OCCTool.GetEndCutterDir( endCutterParam.TiltAngle_deg, endCutterParam.RotateAngle_deg, out gp_Dir dir );
 			gp_Pln cutPlane = new gp_Pln( center, dir );
@@ -150,8 +255,7 @@ namespace MyCore.CAD
 			return makeFace.Face();
 		}
 
-		// make branch tubes
-		public static List<TopoDS_Shape> MakeBranchTubes( List<CADft_BranchTubeParam> branchTubeParamList )
+		static List<TopoDS_Shape> MakeBranchTubes( List<CADft_BranchTubeParam> branchTubeParamList, CADft_MainTubeParam mainTubeParam )
 		{
 			// data protection
 			if( branchTubeParamList == null ) {
@@ -160,7 +264,7 @@ namespace MyCore.CAD
 
 			List<TopoDS_Shape> branchTubes = new List<TopoDS_Shape>();
 			foreach( CADft_BranchTubeParam branchTubeParam in branchTubeParamList ) {
-				TopoDS_Shape oneBranchTube = MakeBranchTube( branchTubeParam );
+				TopoDS_Shape oneBranchTube = MakeBranchTube( branchTubeParam, mainTubeParam );
 				if( oneBranchTube == null ) {
 					continue;
 				}
@@ -169,13 +273,13 @@ namespace MyCore.CAD
 			return branchTubes;
 		}
 
-		public static TopoDS_Shape MakeBranchTube( CADft_BranchTubeParam branchTubeParam )
+		static TopoDS_Shape MakeBranchTube( CADft_BranchTubeParam branchTubeParam, CADft_MainTubeParam mainTubeParam )
 		{
 			// data protection
-			if( branchTubeParam == null ) {
+			if( branchTubeParam == null || mainTubeParam == null ) {
 				return null;
 			}
-			if( branchTubeParam.IsValid() == false ) {
+			if( branchTubeParam.IsValid() == false || mainTubeParam.IsValid() == false ) {
 				return null;
 			}
 
@@ -217,9 +321,16 @@ namespace MyCore.CAD
 			return arrayBranchTube;
 		}
 
-		// make extend bounding box
-		public static TopoDS_Shape MakeExtendBoundingBox( CADft_MainTubeParam mainTubeParam )
+		static TopoDS_Shape MakeExtendBoundingBox( CADft_MainTubeParam mainTubeParam )
 		{
+			// data protection
+			if( mainTubeParam == null ) {
+				return null;
+			}
+			if( mainTubeParam.IsValid() == false ) {
+				return null;
+			}
+
 			// calculate bounding box size
 			double dWidth = 0;
 			double dHeight = 0;

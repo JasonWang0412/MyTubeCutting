@@ -1,15 +1,7 @@
 ﻿using MyCore.CAD;
 using MyCore.Tool;
 using OCC.AIS;
-using OCC.BRep;
-using OCC.BRepAlgoAPI;
-using OCC.BRepBuilderAPI;
-using OCC.BRepTools;
-using OCC.Geom;
 using OCC.Graphic3d;
-using OCC.Quantity;
-using OCC.TopAbs;
-using OCC.TopExp;
 using OCC.TopoDS;
 using System.Collections.Generic;
 using System.Linq;
@@ -173,11 +165,11 @@ namespace MyTubeCutting
 			m_CADEditRedoCommandQueue.RemoveAt( m_CADEditRedoCommandQueue.Count - 1 );
 		}
 
-		// TODO: refine from here
 		void UpdateAndRedrawResultTube()
 		{
-			// return when there exist no main tube
+			// remove all shape if main tube not exist
 			if( m_CADFeatureParamMap.MainTubeParam == null ) {
+				m_Viewer.GetAISContext().RemoveAll( true );
 				return;
 			}
 
@@ -187,13 +179,12 @@ namespace MyTubeCutting
 			}
 
 			// make new tube
-			List<CADft_EndCutterParam> endCutterParams = m_CADFeatureParamMap.ParamMap
-				.Where( pair => pair.Value.Type == CADFeatureType.EndCutter )
-				.Select( endCutterPair => (CADft_EndCutterParam)endCutterPair.Value ).ToList();
-			List<CADft_BranchTubeParam> branchTubeParamList = m_CADFeatureParamMap.ParamMap
-				.Where( pair => pair.Value.Type == CADFeatureType.BranchTube )
-				.Select( branchTubePair => (CADft_BranchTubeParam)branchTubePair.Value ).ToList();
-			TopoDS_Shape tubeShape = CADFeatureMaker.MakeResultTube( m_CADFeatureParamMap.MainTubeParam, endCutterParams, branchTubeParamList );
+			TopoDS_Shape tubeShape = CADFeatureMaker.MakeResultTube( m_CADFeatureParamMap );
+
+			// data protection
+			if( tubeShape == null ) {
+				return;
+			}
 
 			// display new tube
 			m_ResultTubeAIS = new AIS_Shape( tubeShape );
@@ -226,58 +217,6 @@ namespace MyTubeCutting
 		string GetNewBranchTubeName()
 		{
 			return "BranchTube" + m_nBranchTubeCount++;
-		}
-
-		AIS_Shape MakeCADFeatureAIS( ICADFeatureParam cadFeatureParam )
-		{
-			// TODO: let CADFeatureMaker to do this
-			AIS_Shape cadFeatureAIS = null;
-			if( cadFeatureParam.Type == CADFeatureType.EndCutter ) {
-
-				// make the face
-				TopoDS_Face thePlane = CADFeatureMaker.MakeEndCutterFace( (CADft_EndCutterParam)cadFeatureParam );
-
-				// make the extend bounding box of main tube
-				TopoDS_Shape extendBndBox = CADFeatureMaker.MakeExtendBoundingBox( m_CADFeatureParamMap.MainTubeParam );
-
-				// find the common part of the face and the extend bounding box
-				BRepAlgoAPI_Common common = new BRepAlgoAPI_Common( thePlane, extendBndBox );
-				if( common.IsDone() == false ) {
-					return cadFeatureAIS;
-				}
-
-				// retrive the geom surface and uv boundary from the section shape
-				TopoDS_Face commonFace;
-				TopExp_Explorer explorer = new TopExp_Explorer( common.Shape(), TopAbs_ShapeEnum.TopAbs_FACE );
-				if( explorer.More() ) {
-					commonFace = TopoDS.ToFace( explorer.Current() );
-				}
-				else {
-					return cadFeatureAIS;
-				}
-				Geom_Surface commonSurface = BRep_Tool.Surface( commonFace );
-				double Umin = 0;
-				double Umax = 0;
-				double Vmin = 0;
-				double Vmax = 0;
-				BRepTools.UVBounds( commonFace, ref Umin, ref Umax, ref Vmin, ref Vmax );
-				Geom_RectangularTrimmedSurface refinedSurface = new Geom_RectangularTrimmedSurface( commonSurface, Umin, Umax, Vmin, Vmax );
-				BRepBuilderAPI_MakeFace refinedFaceMaker = new BRepBuilderAPI_MakeFace( refinedSurface, 0.001 );
-
-				cadFeatureAIS = new AIS_Shape( refinedFaceMaker.Face() );
-			}
-			else if( cadFeatureParam.Type == CADFeatureType.BranchTube ) {
-				cadFeatureAIS = new AIS_Shape( CADFeatureMaker.MakeBranchTube( (CADft_BranchTubeParam)cadFeatureParam ) );
-			}
-			else {
-				return cadFeatureAIS;
-			}
-			Graphic3d_MaterialAspect aspect = new Graphic3d_MaterialAspect( Graphic3d_NameOfMaterial.Graphic3d_NOM_STONE );
-			aspect.SetTransparency( 0.5f );
-			aspect.SetColor( new Quantity_Color( Quantity_NameOfColor.Quantity_NOC_GREEN4 ) );
-			cadFeatureAIS.SetMaterial( aspect );
-			cadFeatureAIS.SetDisplayMode( 1 );
-			return cadFeatureAIS;
 		}
 
 		void DisplayObjectShape()
@@ -327,12 +266,16 @@ namespace MyTubeCutting
 					continue;
 				}
 
-				// remove old ais from viewer
-				m_Viewer.GetAISContext().Remove( m_CADFeatureNameAISMap[ pair.Key ], false );
-
 				// create new ais
 				ICADFeatureParam cadFeatureParam = m_CADFeatureParamMap.ParamMap[ pair.Key ];
-				AIS_Shape cadFeatureAIS = MakeCADFeatureAIS( cadFeatureParam );
+				AIS_Shape cadFeatureAIS = CADFeatureMaker.MakeCADFeatureAIS( cadFeatureParam, m_CADFeatureParamMap.MainTubeParam );
+				if( cadFeatureAIS == null ) {
+					MessageBox.Show( "Error: CAD Feature AIS generated failed." );
+					return;
+				}
+
+				// remove old ais from viewer
+				m_Viewer.GetAISContext().Remove( m_CADFeatureNameAISMap[ pair.Key ], false );
 
 				// update ais map
 				m_CADFeatureNameAISMap[ pair.Key ] = cadFeatureAIS;
@@ -390,7 +333,7 @@ namespace MyTubeCutting
 				}
 
 				// make AIS and add into map
-				AIS_Shape cadFeatureAIS = MakeCADFeatureAIS( m_CADFeatureParamMap.ParamMap[ szObjectName ] );
+				AIS_Shape cadFeatureAIS = CADFeatureMaker.MakeCADFeatureAIS( m_CADFeatureParamMap.ParamMap[ szObjectName ], m_CADFeatureParamMap.MainTubeParam );
 				if( cadFeatureAIS == null ) {
 					MessageBox.Show( "Error: CAD Feature AIS generated failed." );
 					return;
@@ -439,7 +382,7 @@ namespace MyTubeCutting
 
 				// create new ais
 				ICADFeatureParam cadFeatureParam = m_CADFeatureParamMap.ParamMap[ m_szEditObjName ];
-				cadFeatureAIS = MakeCADFeatureAIS( cadFeatureParam );
+				cadFeatureAIS = CADFeatureMaker.MakeCADFeatureAIS( cadFeatureParam, m_CADFeatureParamMap.MainTubeParam );
 				if( cadFeatureAIS == null ) {
 					MessageBox.Show( "Error: CAD Feature AIS generated failed." );
 					return;

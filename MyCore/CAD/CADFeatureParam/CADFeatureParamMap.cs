@@ -1,11 +1,10 @@
-﻿using MyCore.CAD;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
-namespace MyTubeCutting
+namespace MyCore.CAD
 {
-	internal class CADFeatureParamMap
+	public class CADFeatureParamMap
 	{
-		internal CADft_MainTubeParam MainTubeParam
+		public CADft_MainTubeParam MainTubeParam
 		{
 			get
 			{
@@ -17,7 +16,7 @@ namespace MyTubeCutting
 			}
 		}
 
-		internal Dictionary<string, ICADFeatureParam> ParamMap
+		public Dictionary<string, ICADFeatureParam> ParamMap
 		{
 			get
 			{
