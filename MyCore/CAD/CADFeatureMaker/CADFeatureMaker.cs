@@ -132,6 +132,9 @@ namespace MyCore.CAD
 			gp_Dir dir = new gp_Dir( 0, 1, 0 );
 			TopoDS_Wire outerWire = OCCTool.MakeBaseWire( mainTubeParam.CrossSection.Shape, 0, center, dir, 0 );
 			TopoDS_Wire innerWire = OCCTool.MakeBaseWire( mainTubeParam.CrossSection.Shape, mainTubeParam.CrossSection.Thickness, center, dir, 0 );
+			if( outerWire == null || innerWire == null ) {
+				return null;
+			}
 
 			// Get solid shape by wire
 			return OCCTool.MakeRawTubeShape( outerWire, innerWire, mainTubeParam.Length );

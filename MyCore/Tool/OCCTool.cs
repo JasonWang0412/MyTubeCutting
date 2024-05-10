@@ -16,15 +16,23 @@ namespace MyCore.Tool
 		// make wire
 		public static TopoDS_Wire MakeBaseWire( IGeom2D basicGeom, double dNeckin, gp_Pnt center, gp_Dir dir, double dRotation )
 		{
-			TopoDS_Wire wireXOY = new TopoDS_Wire();
+			// data protection
+			if( basicGeom == null || center == null || dir == null ) {
+				return null;
+			}
+
+			TopoDS_Wire wireXOY;
 			if( basicGeom.Type == Geom2D_Type.Circle ) {
-				wireXOY = MakeXOYCircleWire( (Geom2D_Circle)basicGeom, dNeckin, center, dir, dRotation );
+				wireXOY = MakeXOYCircleWire( (Geom2D_Circle)basicGeom, dNeckin );
 			}
 			else if( basicGeom.Type == Geom2D_Type.Rectangle ) {
-				wireXOY = MakeXOYRectangleWire( (Geom2D_Rectangle)basicGeom, dNeckin, center, dir, dRotation );
+				wireXOY = MakeXOYRectangleWire( (Geom2D_Rectangle)basicGeom, dNeckin );
 			}
 			else {
-				throw new System.Exception( "Not supported cross section type" );
+				return null;
+			}
+			if( wireXOY == null ) {
+				return null;
 			}
 
 			// transform wire
@@ -32,36 +40,57 @@ namespace MyCore.Tool
 			if( transformedShape == null ) {
 				return null;
 			}
+
 			TopoDS_Wire resultWire = TopoDS.ToWire( transformedShape );
 			return resultWire;
 		}
 
-		static TopoDS_Wire MakeXOYCircleWire( Geom2D_Circle circleParam, double dNeckin, gp_Pnt center, gp_Dir dir, double dRotation )
+		static TopoDS_Wire MakeXOYCircleWire( Geom2D_Circle circleParam, double dNeckin )
 		{
+			// data protection
+			if( circleParam == null ) {
+				return null;
+			}
+
 			// get radius
 			double dRadius = circleParam.Radius - dNeckin;
+			if( dRadius <= 0 ) {
+				return null;
+			}
 
 			// make circle wire on XY plane
 			gp_Circ gpCircle = new gp_Circ( new gp_Ax2( new gp_Pnt( 0, 0, 0 ), new gp_Dir( 0, 0, 1 ) ), dRadius );
 			BRepBuilderAPI_MakeEdge edgeMaker = new BRepBuilderAPI_MakeEdge( gpCircle );
+			if( edgeMaker.IsDone() == false ) {
+				return null;
+			}
 			BRepBuilderAPI_MakeWire wireMaker = new BRepBuilderAPI_MakeWire( edgeMaker.Edge() );
-
-			// data protection
 			if( wireMaker.IsDone() == false ) {
 				return null;
 			}
 			return wireMaker.Wire();
 		}
 
-		static TopoDS_Wire MakeXOYRectangleWire( Geom2D_Rectangle rectParam, double dNeckin, gp_Pnt center, gp_Dir dir, double dRotation )
+		static TopoDS_Wire MakeXOYRectangleWire( Geom2D_Rectangle rectParam, double dNeckin )
 		{
+			// data protection
+			if( rectParam == null ) {
+				return null;
+			}
+
 			// get width and height
 			double width = rectParam.Width - 2 * dNeckin;
 			double height = rectParam.Height - 2 * dNeckin;
+			if( width <= 0 || height <= 0 ) {
+				return null;
+			}
 
 			// get fillet
 			double fillet = rectParam.Fillet - dNeckin;
-			if( fillet < 0 ) {
+			if( fillet >= width / 2 || fillet >= height / 2 ) {
+				return null;
+			}
+			else if( fillet < 0 ) {
 				fillet = 0;
 			}
 
@@ -91,12 +120,18 @@ namespace MyCore.Tool
 				fillet2 = new BRepBuilderAPI_MakeEdge( trim2 );
 				fillet3 = new BRepBuilderAPI_MakeEdge( trim3 );
 				fillet4 = new BRepBuilderAPI_MakeEdge( trim4 );
+				if( fillet1.IsDone() == false || fillet2.IsDone() == false || fillet3.IsDone() == false || fillet4.IsDone() == false ) {
+					return null;
+				}
 			}
 
 			// edge up, from left to right
 			gp_Pnt pUP1 = new gp_Pnt( -width / 2 + fillet, height / 2, 0 );
 			gp_Pnt pUP2 = new gp_Pnt( width / 2 - fillet, height / 2, 0 );
 			BRepBuilderAPI_MakeEdge edgeUp = new BRepBuilderAPI_MakeEdge( pUP1, pUP2 );
+			if( edgeUp.IsDone() == false ) {
+				return null;
+			}
 			wireMaker.Add( edgeUp.Edge() );
 			if( fillet > 0 ) {
 				wireMaker.Add( fillet1.Edge() );
@@ -106,6 +141,9 @@ namespace MyCore.Tool
 			gp_Pnt pRight1 = new gp_Pnt( width / 2, height / 2 - fillet, 0 );
 			gp_Pnt pRight2 = new gp_Pnt( width / 2, -height / 2 + fillet, 0 );
 			BRepBuilderAPI_MakeEdge edgeRight = new BRepBuilderAPI_MakeEdge( pRight1, pRight2 );
+			if( edgeRight.IsDone() == false ) {
+				return null;
+			}
 			wireMaker.Add( edgeRight.Edge() );
 			if( fillet > 0 ) {
 				wireMaker.Add( fillet2.Edge() );
@@ -115,6 +153,9 @@ namespace MyCore.Tool
 			gp_Pnt pDown1 = new gp_Pnt( width / 2 - fillet, -height / 2, 0 );
 			gp_Pnt pDown2 = new gp_Pnt( -width / 2 + fillet, -height / 2, 0 );
 			BRepBuilderAPI_MakeEdge edgeDown = new BRepBuilderAPI_MakeEdge( pDown1, pDown2 );
+			if( edgeDown.IsDone() == false ) {
+				return null;
+			}
 			wireMaker.Add( edgeDown.Edge() );
 			if( fillet > 0 ) {
 				wireMaker.Add( fillet3.Edge() );
@@ -124,12 +165,15 @@ namespace MyCore.Tool
 			gp_Pnt pLeft1 = new gp_Pnt( -width / 2, -height / 2 + fillet, 0 );
 			gp_Pnt pLeft2 = new gp_Pnt( -width / 2, height / 2 - fillet, 0 );
 			BRepBuilderAPI_MakeEdge edgeLeft = new BRepBuilderAPI_MakeEdge( pLeft1, pLeft2 );
+			if( edgeLeft.IsDone() == false ) {
+				return null;
+			}
 			wireMaker.Add( edgeLeft.Edge() );
 			if( fillet > 0 ) {
 				wireMaker.Add( fillet4.Edge() );
 			}
 
-			// data protection
+			// make wire
 			if( wireMaker.IsDone() == false ) {
 				return null;
 			}
@@ -139,11 +183,25 @@ namespace MyCore.Tool
 		// make tube
 		public static TopoDS_Shape MakeRawTubeShape( TopoDS_Wire outerWire, TopoDS_Wire innerWire, double tubeLength )
 		{
+			// data protection
+			if( outerWire == null || innerWire == null ) {
+				return null;
+			}
+			if( tubeLength <= 0 ) {
+				return null;
+			}
+
 			BRepBuilderAPI_MakeFace outerFaceMaker = new BRepBuilderAPI_MakeFace( outerWire );
 			BRepBuilderAPI_MakeFace innerFaceMaker = new BRepBuilderAPI_MakeFace( innerWire );
+			if( outerFaceMaker.IsDone() == false || innerFaceMaker.IsDone() == false ) {
+				return null;
+			}
 
 			// cut outer face by inner face
 			BRepAlgoAPI_Cut cut = new BRepAlgoAPI_Cut( outerFaceMaker.Face(), innerFaceMaker.Face() );
+			if( cut.IsDone() == false ) {
+				return null;
+			}
 
 			// make tube
 			gp_Vec vec = new gp_Vec( 0, tubeLength, 0 );
@@ -191,8 +249,16 @@ namespace MyCore.Tool
 		}
 
 		// make array
-		public static TopoDS_Shape MakeArrayCompound( TopoDS_Shape oneBranchTube, ArrayParam arrayParam )
+		public static TopoDS_Shape MakeArrayCompound( TopoDS_Shape oneFeature, ArrayParam arrayParam )
 		{
+			// data protection
+			if( oneFeature == null ) {
+				return null;
+			}
+			if( arrayParam == null || arrayParam.IsValid() == false ) {
+				return oneFeature;
+			}
+
 			// create compound
 			TopoDS_Compound compound = new TopoDS_Compound();
 			TopoDS_Shape compoundShape = compound;
@@ -201,7 +267,7 @@ namespace MyCore.Tool
 
 			// make linear array
 			List<TopoDS_Shape> linearArrayShapeList = new List<TopoDS_Shape>();
-			linearArrayShapeList.Add( oneBranchTube );
+			linearArrayShapeList.Add( oneFeature );
 			for( int i = 1; i < arrayParam.LinearCount; i++ ) {
 
 				// caluculate the linear offset distance
@@ -210,7 +276,7 @@ namespace MyCore.Tool
 				// get the transformation along Y axis
 				gp_Trsf trsf = new gp_Trsf();
 				trsf.SetTranslation( new gp_Vec( 0, dOffset, 0 ) );
-				TopoDS_Shape oneLinearCopy = oneBranchTube.Moved( new OCC.TopLoc.TopLoc_Location( trsf ) );
+				TopoDS_Shape oneLinearCopy = oneFeature.Moved( new OCC.TopLoc.TopLoc_Location( trsf ) );
 
 				linearArrayShapeList.Add( oneLinearCopy );
 			}
@@ -263,8 +329,6 @@ namespace MyCore.Tool
 			// combine all transformations
 			gp_Trsf trsfFinal = transformC.Multiplied( transformD ).Multiplied( transformR );
 			BRepBuilderAPI_Transform shapeTrsfFinal = new BRepBuilderAPI_Transform( shapeToTransform, trsfFinal );
-
-			// data protection
 			if( shapeTrsfFinal.IsDone() == false ) {
 				return null;
 			}
