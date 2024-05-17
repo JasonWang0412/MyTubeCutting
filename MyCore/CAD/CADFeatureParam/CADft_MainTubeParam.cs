@@ -8,7 +8,7 @@ namespace MyCore.CAD
 	[Serializable]
 	public class CADft_MainTubeParam : ICADFeatureParam
 	{
-		public CADft_MainTubeParam( ICrossSection crossSection, double length )
+		public CADft_MainTubeParam( CrossSection crossSection, double length )
 		{
 			CrossSection = crossSection;
 			Length = length;
@@ -17,7 +17,7 @@ namespace MyCore.CAD
 
 		// TODO: dont know shit about this
 		[TypeConverter( typeof( ExpandableObjectConverter ) )]
-		public ICrossSection CrossSection
+		public CrossSection CrossSection
 		{
 			get;
 			set;

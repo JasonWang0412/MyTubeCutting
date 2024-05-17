@@ -4,43 +4,41 @@ using System.ComponentModel;
 namespace MyCore.CAD
 {
 	[Serializable]
-	public class CrossSection : ICrossSection
+	public class CrossSection
 	{
 		public CrossSection( IGeom2D shape, double thickness )
 		{
 			Shape = shape;
 			Thickness = thickness;
+
+			// init parameter checker
+			if( shape.Type == Geom2D_Type.Circle ) {
+				m_CrossSectionCheck = new CS_CircleCheck( this );
+			}
+			else if( shape.Type == Geom2D_Type.Rectangle ) {
+				m_CrossSectionCheck = new CS_RectangleCheck( this );
+			}
+			else {
+				m_CrossSectionCheck = new CS_DefaultCheck();
+			}
 		}
 
 		[TypeConverter( typeof( ExpandableObjectConverter ) )]
-		public virtual IGeom2D Shape
+		public IGeom2D Shape
 		{
 			get;
 		}
 
-		public virtual double Thickness
+		public double Thickness
 		{
 			get; set;
 		}
 
-		public virtual bool IsValid()
+		public bool IsValid()
 		{
-			// shape should not be null
-			if( Shape == null ) {
-				return false;
-			}
-
-			// shape should be valid
-			if( Shape.IsValid() == false ) {
-				return false;
-			}
-
-			// thickness should be positive
-			if( Thickness <= 0 ) {
-				return false;
-			}
-
-			return true;
+			return m_CrossSectionCheck.IsValid();
 		}
+
+		ICrossSectionCheck m_CrossSectionCheck;
 	}
 }
