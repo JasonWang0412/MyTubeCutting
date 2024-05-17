@@ -249,6 +249,7 @@ namespace MyTubeCutting
 				m_EdiObjParam = CloneHelper.Clone( m_CADFeatureParamMap.ParamMap[ m_szEditObjName ] );
 			}
 			m_propgrdPropertyBar.SelectedObject = m_EdiObjParam;
+			m_propgrdPropertyBar.ExpandAllGridItems();
 		}
 
 		void HideAllShapeExceptMainTube()

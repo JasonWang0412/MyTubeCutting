@@ -1,5 +1,8 @@
-﻿namespace MyCore.CAD
+﻿using System;
+
+namespace MyCore.CAD
 {
+	[Serializable]
 	internal class CS_CircleCheck : ICrossSectionCheck
 	{
 		public CS_CircleCheck( CrossSection crossSection )
