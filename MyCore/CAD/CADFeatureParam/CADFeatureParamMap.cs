@@ -16,7 +16,7 @@ namespace MyCore.CAD
 			}
 		}
 
-		public Dictionary<string, ICADFeatureParam> ParamMap
+		public Dictionary<string, ICADFeatureParam> FeatureMap
 		{
 			get
 			{

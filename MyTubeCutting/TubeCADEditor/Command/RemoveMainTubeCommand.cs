@@ -16,7 +16,7 @@ namespace MyTubeCutting
 		public void Do()
 		{
 			// can not remove when cad feature is not empty
-			if( m_CADFeatureParamMap.ParamMap.Count != 0 ) {
+			if( m_CADFeatureParamMap.FeatureMap.Count != 0 ) {
 				return;
 			}
 

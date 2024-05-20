@@ -27,10 +27,10 @@ namespace MyCore.CAD
 			}
 
 			CADft_MainTubeParam mainTubeParam = map.MainTubeParam;
-			List<CADft_EndCutterParam> endCutterParamList = map.ParamMap.Values
+			List<CADft_EndCutterParam> endCutterParamList = map.FeatureMap.Values
 				.Where( param => param.Type == CADFeatureType.EndCutter )
 				.Select( endCutterParam => endCutterParam as CADft_EndCutterParam ).ToList();
-			List<CADft_BranchTubeParam> branchTubeParamList = map.ParamMap.Values
+			List<CADft_BranchTubeParam> branchTubeParamList = map.FeatureMap.Values
 				.Where( param => param.Type == CADFeatureType.BranchTube )
 				.Select( branchTubeParam => branchTubeParam as CADft_BranchTubeParam ).ToList();
 

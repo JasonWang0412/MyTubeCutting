@@ -77,6 +77,8 @@ namespace MyTubeCutting
 		{
 			MainTubeTypeForm mainTubeShapeForm = new MainTubeTypeForm();
 			mainTubeShapeForm.MainTubeTypeSelected += MainTubeTypeSelected;
+
+			// TODO: make it show from center of main form
 			mainTubeShapeForm.Show();
 		}
 
