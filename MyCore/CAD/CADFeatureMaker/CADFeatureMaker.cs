@@ -128,16 +128,18 @@ namespace MyCore.CAD
 			}
 
 			// Make outer wire and inner wire
-			gp_Pnt center = new gp_Pnt( 0, 0, 0 );
-			gp_Dir dir = new gp_Dir( 0, 1, 0 );
-			TopoDS_Wire outerWire = OCCTool.MakeBaseWire( mainTubeParam.CrossSection.Shape, 0, center, dir, 0 );
-			TopoDS_Wire innerWire = OCCTool.MakeBaseWire( mainTubeParam.CrossSection.Shape, mainTubeParam.CrossSection.Thickness, center, dir, 0 );
+			gp_Pnt center = new gp_Pnt( 0, 0, 0 ); // origin
+			gp_Dir dir = new gp_Dir( 0, 1, 0 ); // y-axis
+
+			// TODO: extend tp no-center-tunnel tube
+			TopoDS_Wire outerWire = OCCTool.MakeShapeWire( mainTubeParam.CrossSection.Shape, 0, center, dir, 0 );
+			TopoDS_Wire innerWire = OCCTool.MakeShapeWire( mainTubeParam.CrossSection.Shape, mainTubeParam.CrossSection.Thickness, center, dir, 0 );
 			if( outerWire == null || innerWire == null ) {
 				return null;
 			}
 
 			// Get solid shape by wire
-			return OCCTool.MakeRawTubeShape( outerWire, innerWire, mainTubeParam.Length );
+			return OCCTool.MakeCenterTunnelTube( outerWire, innerWire, mainTubeParam.Length );
 		}
 
 		static List<TopoDS_Shape> MakeEndCutters( List<CADft_EndCutterParam> endCutterParamList )
@@ -304,7 +306,7 @@ namespace MyCore.CAD
 			}
 
 			// make branch tube
-			TopoDS_Wire outerWire = OCCTool.MakeBaseWire( branchTubeParam.Shape, 0, center, dir, branchTubeParam.SelfRotateAngle_deg );
+			TopoDS_Wire outerWire = OCCTool.MakeShapeWire( branchTubeParam.Shape, 0, center, dir, branchTubeParam.SelfRotateAngle_deg );
 			BRepBuilderAPI_MakeFace branchFaceMaker = new BRepBuilderAPI_MakeFace( outerWire );
 			if( branchFaceMaker.IsDone() == false ) {
 				return null;
@@ -351,7 +353,7 @@ namespace MyCore.CAD
 			gp_Pnt center = new gp_Pnt( 0, -mainTubeParam.Length / 2, 0 );
 			gp_Dir dir = new gp_Dir( 0, 1, 0 );
 			Geom2D_Rectangle rect = new Geom2D_Rectangle( dWidth, dHeight, 0 );
-			TopoDS_Wire baseWire = OCCTool.MakeBaseWire( rect, 0, center, dir, 0 );
+			TopoDS_Wire baseWire = OCCTool.MakeShapeWire( rect, 0, center, dir, 0 );
 
 			// make the face
 			BRepBuilderAPI_MakeFace faceMaker = new BRepBuilderAPI_MakeFace( baseWire );

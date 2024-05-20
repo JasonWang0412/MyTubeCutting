@@ -14,7 +14,7 @@ namespace MyCore.Tool
 	public class OCCTool
 	{
 		// make wire
-		public static TopoDS_Wire MakeBaseWire( IGeom2D basicGeom, double dNeckin, gp_Pnt center, gp_Dir dir, double dRotation )
+		public static TopoDS_Wire MakeShapeWire( IGeom2D basicGeom, double dNeckin, gp_Pnt center, gp_Dir dir, double dRotation )
 		{
 			// data protection
 			if( basicGeom == null || center == null || dir == null ) {
@@ -181,7 +181,7 @@ namespace MyCore.Tool
 		}
 
 		// make tube
-		public static TopoDS_Shape MakeRawTubeShape( TopoDS_Wire outerWire, TopoDS_Wire innerWire, double tubeLength )
+		public static TopoDS_Shape MakeCenterTunnelTube( TopoDS_Wire outerWire, TopoDS_Wire innerWire, double tubeLength )
 		{
 			// data protection
 			if( outerWire == null || innerWire == null ) {
