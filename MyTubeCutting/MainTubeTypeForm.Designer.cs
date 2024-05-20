@@ -1,6 +1,6 @@
 ﻿namespace MyTubeCutting
 {
-	partial class MainTubeShapeForm
+	partial class MainTubeTypeForm
 	{
 		/// <summary>
 		/// Required designer variable.
@@ -42,6 +42,7 @@
 			this.m_btnCircle.TabIndex = 0;
 			this.m_btnCircle.Text = "Circle";
 			this.m_btnCircle.UseVisualStyleBackColor = true;
+			this.m_btnCircle.Click += new System.EventHandler(this.m_btnCircle_Click);
 			// 
 			// m_btnRectangle
 			// 
@@ -51,6 +52,7 @@
 			this.m_btnRectangle.TabIndex = 1;
 			this.m_btnRectangle.Text = "Rectangle";
 			this.m_btnRectangle.UseVisualStyleBackColor = true;
+			this.m_btnRectangle.Click += new System.EventHandler(this.m_btnRectangle_Click);
 			// 
 			// button3
 			// 
@@ -82,7 +84,7 @@
 			this.button5.Text = "button5";
 			this.button5.UseVisualStyleBackColor = true;
 			// 
-			// MainTubeShapeForm
+			// MainTubeTypeForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -92,8 +94,9 @@
 			this.Controls.Add(this.button3);
 			this.Controls.Add(this.m_btnRectangle);
 			this.Controls.Add(this.m_btnCircle);
-			this.Name = "MainTubeShapeForm";
-			this.Text = "MainTubeShapeForm";
+			this.Name = "MainTubeTypeForm";
+			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
+			this.Text = "MainTubeTypeForm";
 			this.ResumeLayout(false);
 
 		}

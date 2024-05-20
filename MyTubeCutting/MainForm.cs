@@ -75,21 +75,37 @@ namespace MyTubeCutting
 
 		void m_btnMainTube_Click( object sender, System.EventArgs e )
 		{
+			MainTubeTypeForm mainTubeShapeForm = new MainTubeTypeForm();
+			mainTubeShapeForm.MainTubeTypeSelected += MainTubeTypeSelected;
+			mainTubeShapeForm.Show();
+		}
+
+		void MainTubeTypeSelected( TypeDefine.MainTubeType type )
+		{
 			// set main tube parameter
-			//double dRadius = 25;
-			//double dThickness = 2;
-			//double dTubeLength = 100;
-			//Geom2D_Circle shape = new Geom2D_Circle( dRadius );
-			//CrossSection crossSection = new CrossSection( shape, dThickness );
-			//MainTubeParam mainTubeParam = new MainTubeParam( crossSection, dTubeLength );
-			double dWidth = 50;
-			double dHeight = 50;
-			double dFillet = 5;
-			double dThickness = 2;
-			double dTubeLength = 100;
-			Geom2D_Rectangle shape = new Geom2D_Rectangle( dWidth, dHeight, dFillet );
-			CrossSection crossSection = new CrossSection( shape, dThickness );
-			CADft_MainTubeParam mainTubeParam = new CADft_MainTubeParam( crossSection, dTubeLength );
+			CADft_MainTubeParam mainTubeParam;
+			if( type == TypeDefine.MainTubeType.Circle ) {
+				double dRadius = 25;
+				double dThickness = 2;
+				double dTubeLength = 100;
+				Geom2D_Circle shape = new Geom2D_Circle( dRadius );
+				CrossSection crossSection = new CrossSection( shape, dThickness );
+				mainTubeParam = new CADft_MainTubeParam( crossSection, dTubeLength );
+			}
+			else if( type == TypeDefine.MainTubeType.Rectangle ) {
+				double dWidth = 50;
+				double dHeight = 50;
+				double dFillet = 5;
+				double dThickness = 2;
+				double dTubeLength = 100;
+				Geom2D_Rectangle shape = new Geom2D_Rectangle( dWidth, dHeight, dFillet );
+				CrossSection crossSection = new CrossSection( shape, dThickness );
+				mainTubeParam = new CADft_MainTubeParam( crossSection, dTubeLength );
+			}
+			else {
+				MessageBox.Show( "The type is currenttly not supported." );
+				return;
+			}
 
 			// set main tube to tube editor
 			m_TubeCADEditor.AddMainTube( mainTubeParam );
