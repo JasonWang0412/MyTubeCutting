@@ -12,6 +12,7 @@ using OCC.Quantity;
 using OCC.TopAbs;
 using OCC.TopExp;
 using OCC.TopoDS;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -94,15 +95,20 @@ namespace MyCore.CAD
 
 		public static AIS_Shape MakeCADFeatureAIS( ICADFeatureParam cadFeatureParam, CADft_MainTubeParam mainTubeParam )
 		{
+			// data protection
+			if( cadFeatureParam == null || mainTubeParam == null ) {
+				return null;
+			}
+			if( cadFeatureParam.IsValid() == false || mainTubeParam.IsValid() == false ) {
+				return null;
+			}
+
 			AIS_Shape cadFeatureAIS = null;
 			if( cadFeatureParam.Type == CADFeatureType.EndCutter ) {
 				cadFeatureAIS = MakeEndCutterAIS( (CADft_EndCutterParam)cadFeatureParam, mainTubeParam );
 			}
 			else if( cadFeatureParam.Type == CADFeatureType.BranchTube ) {
 				cadFeatureAIS = new AIS_Shape( MakeBranchTube( (CADft_BranchTubeParam)cadFeatureParam, mainTubeParam ) );
-			}
-			else {
-				return cadFeatureAIS;
 			}
 
 			if( cadFeatureAIS == null ) {
@@ -190,14 +196,6 @@ namespace MyCore.CAD
 
 		static AIS_Shape MakeEndCutterAIS( CADft_EndCutterParam endCutterParam, CADft_MainTubeParam mainTubeParam )
 		{
-			// data protection
-			if( endCutterParam == null || mainTubeParam == null ) {
-				return null;
-			}
-			if( endCutterParam.IsValid() == false || mainTubeParam.IsValid() == false ) {
-				return null;
-			}
-
 			// make the face
 			TopoDS_Face thePlane = MakeEndCutterFace( endCutterParam );
 			if( thePlane == null ) {
@@ -219,23 +217,39 @@ namespace MyCore.CAD
 			// find the face inside the extend bounding box
 			TopoDS_Face commonFace;
 			TopExp_Explorer explorer = new TopExp_Explorer( common.Shape(), TopAbs_ShapeEnum.TopAbs_FACE );
+			Geom_RectangularTrimmedSurface refinedSurface = null;
+
+			// can find
 			if( explorer.More() ) {
+
+				// retrive the geom surface and uv boundary from the face
+				// this is to make the face a complete face (ex: tiled -45, rotate 45, retangular tube)
 				commonFace = TopoDS.ToFace( explorer.Current() );
+				Geom_Surface commonSurface = BRep_Tool.Surface( commonFace );
+				double Umin = 0;
+				double Umax = 0;
+				double Vmin = 0;
+				double Vmax = 0;
+				BRepTools.UVBounds( commonFace, ref Umin, ref Umax, ref Vmin, ref Vmax );
+				refinedSurface = new Geom_RectangularTrimmedSurface( commonSurface, Umin, Umax, Vmin, Vmax );
 			}
+			// cannot find
 			else {
-				return null;
+
+				// make a large face
+				Geom_Surface commonSurface = BRep_Tool.Surface( thePlane );
+
+				// get extend bounding box size
+				GetExtendBoundingBoxSize( mainTubeParam, out double dWidth, out double dHeight, out double dLength );
+				double dParam = Math.Sqrt( Math.Pow( dWidth, 2 ) + Math.Pow( dHeight, 2 ) + Math.Pow( dLength, 2 ) ) / 2;
+				refinedSurface = new Geom_RectangularTrimmedSurface( commonSurface, -dParam, dParam, -dParam, dParam );
 			}
 
-			// retrive the geom surface and uv boundary from the face
-			// this is to make the face a complete face (ex: tiled -45, rotate 45, retangular tube)
-			Geom_Surface commonSurface = BRep_Tool.Surface( commonFace );
-			double Umin = 0;
-			double Umax = 0;
-			double Vmin = 0;
-			double Vmax = 0;
-			BRepTools.UVBounds( commonFace, ref Umin, ref Umax, ref Vmin, ref Vmax );
-			Geom_RectangularTrimmedSurface refinedSurface = new Geom_RectangularTrimmedSurface( commonSurface, Umin, Umax, Vmin, Vmax );
+			// TODO: magic number 0.001
 			BRepBuilderAPI_MakeFace refinedFaceMaker = new BRepBuilderAPI_MakeFace( refinedSurface, 0.001 );
+			if( refinedFaceMaker.IsDone() == false ) {
+				return null;
+			}
 
 			return new AIS_Shape( refinedFaceMaker.Face() );
 		}
@@ -250,7 +264,7 @@ namespace MyCore.CAD
 				return null;
 			}
 
-			gp_Pnt center = new gp_Pnt( endCutterParam.Center_X, endCutterParam.Center_Y, endCutterParam.Center_Z );
+			gp_Pnt center = new gp_Pnt( 0, endCutterParam.Center_Y, 0 );
 			OCCTool.GetEndCutterDir( endCutterParam.TiltAngle_deg, endCutterParam.RotateAngle_deg, out gp_Dir dir );
 			gp_Pln cutPlane = new gp_Pln( center, dir );
 			BRepBuilderAPI_MakeFace makeFace = new BRepBuilderAPI_MakeFace( cutPlane );
@@ -328,17 +342,37 @@ namespace MyCore.CAD
 
 		static TopoDS_Shape MakeExtendBoundingBox( CADft_MainTubeParam mainTubeParam )
 		{
-			// data protection
-			if( mainTubeParam == null ) {
-				return null;
-			}
-			if( mainTubeParam.IsValid() == false ) {
+			// calculate bounding box size
+			GetExtendBoundingBoxSize( mainTubeParam, out double dWidth, out double dHeight, out double dLength );
+
+			// make XZ plane wire
+			gp_Pnt center = new gp_Pnt( 0, -mainTubeParam.Length / 2, 0 );
+			gp_Dir dir = new gp_Dir( 0, 1, 0 );
+			Geom2D_Rectangle rect = new Geom2D_Rectangle( dWidth, dHeight, 0 );
+			TopoDS_Wire baseWire = OCCTool.MakeShapeWire( rect, 0, center, dir, 0 );
+			if( baseWire == null ) {
 				return null;
 			}
 
-			// calculate bounding box size
-			double dWidth = 0;
-			double dHeight = 0;
+			// make the face
+			BRepBuilderAPI_MakeFace faceMaker = new BRepBuilderAPI_MakeFace( baseWire );
+			if( faceMaker.IsDone() == false ) {
+				return null;
+			}
+
+			// make prism along Y-axis
+			gp_Vec vec = new gp_Vec( 0, dLength, 0 );
+			BRepPrimAPI_MakePrism prismMaker = new BRepPrimAPI_MakePrism( faceMaker.Face(), vec );
+			if( prismMaker.IsDone() == false ) {
+				return null;
+			}
+			return prismMaker.Shape();
+		}
+
+		static void GetExtendBoundingBoxSize( CADft_MainTubeParam mainTubeParam, out double dWidth, out double dHeight, out double dLength )
+		{
+			dWidth = 0;
+			dHeight = 0;
 			if( mainTubeParam.CrossSection.Shape.Type == Geom2D_Type.Circle ) {
 				dWidth = ( (Geom2D_Circle)( mainTubeParam.CrossSection.Shape ) ).Radius * 4;
 				dHeight = dWidth;
@@ -347,27 +381,7 @@ namespace MyCore.CAD
 				dWidth = ( (Geom2D_Rectangle)( mainTubeParam.CrossSection.Shape ) ).Width * 2;
 				dHeight = ( (Geom2D_Rectangle)( mainTubeParam.CrossSection.Shape ) ).Height * 2;
 			}
-			double dLength = mainTubeParam.Length * 2;
-
-			// make XZ plane wire
-			gp_Pnt center = new gp_Pnt( 0, -mainTubeParam.Length / 2, 0 );
-			gp_Dir dir = new gp_Dir( 0, 1, 0 );
-			Geom2D_Rectangle rect = new Geom2D_Rectangle( dWidth, dHeight, 0 );
-			TopoDS_Wire baseWire = OCCTool.MakeShapeWire( rect, 0, center, dir, 0 );
-
-			// make the face
-			BRepBuilderAPI_MakeFace faceMaker = new BRepBuilderAPI_MakeFace( baseWire );
-			if( faceMaker.IsDone() == false ) {
-				return null;
-			}
-
-			// make prism
-			gp_Vec vec = new gp_Vec( 0, dLength, 0 );
-			BRepPrimAPI_MakePrism prismMaker = new BRepPrimAPI_MakePrism( faceMaker.Face(), vec );
-			if( prismMaker.IsDone() == false ) {
-				return null;
-			}
-			return prismMaker.Shape();
+			dLength = mainTubeParam.Length * 2;
 		}
 	}
 }

@@ -116,15 +116,7 @@ namespace MyTubeCutting
 		void m_btnEndCutter_Click( object sender, System.EventArgs e )
 		{
 			// set end cutter parameter
-			CADft_EndCutterParam endCutterParam = new CADft_EndCutterParam()
-			{
-				Center_X = 0,
-				Center_Y = 0,
-				Center_Z = 0,
-				TiltAngle_deg = 0,
-				RotateAngle_deg = 0,
-				Side = EEndSide.Left
-			};
+			CADft_EndCutterParam endCutterParam = new CADft_EndCutterParam( 0, 0, 0, EEndSide.Left );
 			m_TubeCADEditor.AddEndCutter( endCutterParam );
 		}
 
