@@ -27,11 +27,9 @@ namespace MyCore.CAD
 
 			CADft_MainTubeParam mainTubeParam = map.MainTubeParam;
 			List<CADft_EndCutterParam> endCutterParamList = map.FeatureMap.Values
-				.Where( param => param.Type == CADFeatureType.EndCutter )
-				.Select( endCutterParam => endCutterParam as CADft_EndCutterParam ).ToList();
+				.Where( param => param.Type == CADFeatureType.EndCutter ).Cast<CADft_EndCutterParam>().ToList();
 			List<CADft_BranchTubeParam> branchTubeParamList = map.FeatureMap.Values
-				.Where( param => param.Type == CADFeatureType.BranchTube )
-				.Select( branchTubeParam => branchTubeParam as CADft_BranchTubeParam ).ToList();
+				.Where( param => param.Type == CADFeatureType.BranchTube ).Cast<CADft_BranchTubeParam>().ToList();
 
 			// data protection
 			if( mainTubeParam == null ) {
@@ -51,15 +49,25 @@ namespace MyCore.CAD
 			}
 
 			// cut main tube by end cutters
-			List<TopoDS_Shape> endCutters = MakeEndCutters( endCutterParamList );
-			if( endCutters != null && endCutters.Count != 0 ) {
-				foreach( TopoDS_Shape endCutter in endCutters ) {
-					BRepAlgoAPI_Cut cut = new BRepAlgoAPI_Cut( mainTube, endCutter );
-					if( cut.IsDone() == false ) {
-						continue;
-					}
-					mainTube = cut.Shape();
+			foreach( CADft_EndCutterParam oneEndCutterParam in endCutterParamList ) {
+
+				// data protection
+				if( oneEndCutterParam == null || oneEndCutterParam.IsValid() == false ) {
+					continue;
 				}
+
+				// make end cutter
+				TopoDS_Shape oneEndCutter = MakeEndCutterTopo( oneEndCutterParam );
+				if( oneEndCutter == null ) {
+					continue;
+				}
+
+				// cut main tube
+				BRepAlgoAPI_Cut cut = new BRepAlgoAPI_Cut( mainTube, oneEndCutter );
+				if( cut.IsDone() == false ) {
+					continue;
+				}
+				mainTube = cut.Shape();
 			}
 
 			// cut main tube by branch tubes
@@ -146,34 +154,8 @@ namespace MyCore.CAD
 			return OCCTool.MakeCenterTunnelTube( outerWire, innerWire, mainTubeParam.Length );
 		}
 
-		static List<TopoDS_Shape> MakeEndCutters( List<CADft_EndCutterParam> endCutterParamList )
+		static TopoDS_Shape MakeEndCutterTopo( CADft_EndCutterParam endCutterParam )
 		{
-			// data protection
-			if( endCutterParamList == null ) {
-				return null;
-			}
-
-			List<TopoDS_Shape> cutters = new List<TopoDS_Shape>();
-			foreach( CADft_EndCutterParam endCutterParam in endCutterParamList ) {
-				TopoDS_Shape oneEndCutter = MakeEndCutter( endCutterParam );
-				if( oneEndCutter == null ) {
-					continue;
-				}
-				cutters.Add( oneEndCutter );
-			}
-			return cutters;
-		}
-
-		static TopoDS_Shape MakeEndCutter( CADft_EndCutterParam endCutterParam )
-		{
-			// data protection
-			if( endCutterParam == null ) {
-				return null;
-			}
-			if( endCutterParam.IsValid() == false ) {
-				return null;
-			}
-
 			// get plane
 			TopoDS_Face thePlane = MakeEndCutterFace( endCutterParam );
 			if( thePlane == null ) {
@@ -181,10 +163,14 @@ namespace MyCore.CAD
 			}
 
 			// get point on cut side
-			double dYpos = endCutterParam.Side == EEndSide.Left ? endCutterParam.Center_Y - 1 : endCutterParam.Center_Y + 1;
+			OCCTool.GetEndCutterDir( endCutterParam.TiltAngle_deg, endCutterParam.RotateAngle_deg, out gp_Dir dir );
+			if( endCutterParam.Side == EEndSide.Left ) {
+				dir.Reverse();
+			}
 
 			// make cutter half space
-			gp_Pnt pointOnCutSide = new gp_Pnt( 0, dYpos, 0 );
+			// Discuss: it can work with Y only, even when tilt is 90
+			gp_Pnt pointOnCutSide = new gp_Pnt( dir.X(), endCutterParam.Center_Y + dir.Y(), dir.Z() );
 			BRepPrimAPI_MakeHalfSpace halfSpace = new BRepPrimAPI_MakeHalfSpace( thePlane, pointOnCutSide );
 			if( halfSpace.IsDone() == false ) {
 				return null;
@@ -221,14 +207,6 @@ namespace MyCore.CAD
 
 		static TopoDS_Face MakeEndCutterFace( CADft_EndCutterParam endCutterParam )
 		{
-			// data protection
-			if( endCutterParam == null ) {
-				return null;
-			}
-			if( endCutterParam.IsValid() == false ) {
-				return null;
-			}
-
 			gp_Pnt center = new gp_Pnt( 0, endCutterParam.Center_Y, 0 );
 			OCCTool.GetEndCutterDir( endCutterParam.TiltAngle_deg, endCutterParam.RotateAngle_deg, out gp_Dir dir );
 			gp_Pln cutPlane = new gp_Pln( center, dir );
