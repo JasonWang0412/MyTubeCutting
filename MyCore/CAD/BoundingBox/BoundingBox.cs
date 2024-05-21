@@ -2,37 +2,47 @@
 {
 	public class BoundingBox
 	{
-		double MinX
+		public BoundingBox( double minX, double maxX, double minY, double maxY, double minZ, double maxZ )
+		{
+			MinX = minX;
+			MaxX = maxX;
+			MinY = minY;
+			MaxY = maxY;
+			MinZ = minZ;
+			MaxZ = maxZ;
+		}
+
+		public double MinX
 		{
 			get;
 			set;
 		}
 
-		double MaxX
+		public double MaxX
 		{
 			get;
 			set;
 		}
 
-		double MinY
+		public double MinY
 		{
 			get;
 			set;
 		}
 
-		double MaxY
+		public double MaxY
 		{
 			get;
 			set;
 		}
 
-		double MinZ
+		public double MinZ
 		{
 			get;
 			set;
 		}
 
-		double MaxZ
+		public double MaxZ
 		{
 			get;
 			set;

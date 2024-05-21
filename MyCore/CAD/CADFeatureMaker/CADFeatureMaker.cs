@@ -4,13 +4,11 @@ using OCC.BRep;
 using OCC.BRepAlgoAPI;
 using OCC.BRepBuilderAPI;
 using OCC.BRepPrimAPI;
-using OCC.BRepTools;
 using OCC.Geom;
 using OCC.gp;
 using OCC.Graphic3d;
 using OCC.Quantity;
 using OCC.TopAbs;
-using OCC.TopExp;
 using OCC.TopoDS;
 using System;
 using System.Collections.Generic;
@@ -202,48 +200,15 @@ namespace MyCore.CAD
 				return null;
 			}
 
-			// make the extend bounding box of main tube
-			TopoDS_Shape extendBndBox = MakeExtendBoundingBox( mainTubeParam );
-			if( extendBndBox == null ) {
-				return null;
-			}
-
-			// find the common part of the face and the extend bounding box
-			BRepAlgoAPI_Common common = new BRepAlgoAPI_Common( thePlane, extendBndBox );
-			if( common.IsDone() == false ) {
-				return null;
-			}
-
-			// find the face inside the extend bounding box
-			TopoDS_Face commonFace;
-			TopExp_Explorer explorer = new TopExp_Explorer( common.Shape(), TopAbs_ShapeEnum.TopAbs_FACE );
-			Geom_RectangularTrimmedSurface refinedSurface = null;
-
-			// can find
-			if( explorer.More() ) {
-
-				// retrive the geom surface and uv boundary from the face
-				// this is to make the face a complete face (ex: tiled -45, rotate 45, retangular tube)
-				commonFace = TopoDS.ToFace( explorer.Current() );
-				Geom_Surface commonSurface = BRep_Tool.Surface( commonFace );
-				double Umin = 0;
-				double Umax = 0;
-				double Vmin = 0;
-				double Vmax = 0;
-				BRepTools.UVBounds( commonFace, ref Umin, ref Umax, ref Vmin, ref Vmax );
-				refinedSurface = new Geom_RectangularTrimmedSurface( commonSurface, Umin, Umax, Vmin, Vmax );
-			}
-			// cannot find
-			else {
-
-				// make a large face
-				Geom_Surface commonSurface = BRep_Tool.Surface( thePlane );
-
-				// get extend bounding box size
-				GetExtendBoundingBoxSize( mainTubeParam, out double dWidth, out double dHeight, out double dLength );
-				double dParam = Math.Sqrt( Math.Pow( dWidth, 2 ) + Math.Pow( dHeight, 2 ) + Math.Pow( dLength, 2 ) ) / 2;
-				refinedSurface = new Geom_RectangularTrimmedSurface( commonSurface, -dParam, dParam, -dParam, dParam );
-			}
+			// make a large face
+			// the face is for display only, the size is not important
+			Geom_Surface originalSurface = BRep_Tool.Surface( thePlane );
+			GetMainTubeBoundingBox( mainTubeParam, out BoundingBox boundingBox );
+			double dWidth = boundingBox.MaxX - boundingBox.MinX;
+			double dHeight = boundingBox.MaxZ - boundingBox.MinZ;
+			double dLength = boundingBox.MaxY - boundingBox.MinY;
+			double dParam = Math.Sqrt( Math.Pow( dWidth, 2 ) + Math.Pow( dHeight, 2 ) + Math.Pow( dLength, 2 ) );
+			Geom_RectangularTrimmedSurface refinedSurface = new Geom_RectangularTrimmedSurface( originalSurface, -dParam, dParam, -dParam, dParam );
 
 			// TODO: magic number 0.001
 			BRepBuilderAPI_MakeFace refinedFaceMaker = new BRepBuilderAPI_MakeFace( refinedSurface, 0.001 );
@@ -340,48 +305,21 @@ namespace MyCore.CAD
 			return arrayBranchTube;
 		}
 
-		static TopoDS_Shape MakeExtendBoundingBox( CADft_MainTubeParam mainTubeParam )
+		static void GetMainTubeBoundingBox( CADft_MainTubeParam mainTubeParam, out BoundingBox boundingBox )
 		{
-			// calculate bounding box size
-			GetExtendBoundingBoxSize( mainTubeParam, out double dWidth, out double dHeight, out double dLength );
-
-			// make XZ plane wire
-			gp_Pnt center = new gp_Pnt( 0, -mainTubeParam.Length / 2, 0 );
-			gp_Dir dir = new gp_Dir( 0, 1, 0 );
-			Geom2D_Rectangle rect = new Geom2D_Rectangle( dWidth, dHeight, 0 );
-			TopoDS_Wire baseWire = OCCTool.MakeShapeWire( rect, 0, center, dir, 0 );
-			if( baseWire == null ) {
-				return null;
-			}
-
-			// make the face
-			BRepBuilderAPI_MakeFace faceMaker = new BRepBuilderAPI_MakeFace( baseWire );
-			if( faceMaker.IsDone() == false ) {
-				return null;
-			}
-
-			// make prism along Y-axis
-			gp_Vec vec = new gp_Vec( 0, dLength, 0 );
-			BRepPrimAPI_MakePrism prismMaker = new BRepPrimAPI_MakePrism( faceMaker.Face(), vec );
-			if( prismMaker.IsDone() == false ) {
-				return null;
-			}
-			return prismMaker.Shape();
-		}
-
-		static void GetExtendBoundingBoxSize( CADft_MainTubeParam mainTubeParam, out double dWidth, out double dHeight, out double dLength )
-		{
-			dWidth = 0;
-			dHeight = 0;
+			double dWidth = 0;
+			double dHeight = 0;
 			if( mainTubeParam.CrossSection.Shape.Type == Geom2D_Type.Circle ) {
-				dWidth = ( (Geom2D_Circle)( mainTubeParam.CrossSection.Shape ) ).Radius * 4;
+				dWidth = ( (Geom2D_Circle)( mainTubeParam.CrossSection.Shape ) ).Radius * 2;
 				dHeight = dWidth;
 			}
 			else if( mainTubeParam.CrossSection.Shape.Type == Geom2D_Type.Rectangle ) {
-				dWidth = ( (Geom2D_Rectangle)( mainTubeParam.CrossSection.Shape ) ).Width * 2;
-				dHeight = ( (Geom2D_Rectangle)( mainTubeParam.CrossSection.Shape ) ).Height * 2;
+				dWidth = ( (Geom2D_Rectangle)( mainTubeParam.CrossSection.Shape ) ).Width;
+				dHeight = ( (Geom2D_Rectangle)( mainTubeParam.CrossSection.Shape ) ).Height;
 			}
-			dLength = mainTubeParam.Length * 2;
+			double dLength = mainTubeParam.Length * 2;
+
+			boundingBox = new BoundingBox( -dWidth / 2, dWidth / 2, -dHeight / 2, dHeight / 2, 0, dLength );
 		}
 	}
 }
