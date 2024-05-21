@@ -341,15 +341,10 @@ namespace MyCore.CAD
 
 			// make branch tube
 			TopoDS_Wire outerWire = OCCTool.MakeShapeWire( branchTubeParam.Shape, 0, center, dir, branchTubeParam.SelfRotateAngle_deg );
-			BRepBuilderAPI_MakeFace branchFaceMaker = new BRepBuilderAPI_MakeFace( outerWire );
-			if( branchFaceMaker.IsDone() == false ) {
+			if( outerWire == null ) {
 				return null;
 			}
-			BRepPrimAPI_MakePrism branchTubeMaker = new BRepPrimAPI_MakePrism( branchFaceMaker.Shape(), prismVec );
-			if( branchTubeMaker.IsDone() == false ) {
-				return null;
-			}
-			return branchTubeMaker.Shape();
+			return OCCTool.MakeConcretePrismByWire( outerWire, prismVec, false );
 		}
 
 		static TopoDS_Shape MakeBranchTubeTopo_CutThrough( CADft_BranchTubeParam branchTubeParam )
@@ -358,16 +353,12 @@ namespace MyCore.CAD
 			gp_Pnt center = new gp_Pnt( branchTubeParam.Center_X, branchTubeParam.Center_Y, branchTubeParam.Center_Z );
 
 			// make branch tube
-			TopoDS_Wire outerWire = OCCTool.MakeShapeWire( branchTubeParam.Shape, 0, center, dir, branchTubeParam.SelfRotateAngle_deg );
-			BRepBuilderAPI_MakeFace branchFaceMaker = new BRepBuilderAPI_MakeFace( outerWire );
-			if( branchFaceMaker.IsDone() == false ) {
+			TopoDS_Wire baseWire = OCCTool.MakeShapeWire( branchTubeParam.Shape, 0, center, dir, branchTubeParam.SelfRotateAngle_deg );
+			if( baseWire == null ) {
 				return null;
 			}
-			BRepPrimAPI_MakePrism branchTubeMaker = new BRepPrimAPI_MakePrism( branchFaceMaker.Shape(), dir, true );
-			if( branchTubeMaker.IsDone() == false ) {
-				return null;
-			}
-			return branchTubeMaker.Shape();
+			gp_Vec vec = new gp_Vec( dir );
+			return OCCTool.MakeConcretePrismByWire( baseWire, vec, true );
 		}
 
 		static void GetBranchTubeDir( double dA_deg, double dB_deg, out gp_Dir dir )

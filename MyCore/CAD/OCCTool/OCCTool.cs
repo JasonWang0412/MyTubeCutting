@@ -1,4 +1,5 @@
 ﻿using OCC.BRepBuilderAPI;
+using OCC.BRepPrimAPI;
 using OCC.Geom;
 using OCC.gp;
 using OCC.TopoDS;
@@ -61,6 +62,34 @@ namespace MyCore.CAD
 				return null;
 			}
 			return shapeTrsfFinal.Shape();
+		}
+
+		public static TopoDS_Shape MakeConcretePrismByWire( TopoDS_Wire baseWire, gp_Vec vec, bool isInf )
+		{
+			// data protection
+			if( baseWire == null ) {
+				return null;
+			}
+
+			// make face
+			BRepBuilderAPI_MakeFace branchFaceMaker = new BRepBuilderAPI_MakeFace( baseWire );
+			if( branchFaceMaker.IsDone() == false ) {
+				return null;
+			}
+
+			// make prism
+			BRepPrimAPI_MakePrism branchTubeMaker;
+			if( isInf ) {
+				gp_Dir dir = new gp_Dir( vec );
+				branchTubeMaker = new BRepPrimAPI_MakePrism( branchFaceMaker.Shape(), dir, true );
+			}
+			else {
+				branchTubeMaker = new BRepPrimAPI_MakePrism( branchFaceMaker.Shape(), vec );
+			}
+			if( branchTubeMaker.IsDone() == false ) {
+				return null;
+			}
+			return branchTubeMaker.Shape();
 		}
 
 		static TopoDS_Wire MakeXOYCircleWire( Geom2D_Circle circleParam, double dNeckin )
