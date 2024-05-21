@@ -51,10 +51,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BranchTubeTypeForm.cs">
+    <Compile Include="Dialog\BranchTubeTypeForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="BranchTubeTypeForm.Designer.cs">
+    <Compile Include="Dialog\BranchTubeTypeForm.Designer.cs">
       <DependentUpon>BranchTubeTypeForm.cs</DependentUpon>
     </Compile>
     <Compile Include="MainForm.cs">
@@ -63,10 +63,10 @@
     <Compile Include="MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="MainTubeTypeForm.cs">
+    <Compile Include="Dialog\MainTubeTypeForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="MainTubeTypeForm.Designer.cs">
+    <Compile Include="Dialog\MainTubeTypeForm.Designer.cs">
       <DependentUpon>MainTubeTypeForm.cs</DependentUpon>
     </Compile>
     <Compile Include="OCCViewer\OCCViewer.cs" />
@@ -82,13 +82,13 @@
     <Compile Include="TubeCADEditor\TubeCADEditor.cs" />
     <Compile Include="OCCViewer\ViewerMouseAction.cs" />
     <Compile Include="TypeDefine\TypeDefine.cs" />
-    <EmbeddedResource Include="BranchTubeTypeForm.resx">
+    <EmbeddedResource Include="Dialog\BranchTubeTypeForm.resx">
       <DependentUpon>BranchTubeTypeForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="MainTubeTypeForm.resx">
+    <EmbeddedResource Include="Dialog\MainTubeTypeForm.resx">
       <DependentUpon>MainTubeTypeForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
@@ -119,9 +119,7 @@
       <Name>MyCore</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Dialog\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>copy /Y $(SolutionDir)reference\OCCwrapCSharp.dll $(TargetDir)
