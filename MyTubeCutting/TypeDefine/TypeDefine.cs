@@ -1,17 +1,14 @@
 ﻿namespace MyTubeCutting
 {
-	internal class TypeDefine
+	internal enum MainTubeType
 	{
-		internal enum MainTubeType
-		{
-			Circle,
-			Rectangle
-		}
+		Circle,
+		Rectangle
+	}
 
-		internal enum BranchTubeType
-		{
-			Circle,
-			Rectangle
-		}
+	internal enum BranchTubeType
+	{
+		Circle,
+		Rectangle
 	}
 }

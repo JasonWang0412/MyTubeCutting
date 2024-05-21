@@ -82,24 +82,22 @@ namespace MyTubeCutting
 			mainTubeShapeForm.Show();
 		}
 
-		void MainTubeTypeSelected( TypeDefine.MainTubeType type )
+		void MainTubeTypeSelected( MainTubeType type )
 		{
 			// set main tube parameter
 			CADft_MainTubeParam mainTubeParam;
-			if( type == TypeDefine.MainTubeType.Circle ) {
+			double dThickness = 2;
+			double dTubeLength = 100;
+			if( type == MainTubeType.Circle ) {
 				double dRadius = 25;
-				double dThickness = 2;
-				double dTubeLength = 100;
 				Geom2D_Circle shape = new Geom2D_Circle( dRadius );
 				CrossSection crossSection = new CrossSection( shape, dThickness );
 				mainTubeParam = new CADft_MainTubeParam( crossSection, dTubeLength );
 			}
-			else if( type == TypeDefine.MainTubeType.Rectangle ) {
+			else if( type == MainTubeType.Rectangle ) {
 				double dWidth = 50;
 				double dHeight = 50;
 				double dFillet = 5;
-				double dThickness = 2;
-				double dTubeLength = 100;
 				Geom2D_Rectangle shape = new Geom2D_Rectangle( dWidth, dHeight, dFillet );
 				CrossSection crossSection = new CrossSection( shape, dThickness );
 				mainTubeParam = new CADft_MainTubeParam( crossSection, dTubeLength );
@@ -122,35 +120,41 @@ namespace MyTubeCutting
 
 		void m_btnBranchTube_Click( object sender, System.EventArgs e )
 		{
-			// set branch tube 1 parameter
-			//double dRadius = 10;
-			//BranchTubeParam branchTubeParam = new BranchTubeParam()
-			//{
-			//	Center_X = 0,
-			//	Center_Y = 50,
-			//	Center_Z = 0,
-			//	SelfRotateAngle = 0,
-			//	AAngle = 0,
-			//	BAngle = 0,
-			//	IntersectDir = BranchIntersectDir.Positive,
-			//	Length = 50,
-			//	Shape = new Geom2D_Circle( dRadius ),
-			//};
-			double dWidth = 20;
-			double dHeight = 20;
-			double dFillet = 5;
-			CADft_BranchTubeParam branchTubeParam = new CADft_BranchTubeParam()
-			{
-				Center_X = 0,
-				Center_Y = 50,
-				Center_Z = 0,
-				SelfRotateAngle_deg = 0,
-				AAngle_deg = 0,
-				BAngle_deg = 0,
-				IntersectDir = BranchIntersectDir.Positive,
-				Length = 50,
-				Shape = new Geom2D_Rectangle( dWidth, dHeight, dFillet ),
-			};
+			BranchTubeTypeForm branchTubeTypeForm = new BranchTubeTypeForm();
+			branchTubeTypeForm.BranchTubeTypeSelected += BranchTubeTypeSelected;
+			branchTubeTypeForm.Show();
+		}
+
+		void BranchTubeTypeSelected( BranchTubeType type )
+		{
+			// set branch tube parameter
+			IGeom2D shape;
+			double length = 50;
+			if( type == BranchTubeType.Circle ) {
+				double dRadius = 10;
+				shape = new Geom2D_Circle( dRadius );
+			}
+			else if( type == BranchTubeType.Rectangle ) {
+				double dWidth = 20;
+				double dHeight = 20;
+				double dFillet = 5;
+				shape = new Geom2D_Rectangle( dWidth, dHeight, dFillet );
+			}
+			else {
+				MessageBox.Show( "The type is currenttly not supported." );
+				return;
+			}
+
+			double x = 0;
+			double y = 50;
+			double z = 0;
+			double selfRotateAngle_deg = 0;
+			double angleA_deg = 0;
+			double angleB_deg = 0;
+			BranchIntersectDir intersectDir = BranchIntersectDir.Positive;
+			CADft_BranchTubeParam branchTubeParam = new CADft_BranchTubeParam( x, y, z, selfRotateAngle_deg, angleA_deg, angleB_deg, shape, intersectDir, length );
+
+			// set branch tube to tube editor
 			m_TubeCADEditor.AddBranchTube( branchTubeParam );
 		}
 

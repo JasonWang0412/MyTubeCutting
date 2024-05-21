@@ -12,17 +12,17 @@ namespace MyTubeCutting
 
 		void m_btnCircle_Click( object sender, EventArgs e )
 		{
-			MainTubeTypeSelected?.Invoke( TypeDefine.MainTubeType.Circle );
+			MainTubeTypeSelected?.Invoke( MainTubeType.Circle );
 			Close();
 		}
 
 		void m_btnRectangle_Click( object sender, EventArgs e )
 		{
-			MainTubeTypeSelected?.Invoke( TypeDefine.MainTubeType.Rectangle );
+			MainTubeTypeSelected?.Invoke( MainTubeType.Rectangle );
 			Close();
 		}
 
-		internal delegate void MainTubeTypeSelectedHandler( TypeDefine.MainTubeType type );
+		internal delegate void MainTubeTypeSelectedHandler( MainTubeType type );
 		internal event MainTubeTypeSelectedHandler MainTubeTypeSelected;
 	}
 }

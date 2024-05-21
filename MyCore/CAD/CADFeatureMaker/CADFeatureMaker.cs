@@ -317,14 +317,16 @@ namespace MyCore.CAD
 				return null;
 			}
 
-			if( branchTubeParam.ArrayParam.LinearCount <= 1 && branchTubeParam.ArrayParam.AngularCount <= 1 ) {
-				return branchTubeMaker.Shape();
-			}
+			return branchTubeMaker.Shape();
 
-			// make array
-			TopoDS_Shape oneBranchTube = branchTubeMaker.Shape();
-			TopoDS_Shape arrayBranchTube = MakeArrayCompound( oneBranchTube, branchTubeParam.ArrayParam );
-			return arrayBranchTube;
+			//if( branchTubeParam.ArrayParam.LinearCount <= 1 && branchTubeParam.ArrayParam.AngularCount <= 1 ) {
+			//	return branchTubeMaker.Shape();
+			//}
+
+			//// make array
+			//TopoDS_Shape oneBranchTube = branchTubeMaker.Shape();
+			//TopoDS_Shape arrayBranchTube = MakeArrayCompound( oneBranchTube, branchTubeParam.ArrayParam );
+			//return arrayBranchTube;
 		}
 
 		static void GetBranchTubeDir( double dA_deg, double dB_deg, out gp_Dir dir )

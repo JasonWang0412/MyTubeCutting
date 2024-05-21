@@ -13,18 +13,20 @@ namespace MyCore.CAD
 	[Serializable]
 	public class CADft_BranchTubeParam : ICADFeatureParam
 	{
-		public CADft_BranchTubeParam()
+		public CADft_BranchTubeParam( double x, double y, double z,
+			double selfRotateAngle_deg, double angleA_deg, double angleB_deg,
+			IGeom2D shape, BranchIntersectDir intersectDir, double length )
 		{
-			Center_X = 0;
-			Center_Y = 50;
-			Center_Z = 0;
-			SelfRotateAngle_deg = 0;
-			AAngle_deg = 0;
-			BAngle_deg = 0;
-			Shape = null;
-			IntersectDir = BranchIntersectDir.Positive;
-			Length = 50;
-			ArrayParam = new ArrayParam();
+			Center_X = x;
+			Center_Y = y;
+			Center_Z = z;
+			SelfRotateAngle_deg = selfRotateAngle_deg;
+			AAngle_deg = angleA_deg;
+			BAngle_deg = angleB_deg;
+			Shape = shape;
+			IntersectDir = intersectDir;
+			Length = length;
+			//ArrayParam = new ArrayParam();
 		}
 
 		public double Center_X
@@ -82,12 +84,12 @@ namespace MyCore.CAD
 			set;
 		}
 
-		[TypeConverter( typeof( ExpandableObjectConverter ) )]
-		public ArrayParam ArrayParam
-		{
-			get;
-			set;
-		}
+		//[TypeConverter( typeof( ExpandableObjectConverter ) )]
+		//public ArrayParam ArrayParam
+		//{
+		//	get;
+		//	set;
+		//}
 
 		public CADFeatureType Type
 		{
@@ -114,13 +116,8 @@ namespace MyCore.CAD
 				return false;
 			}
 
-			// shape should not be null
-			if( Shape == null ) {
-				return false;
-			}
-
-			// shape should be valid
-			if( Shape.IsValid() == false ) {
+			// shape should not be null and should be valid
+			if( Shape == null || Shape.IsValid() == false ) {
 				return false;
 			}
 
@@ -130,14 +127,14 @@ namespace MyCore.CAD
 			}
 
 			// array param should not be null
-			if( ArrayParam == null ) {
-				return false;
-			}
+			//if( ArrayParam == null ) {
+			//	return false;
+			//}
 
 			// array param should be valid
-			if( ArrayParam.IsValid() == false ) {
-				return false;
-			}
+			//if( ArrayParam.IsValid() == false ) {
+			//	return false;
+			//}
 
 			return true;
 		}
