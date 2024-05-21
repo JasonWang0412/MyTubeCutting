@@ -128,8 +128,8 @@ namespace MyCore.CAD
 				return false;
 			}
 
-			// length should be positive
-			if( Length <= 0 ) {
+			// length should be positive, or must be cut through
+			if( Length <= 0 && IsCutThrough == false ) {
 				return false;
 			}
 

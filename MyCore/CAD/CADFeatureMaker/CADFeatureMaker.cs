@@ -114,7 +114,7 @@ namespace MyCore.CAD
 				cadFeatureAIS = MakeEndCutterAIS( (CADft_EndCutterParam)cadFeatureParam, mainTubeParam );
 			}
 			else if( cadFeatureParam.Type == CADFeatureType.BranchTube ) {
-				cadFeatureAIS = new AIS_Shape( MakeBranchTube( (CADft_BranchTubeParam)cadFeatureParam, mainTubeParam ) );
+				cadFeatureAIS = MakeBranchTubeAIS( (CADft_BranchTubeParam)cadFeatureParam, mainTubeParam );
 			}
 
 			if( cadFeatureAIS == null ) {
@@ -270,7 +270,7 @@ namespace MyCore.CAD
 
 			List<TopoDS_Shape> branchTubes = new List<TopoDS_Shape>();
 			foreach( CADft_BranchTubeParam branchTubeParam in branchTubeParamList ) {
-				TopoDS_Shape oneBranchTube = MakeBranchTube( branchTubeParam, mainTubeParam );
+				TopoDS_Shape oneBranchTube = MakeBranchTubeTopo( branchTubeParam );
 				if( oneBranchTube == null ) {
 					continue;
 				}
@@ -279,16 +279,58 @@ namespace MyCore.CAD
 			return branchTubes;
 		}
 
-		static TopoDS_Shape MakeBranchTube( CADft_BranchTubeParam branchTubeParam, CADft_MainTubeParam mainTubeParam )
+		static TopoDS_Shape MakeBranchTubeTopo( CADft_BranchTubeParam branchTubeParam )
 		{
-			// data protection
-			if( branchTubeParam == null || mainTubeParam == null ) {
-				return null;
+			if( branchTubeParam.IsCutThrough ) {
+				return MakeBranchTubeTopo_CutThrough( branchTubeParam );
 			}
-			if( branchTubeParam.IsValid() == false || mainTubeParam.IsValid() == false ) {
-				return null;
+			else {
+				return MakeBranchTubeTopo_ByLength( branchTubeParam );
 			}
 
+			//if( branchTubeParam.ArrayParam.LinearCount <= 1 && branchTubeParam.ArrayParam.AngularCount <= 1 ) {
+			//	return branchTubeMaker.Shape();
+			//}
+
+			//// make array
+			//TopoDS_Shape oneBranchTube = branchTubeMaker.Shape();
+			//TopoDS_Shape arrayBranchTube = MakeArrayCompound( oneBranchTube, branchTubeParam.ArrayParam );
+			//return arrayBranchTube;
+		}
+
+		static AIS_Shape MakeBranchTubeAIS( CADft_BranchTubeParam branchTubeParam, CADft_MainTubeParam mainTubeParam )
+		{
+			TopoDS_Shape branchTube;
+
+			if( branchTubeParam.IsCutThrough ) {
+				CADft_BranchTubeParam cloneParam = CloneHelper.Clone( branchTubeParam );
+
+				// get display size
+				BoundingBox boundingBox = GetMainTubeBoundingBox( mainTubeParam );
+				double dWidth = boundingBox.MaxX - boundingBox.MinX;
+				double dHeight = boundingBox.MaxZ - boundingBox.MinZ;
+				double dLength = boundingBox.MaxY - boundingBox.MinY;
+				double dSize = Math.Sqrt( Math.Pow( dWidth, 2 ) + Math.Pow( dHeight, 2 ) + Math.Pow( dLength, 2 ) );
+
+				// set property
+				cloneParam.Length = dSize;
+				cloneParam.IntersectDir = BranchIntersectDir.Both;
+
+				// make branch tube
+				branchTube = MakeBranchTubeTopo_ByLength( cloneParam );
+			}
+			else {
+				branchTube = MakeBranchTubeTopo_ByLength( branchTubeParam );
+			}
+
+			if( branchTube == null ) {
+				return null;
+			}
+			return new AIS_Shape( branchTube );
+		}
+
+		static TopoDS_Shape MakeBranchTubeTopo_ByLength( CADft_BranchTubeParam branchTubeParam )
+		{
 			// calculate prism vector
 			gp_Pnt center;
 			GetBranchTubeDir( branchTubeParam.AAngle_deg, branchTubeParam.BAngle_deg, out gp_Dir dir );
@@ -316,17 +358,25 @@ namespace MyCore.CAD
 			if( branchTubeMaker.IsDone() == false ) {
 				return null;
 			}
-
 			return branchTubeMaker.Shape();
+		}
 
-			//if( branchTubeParam.ArrayParam.LinearCount <= 1 && branchTubeParam.ArrayParam.AngularCount <= 1 ) {
-			//	return branchTubeMaker.Shape();
-			//}
+		static TopoDS_Shape MakeBranchTubeTopo_CutThrough( CADft_BranchTubeParam branchTubeParam )
+		{
+			GetBranchTubeDir( branchTubeParam.AAngle_deg, branchTubeParam.BAngle_deg, out gp_Dir dir );
+			gp_Pnt center = new gp_Pnt( branchTubeParam.Center_X, branchTubeParam.Center_Y, branchTubeParam.Center_Z );
 
-			//// make array
-			//TopoDS_Shape oneBranchTube = branchTubeMaker.Shape();
-			//TopoDS_Shape arrayBranchTube = MakeArrayCompound( oneBranchTube, branchTubeParam.ArrayParam );
-			//return arrayBranchTube;
+			// make branch tube
+			TopoDS_Wire outerWire = OCCTool.MakeShapeWire( branchTubeParam.Shape, 0, center, dir, branchTubeParam.SelfRotateAngle_deg );
+			BRepBuilderAPI_MakeFace branchFaceMaker = new BRepBuilderAPI_MakeFace( outerWire );
+			if( branchFaceMaker.IsDone() == false ) {
+				return null;
+			}
+			BRepPrimAPI_MakePrism branchTubeMaker = new BRepPrimAPI_MakePrism( branchFaceMaker.Shape(), dir, true );
+			if( branchTubeMaker.IsDone() == false ) {
+				return null;
+			}
+			return branchTubeMaker.Shape();
 		}
 
 		static void GetBranchTubeDir( double dA_deg, double dB_deg, out gp_Dir dir )
