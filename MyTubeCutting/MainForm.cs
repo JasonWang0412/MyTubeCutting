@@ -152,7 +152,7 @@ namespace MyTubeCutting
 			double angleA_deg = 0;
 			double angleB_deg = 0;
 			BranchIntersectDir intersectDir = BranchIntersectDir.Positive;
-			CADft_BranchTubeParam branchTubeParam = new CADft_BranchTubeParam( x, y, z, selfRotateAngle_deg, angleA_deg, angleB_deg, shape, intersectDir, length );
+			CADft_BranchTubeParam branchTubeParam = new CADft_BranchTubeParam( x, y, z, selfRotateAngle_deg, angleA_deg, angleB_deg, shape, intersectDir, false, length );
 
 			// set branch tube to tube editor
 			m_TubeCADEditor.AddBranchTube( branchTubeParam );

@@ -15,7 +15,7 @@ namespace MyCore.CAD
 	{
 		public CADft_BranchTubeParam( double x, double y, double z,
 			double selfRotateAngle_deg, double angleA_deg, double angleB_deg,
-			IGeom2D shape, BranchIntersectDir intersectDir, double length )
+			IGeom2D shape, BranchIntersectDir intersectDir, bool isCutThrough, double length )
 		{
 			Center_X = x;
 			Center_Y = y;
@@ -25,6 +25,7 @@ namespace MyCore.CAD
 			BAngle_deg = angleB_deg;
 			Shape = shape;
 			IntersectDir = intersectDir;
+			IsCutThrough = isCutThrough;
 			Length = length;
 			//ArrayParam = new ArrayParam();
 		}
@@ -73,6 +74,12 @@ namespace MyCore.CAD
 		}
 
 		public BranchIntersectDir IntersectDir
+		{
+			get;
+			set;
+		}
+
+		public bool IsCutThrough
 		{
 			get;
 			set;
