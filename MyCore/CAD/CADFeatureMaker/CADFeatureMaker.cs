@@ -129,6 +129,7 @@ namespace MyCore.CAD
 			return cadFeatureAIS;
 		}
 
+		// make main tube
 		static TopoDS_Shape MakeMainTube( CADft_MainTubeParam mainTubeParam )
 		{
 			// data protection
@@ -151,9 +152,34 @@ namespace MyCore.CAD
 			}
 
 			// Get solid shape by wire
-			return OCCTool.MakeCenterTunnelTube( outerWire, innerWire, mainTubeParam.Length );
+			return MakeCenterTunnelTube( outerWire, innerWire, mainTubeParam.Length );
 		}
 
+		static TopoDS_Shape MakeCenterTunnelTube( TopoDS_Wire outerWire, TopoDS_Wire innerWire, double tubeLength )
+		{
+			BRepBuilderAPI_MakeFace outerFaceMaker = new BRepBuilderAPI_MakeFace( outerWire );
+			BRepBuilderAPI_MakeFace innerFaceMaker = new BRepBuilderAPI_MakeFace( innerWire );
+			if( outerFaceMaker.IsDone() == false || innerFaceMaker.IsDone() == false ) {
+				return null;
+			}
+
+			// cut outer face by inner face
+			BRepAlgoAPI_Cut cut = new BRepAlgoAPI_Cut( outerFaceMaker.Face(), innerFaceMaker.Face() );
+			if( cut.IsDone() == false ) {
+				return null;
+			}
+
+			// make tube
+			gp_Vec vec = new gp_Vec( 0, tubeLength, 0 );
+			BRepPrimAPI_MakePrism tubeMaker = new BRepPrimAPI_MakePrism( cut.Shape(), vec );
+			if( tubeMaker.IsDone() == false ) {
+				return null;
+			}
+
+			return tubeMaker.Shape();
+		}
+
+		// make end cutter
 		static TopoDS_Shape MakeEndCutterTopo( CADft_EndCutterParam endCutterParam )
 		{
 			// get plane
@@ -163,7 +189,7 @@ namespace MyCore.CAD
 			}
 
 			// get point on cut side
-			OCCTool.GetEndCutterDir( endCutterParam.TiltAngle_deg, endCutterParam.RotateAngle_deg, out gp_Dir dir );
+			GetEndCutterDir( endCutterParam.TiltAngle_deg, endCutterParam.RotateAngle_deg, out gp_Dir dir );
 			if( endCutterParam.Side == EEndSide.Left ) {
 				dir.Reverse();
 			}
@@ -208,7 +234,7 @@ namespace MyCore.CAD
 		static TopoDS_Face MakeEndCutterFace( CADft_EndCutterParam endCutterParam )
 		{
 			gp_Pnt center = new gp_Pnt( 0, endCutterParam.Center_Y, 0 );
-			OCCTool.GetEndCutterDir( endCutterParam.TiltAngle_deg, endCutterParam.RotateAngle_deg, out gp_Dir dir );
+			GetEndCutterDir( endCutterParam.TiltAngle_deg, endCutterParam.RotateAngle_deg, out gp_Dir dir );
 			gp_Pln cutPlane = new gp_Pln( center, dir );
 			BRepBuilderAPI_MakeFace makeFace = new BRepBuilderAPI_MakeFace( cutPlane );
 			if( makeFace.IsDone() == false ) {
@@ -217,6 +243,24 @@ namespace MyCore.CAD
 			return makeFace.Face();
 		}
 
+		static void GetEndCutterDir( double dTilt_deg, double dRotate_deg, out gp_Dir dir )
+		{
+			// the initail direction is (0, 1, 0)
+			gp_Dir dirInit = new gp_Dir( 0, 1, 0 );
+
+			// rotate around X axis by tilt angle in radian
+			gp_Trsf transformTilt = new gp_Trsf();
+			transformTilt.SetRotation( new gp_Ax1( new gp_Pnt( 0, 0, 0 ), new gp_Dir( 1, 0, 0 ) ), dTilt_deg * Math.PI / 180 );
+
+			// rotate around Y axis by rotate angle in radian
+			gp_Trsf transformRotate = new gp_Trsf();
+			transformRotate.SetRotation( new gp_Ax1( new gp_Pnt( 0, 0, 0 ), new gp_Dir( 0, 1, 0 ) ), dRotate_deg * Math.PI / 180 );
+
+			gp_Trsf trsfFinal = transformRotate.Multiplied( transformTilt );
+			dir = dirInit.Transformed( trsfFinal );
+		}
+
+		// make branch tube
 		static List<TopoDS_Shape> MakeBranchTubes( List<CADft_BranchTubeParam> branchTubeParamList, CADft_MainTubeParam mainTubeParam )
 		{
 			// data protection
@@ -247,7 +291,7 @@ namespace MyCore.CAD
 
 			// calculate prism vector
 			gp_Pnt center;
-			OCCTool.GetBranchTubeDir( branchTubeParam.AAngle_deg, branchTubeParam.BAngle_deg, out gp_Dir dir );
+			GetBranchTubeDir( branchTubeParam.AAngle_deg, branchTubeParam.BAngle_deg, out gp_Dir dir );
 			gp_Vec prismVec = new gp_Vec( dir );
 			if( branchTubeParam.IntersectDir == BranchIntersectDir.Positive
 				|| branchTubeParam.IntersectDir == BranchIntersectDir.Negative ) {
@@ -279,10 +323,28 @@ namespace MyCore.CAD
 
 			// make array
 			TopoDS_Shape oneBranchTube = branchTubeMaker.Shape();
-			TopoDS_Shape arrayBranchTube = OCCTool.MakeArrayCompound( oneBranchTube, branchTubeParam.ArrayParam );
+			TopoDS_Shape arrayBranchTube = MakeArrayCompound( oneBranchTube, branchTubeParam.ArrayParam );
 			return arrayBranchTube;
 		}
 
+		static void GetBranchTubeDir( double dA_deg, double dB_deg, out gp_Dir dir )
+		{
+			// the initail direction is (0, 0, 1)
+			gp_Dir dirInit = new gp_Dir( 0, 0, 1 );
+
+			// rotate around X axis by A angle in radian
+			gp_Trsf transformA = new gp_Trsf();
+			transformA.SetRotation( new gp_Ax1( new gp_Pnt( 0, 0, 0 ), new gp_Dir( 1, 0, 0 ) ), dA_deg * Math.PI / 180 );
+
+			// rotate around Y axis by B angle in radian
+			gp_Trsf transformB = new gp_Trsf();
+			transformB.SetRotation( new gp_Ax1( new gp_Pnt( 0, 0, 0 ), new gp_Dir( 0, 1, 0 ) ), dB_deg * Math.PI / 180 );
+
+			gp_Trsf trsfFinal = transformB.Multiplied( transformA );
+			dir = dirInit.Transformed( trsfFinal );
+		}
+
+		// display size
 		static BoundingBox GetMainTubeBoundingBox( CADft_MainTubeParam mainTubeParam )
 		{
 			double dWidth = 0;
@@ -298,6 +360,61 @@ namespace MyCore.CAD
 			double dLength = mainTubeParam.Length * 2;
 
 			return new BoundingBox( -dWidth / 2, dWidth / 2, -dHeight / 2, dHeight / 2, 0, dLength );
+		}
+
+		// make array
+		static TopoDS_Shape MakeArrayCompound( TopoDS_Shape oneFeature, ArrayParam arrayParam )
+		{
+			// create compound
+			TopoDS_Compound compound = new TopoDS_Compound();
+			TopoDS_Shape compoundShape = compound;
+			BRep_Builder builder = new BRep_Builder();
+			builder.MakeCompound( ref compound );
+
+			// make linear array
+			List<TopoDS_Shape> linearArrayShapeList = new List<TopoDS_Shape>();
+			linearArrayShapeList.Add( oneFeature );
+			for( int i = 1; i < arrayParam.LinearCount; i++ ) {
+
+				// caluculate the linear offset distance
+				double dOffset = arrayParam.LinearDistance * i;
+
+				// get the transformation along Y axis
+				gp_Trsf trsf = new gp_Trsf();
+				trsf.SetTranslation( new gp_Vec( 0, dOffset, 0 ) );
+				TopoDS_Shape oneLinearCopy = oneFeature.Moved( new OCC.TopLoc.TopLoc_Location( trsf ) );
+
+				linearArrayShapeList.Add( oneLinearCopy );
+			}
+
+			// make angular array
+			List<List<TopoDS_Shape>> angularArrayShapeList = new List<List<TopoDS_Shape>>();
+			angularArrayShapeList.Add( linearArrayShapeList );
+			for( int i = 1; i < arrayParam.AngularCount; i++ ) {
+
+				// calculate the angular offset distance
+				double dAngle_Deg = arrayParam.AngularDistance_Deg * i;
+
+				// get the transformation around Y axis
+				gp_Trsf trsf = new gp_Trsf();
+				trsf.SetRotation( new gp_Ax1( new gp_Pnt( 0, 0, 0 ), new gp_Dir( 0, 1, 0 ) ), dAngle_Deg * Math.PI / 180 );
+
+				List<TopoDS_Shape> oneAngularArray = new List<TopoDS_Shape>();
+				foreach( TopoDS_Shape oneLinearCopy in linearArrayShapeList ) {
+					TopoDS_Shape oneAngularCopy = oneLinearCopy.Moved( new OCC.TopLoc.TopLoc_Location( trsf ) );
+					oneAngularArray.Add( oneAngularCopy );
+				}
+				angularArrayShapeList.Add( oneAngularArray );
+			}
+
+			// add all shapes to compound
+			foreach( List<TopoDS_Shape> oneAngularArray in angularArrayShapeList ) {
+				foreach( TopoDS_Shape oneLinearCopy in oneAngularArray ) {
+					builder.Add( ref compoundShape, oneLinearCopy );
+				}
+			}
+
+			return compound;
 		}
 	}
 }
