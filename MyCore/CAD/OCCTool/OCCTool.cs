@@ -1,15 +1,10 @@
-﻿using MyCore.CAD;
-using OCC.BRep;
-using OCC.BRepAlgoAPI;
-using OCC.BRepBuilderAPI;
-using OCC.BRepPrimAPI;
+﻿using OCC.BRepBuilderAPI;
 using OCC.Geom;
 using OCC.gp;
 using OCC.TopoDS;
 using System;
-using System.Collections.Generic;
 
-namespace MyCore.Tool
+namespace MyCore.CAD
 {
 	public class OCCTool
 	{
