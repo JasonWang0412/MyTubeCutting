@@ -102,10 +102,10 @@ namespace MyCore.CAD
 		public static AIS_Shape MakeCADFeatureAIS( ICADFeatureParam cadFeatureParam, CADft_MainTubeParam mainTubeParam )
 		{
 			// data protection
-			if( cadFeatureParam == null || mainTubeParam == null ) {
+			if( cadFeatureParam == null || cadFeatureParam.IsValid() == false ) {
 				return null;
 			}
-			if( cadFeatureParam.IsValid() == false || mainTubeParam.IsValid() == false ) {
+			if( mainTubeParam == null || mainTubeParam.IsValid() == false ) {
 				return null;
 			}
 
@@ -189,7 +189,7 @@ namespace MyCore.CAD
 			// make a large face
 			// the face is for display only, the size is not important
 			Geom_Surface originalSurface = BRep_Tool.Surface( thePlane );
-			GetMainTubeBoundingBox( mainTubeParam, out BoundingBox boundingBox );
+			BoundingBox boundingBox = GetMainTubeBoundingBox( mainTubeParam );
 			double dWidth = boundingBox.MaxX - boundingBox.MinX;
 			double dHeight = boundingBox.MaxZ - boundingBox.MinZ;
 			double dLength = boundingBox.MaxY - boundingBox.MinY;
@@ -283,7 +283,7 @@ namespace MyCore.CAD
 			return arrayBranchTube;
 		}
 
-		static void GetMainTubeBoundingBox( CADft_MainTubeParam mainTubeParam, out BoundingBox boundingBox )
+		static BoundingBox GetMainTubeBoundingBox( CADft_MainTubeParam mainTubeParam )
 		{
 			double dWidth = 0;
 			double dHeight = 0;
@@ -297,7 +297,7 @@ namespace MyCore.CAD
 			}
 			double dLength = mainTubeParam.Length * 2;
 
-			boundingBox = new BoundingBox( -dWidth / 2, dWidth / 2, -dHeight / 2, dHeight / 2, 0, dLength );
+			return new BoundingBox( -dWidth / 2, dWidth / 2, -dHeight / 2, dHeight / 2, 0, dLength );
 		}
 	}
 }
