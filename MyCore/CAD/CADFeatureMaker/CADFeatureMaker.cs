@@ -71,28 +71,37 @@ namespace MyCore.CAD
 			}
 
 			// cut main tube by branch tubes
-			List<TopoDS_Shape> branchTubes = MakeBranchTubes( branchTubeParamList, mainTubeParam );
-			if( branchTubes != null && branchTubes.Count != 0 ) {
-				foreach( TopoDS_Shape branchTube in branchTubes ) {
+			foreach( CADft_BranchTubeParam oneBranchTubeParam in branchTubeParamList ) {
 
-					// find all shapes in branchTube if it is compound
-					// u'll meet some bug (from OCC maybe) if u use compound shape directly
-					if( branchTube.ShapeType() == TopAbs_ShapeEnum.TopAbs_COMPOUND ) {
-						foreach( TopoDS_Shape oneBranchTube in branchTube.elementsAsList ) {
-							BRepAlgoAPI_Cut cut = new BRepAlgoAPI_Cut( mainTube, oneBranchTube );
-							if( cut.IsDone() == false ) {
-								continue;
-							}
-							mainTube = cut.Shape();
-						}
-					}
-					else {
-						BRepAlgoAPI_Cut cut = new BRepAlgoAPI_Cut( mainTube, branchTube );
+				// data protection
+				if( oneBranchTubeParam == null || oneBranchTubeParam.IsValid() == false ) {
+					continue;
+				}
+
+				// make branch tube
+				TopoDS_Shape oneBranchTube = MakeBranchTubeTopo( oneBranchTubeParam );
+				if( oneBranchTube == null ) {
+					continue;
+				}
+
+				// cut main tube
+				// find all shapes in branchTube if it is compound
+				// u'll meet some bug (from OCC maybe) if u use compound shape directly
+				if( oneBranchTube.ShapeType() == TopAbs_ShapeEnum.TopAbs_COMPOUND ) {
+					foreach( TopoDS_Shape oneArrayElemnt in oneBranchTube.elementsAsList ) {
+						BRepAlgoAPI_Cut cut = new BRepAlgoAPI_Cut( mainTube, oneArrayElemnt );
 						if( cut.IsDone() == false ) {
 							continue;
 						}
 						mainTube = cut.Shape();
 					}
+				}
+				else {
+					BRepAlgoAPI_Cut cut = new BRepAlgoAPI_Cut( mainTube, oneBranchTube );
+					if( cut.IsDone() == false ) {
+						continue;
+					}
+					mainTube = cut.Shape();
 				}
 			}
 
@@ -261,24 +270,6 @@ namespace MyCore.CAD
 		}
 
 		// make branch tube
-		static List<TopoDS_Shape> MakeBranchTubes( List<CADft_BranchTubeParam> branchTubeParamList, CADft_MainTubeParam mainTubeParam )
-		{
-			// data protection
-			if( branchTubeParamList == null ) {
-				return null;
-			}
-
-			List<TopoDS_Shape> branchTubes = new List<TopoDS_Shape>();
-			foreach( CADft_BranchTubeParam branchTubeParam in branchTubeParamList ) {
-				TopoDS_Shape oneBranchTube = MakeBranchTubeTopo( branchTubeParam );
-				if( oneBranchTube == null ) {
-					continue;
-				}
-				branchTubes.Add( oneBranchTube );
-			}
-			return branchTubes;
-		}
-
 		static TopoDS_Shape MakeBranchTubeTopo( CADft_BranchTubeParam branchTubeParam )
 		{
 			if( branchTubeParam.IsCutThrough ) {
