@@ -1,4 +1,5 @@
 ﻿using MyCore.CAD;
+using OCC.gp;
 using System.Windows.Forms;
 
 namespace MyTubeCutting
@@ -194,6 +195,53 @@ namespace MyTubeCutting
 					m_TubeCADEditor.Redo();
 				}
 			}
+		}
+
+		void m_btnX_Pos_Click( object sender, System.EventArgs e )
+		{
+			m_Viewer.RightView();
+		}
+
+		void m_btnX_Neg_Click( object sender, System.EventArgs e )
+		{
+			m_Viewer.LeftView();
+		}
+
+		void m_btnY_Pos_Click( object sender, System.EventArgs e )
+		{
+			m_Viewer.FrontView();
+		}
+
+		void m_btnY_Neg_Click( object sender, System.EventArgs e )
+		{
+			m_Viewer.BackView();
+		}
+
+		void m_btnZ_Pos_Click( object sender, System.EventArgs e )
+		{
+			m_Viewer.TopView();
+		}
+
+		void m_btnZ_Neg_Click( object sender, System.EventArgs e )
+		{
+			m_Viewer.BottomView();
+		}
+
+		void m_btnDir_Pos_Click( object sender, System.EventArgs e )
+		{
+			gp_Dir dir = m_TubeCADEditor.GetEditObjectDir();
+			m_Viewer.SetViewDir( dir );
+		}
+
+		void m_btnDir_Neg_Click( object sender, System.EventArgs e )
+		{
+			gp_Dir dir = m_TubeCADEditor.GetEditObjectDir();
+			m_Viewer.SetViewDir( dir.Reversed() );
+		}
+
+		void m_btnISO_Click( object sender, System.EventArgs e )
+		{
+			m_Viewer.IsometricView();
 		}
 	}
 }

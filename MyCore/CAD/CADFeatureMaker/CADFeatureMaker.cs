@@ -138,6 +138,28 @@ namespace MyCore.CAD
 			return cadFeatureAIS;
 		}
 
+		public static gp_Dir GetCADFeatureDir( ICADFeatureParam cadFeatureParam )
+		{
+			// data protection
+			if( cadFeatureParam == null || cadFeatureParam.IsValid() == false ) {
+				return new gp_Dir( 0, 1, 0 );
+			}
+
+			if( cadFeatureParam.Type == CADFeatureType.EndCutter ) {
+				CADft_EndCutterParam endCutterParam = (CADft_EndCutterParam)cadFeatureParam;
+				GetEndCutterDir( endCutterParam.TiltAngle_deg, endCutterParam.RotateAngle_deg, out gp_Dir dir );
+				return dir;
+			}
+			else if( cadFeatureParam.Type == CADFeatureType.BranchTube ) {
+				CADft_BranchTubeParam branchTubeParam = (CADft_BranchTubeParam)cadFeatureParam;
+				GetBranchTubeDir( branchTubeParam.AAngle_deg, branchTubeParam.BAngle_deg, out gp_Dir dir );
+				return dir;
+			}
+			else {
+				return new gp_Dir( 0, 1, 0 );
+			}
+		}
+
 		// make main tube
 		static TopoDS_Shape MakeMainTube( CADft_MainTubeParam mainTubeParam )
 		{

@@ -35,6 +35,15 @@
 			this.m_treeObjBrowser = new System.Windows.Forms.TreeView();
 			this.m_panPropertyBar = new System.Windows.Forms.Panel();
 			this.m_propgrdPropertyBar = new System.Windows.Forms.PropertyGrid();
+			this.m_btnX_Pos = new System.Windows.Forms.Button();
+			this.m_btnX_Neg = new System.Windows.Forms.Button();
+			this.m_btnY_Pos = new System.Windows.Forms.Button();
+			this.m_btnY_Neg = new System.Windows.Forms.Button();
+			this.m_btnZ_Pos = new System.Windows.Forms.Button();
+			this.m_btnZ_Neg = new System.Windows.Forms.Button();
+			this.m_btnDir_Pos = new System.Windows.Forms.Button();
+			this.m_btnDir_Neg = new System.Windows.Forms.Button();
+			this.m_btnISO = new System.Windows.Forms.Button();
 			this.m_panViewer.SuspendLayout();
 			this.m_panObjBrowser.SuspendLayout();
 			this.m_panPropertyBar.SuspendLayout();
@@ -42,6 +51,15 @@
 			// 
 			// m_panViewer
 			// 
+			this.m_panViewer.Controls.Add(this.m_btnISO);
+			this.m_panViewer.Controls.Add(this.m_btnDir_Neg);
+			this.m_panViewer.Controls.Add(this.m_btnDir_Pos);
+			this.m_panViewer.Controls.Add(this.m_btnZ_Neg);
+			this.m_panViewer.Controls.Add(this.m_btnZ_Pos);
+			this.m_panViewer.Controls.Add(this.m_btnY_Neg);
+			this.m_panViewer.Controls.Add(this.m_btnY_Pos);
+			this.m_panViewer.Controls.Add(this.m_btnX_Neg);
+			this.m_panViewer.Controls.Add(this.m_btnX_Pos);
 			this.m_panViewer.Controls.Add(this.m_btnBranchTube);
 			this.m_panViewer.Controls.Add(this.m_btnEndCutter);
 			this.m_panViewer.Controls.Add(this.m_btnMainTube);
@@ -118,6 +136,96 @@
 			this.m_propgrdPropertyBar.TabIndex = 0;
 			this.m_propgrdPropertyBar.PropertyValueChanged += new System.Windows.Forms.PropertyValueChangedEventHandler(this.m_propgrdPropertyBar_PropertyValueChanged);
 			// 
+			// m_btnX_Pos
+			// 
+			this.m_btnX_Pos.Location = new System.Drawing.Point(13, 13);
+			this.m_btnX_Pos.Name = "m_btnX_Pos";
+			this.m_btnX_Pos.Size = new System.Drawing.Size(40, 23);
+			this.m_btnX_Pos.TabIndex = 3;
+			this.m_btnX_Pos.Text = "X+";
+			this.m_btnX_Pos.UseVisualStyleBackColor = true;
+			this.m_btnX_Pos.Click += new System.EventHandler(this.m_btnX_Pos_Click);
+			// 
+			// m_btnX_Neg
+			// 
+			this.m_btnX_Neg.Location = new System.Drawing.Point(59, 13);
+			this.m_btnX_Neg.Name = "m_btnX_Neg";
+			this.m_btnX_Neg.Size = new System.Drawing.Size(40, 23);
+			this.m_btnX_Neg.TabIndex = 4;
+			this.m_btnX_Neg.Text = "X-";
+			this.m_btnX_Neg.UseVisualStyleBackColor = true;
+			this.m_btnX_Neg.Click += new System.EventHandler(this.m_btnX_Neg_Click);
+			// 
+			// m_btnY_Pos
+			// 
+			this.m_btnY_Pos.Location = new System.Drawing.Point(13, 43);
+			this.m_btnY_Pos.Name = "m_btnY_Pos";
+			this.m_btnY_Pos.Size = new System.Drawing.Size(40, 23);
+			this.m_btnY_Pos.TabIndex = 5;
+			this.m_btnY_Pos.Text = "Y+";
+			this.m_btnY_Pos.UseVisualStyleBackColor = true;
+			this.m_btnY_Pos.Click += new System.EventHandler(this.m_btnY_Pos_Click);
+			// 
+			// m_btnY_Neg
+			// 
+			this.m_btnY_Neg.Location = new System.Drawing.Point(60, 43);
+			this.m_btnY_Neg.Name = "m_btnY_Neg";
+			this.m_btnY_Neg.Size = new System.Drawing.Size(39, 23);
+			this.m_btnY_Neg.TabIndex = 6;
+			this.m_btnY_Neg.Text = "Y-";
+			this.m_btnY_Neg.UseVisualStyleBackColor = true;
+			this.m_btnY_Neg.Click += new System.EventHandler(this.m_btnY_Neg_Click);
+			// 
+			// m_btnZ_Pos
+			// 
+			this.m_btnZ_Pos.Location = new System.Drawing.Point(13, 73);
+			this.m_btnZ_Pos.Name = "m_btnZ_Pos";
+			this.m_btnZ_Pos.Size = new System.Drawing.Size(40, 23);
+			this.m_btnZ_Pos.TabIndex = 7;
+			this.m_btnZ_Pos.Text = "Z+";
+			this.m_btnZ_Pos.UseVisualStyleBackColor = true;
+			this.m_btnZ_Pos.Click += new System.EventHandler(this.m_btnZ_Pos_Click);
+			// 
+			// m_btnZ_Neg
+			// 
+			this.m_btnZ_Neg.Location = new System.Drawing.Point(60, 73);
+			this.m_btnZ_Neg.Name = "m_btnZ_Neg";
+			this.m_btnZ_Neg.Size = new System.Drawing.Size(39, 23);
+			this.m_btnZ_Neg.TabIndex = 8;
+			this.m_btnZ_Neg.Text = "Z-";
+			this.m_btnZ_Neg.UseVisualStyleBackColor = true;
+			this.m_btnZ_Neg.Click += new System.EventHandler(this.m_btnZ_Neg_Click);
+			// 
+			// m_btnDir_Pos
+			// 
+			this.m_btnDir_Pos.Location = new System.Drawing.Point(13, 103);
+			this.m_btnDir_Pos.Name = "m_btnDir_Pos";
+			this.m_btnDir_Pos.Size = new System.Drawing.Size(40, 23);
+			this.m_btnDir_Pos.TabIndex = 9;
+			this.m_btnDir_Pos.Text = "Dir+";
+			this.m_btnDir_Pos.UseVisualStyleBackColor = true;
+			this.m_btnDir_Pos.Click += new System.EventHandler(this.m_btnDir_Pos_Click);
+			// 
+			// m_btnDir_Neg
+			// 
+			this.m_btnDir_Neg.Location = new System.Drawing.Point(60, 103);
+			this.m_btnDir_Neg.Name = "m_btnDir_Neg";
+			this.m_btnDir_Neg.Size = new System.Drawing.Size(39, 23);
+			this.m_btnDir_Neg.TabIndex = 10;
+			this.m_btnDir_Neg.Text = "Dir-";
+			this.m_btnDir_Neg.UseVisualStyleBackColor = true;
+			this.m_btnDir_Neg.Click += new System.EventHandler(this.m_btnDir_Neg_Click);
+			// 
+			// m_btnISO
+			// 
+			this.m_btnISO.Location = new System.Drawing.Point(13, 133);
+			this.m_btnISO.Name = "m_btnISO";
+			this.m_btnISO.Size = new System.Drawing.Size(40, 23);
+			this.m_btnISO.TabIndex = 11;
+			this.m_btnISO.Text = "ISO";
+			this.m_btnISO.UseVisualStyleBackColor = true;
+			this.m_btnISO.Click += new System.EventHandler(this.m_btnISO_Click);
+			// 
 			// MainForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -146,6 +254,15 @@
 		private System.Windows.Forms.PropertyGrid m_propgrdPropertyBar;
 		private System.Windows.Forms.Button m_btnBranchTube;
 		private System.Windows.Forms.Button m_btnEndCutter;
+		private System.Windows.Forms.Button m_btnISO;
+		private System.Windows.Forms.Button m_btnDir_Neg;
+		private System.Windows.Forms.Button m_btnDir_Pos;
+		private System.Windows.Forms.Button m_btnZ_Neg;
+		private System.Windows.Forms.Button m_btnZ_Pos;
+		private System.Windows.Forms.Button m_btnY_Neg;
+		private System.Windows.Forms.Button m_btnY_Pos;
+		private System.Windows.Forms.Button m_btnX_Neg;
+		private System.Windows.Forms.Button m_btnX_Pos;
 	}
 }
 

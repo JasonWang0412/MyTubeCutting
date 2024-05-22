@@ -1,6 +1,7 @@
 ﻿using MyCore.CAD;
 using MyCore.Tool;
 using OCC.AIS;
+using OCC.gp;
 using OCC.Graphic3d;
 using OCC.TopoDS;
 using System.Collections.Generic;
@@ -163,6 +164,24 @@ namespace MyTubeCutting
 
 			// remove command from redo queue
 			m_CADEditRedoCommandQueue.RemoveAt( m_CADEditRedoCommandQueue.Count - 1 );
+		}
+
+		internal gp_Dir GetEditObjectDir()
+		{
+			// main tube
+			if( m_szEditObjName == MAIN_TUBE_NAME
+				&& m_CADFeatureParamMap.MainTubeParam != null ) {
+				return new gp_Dir( 0, 1, 0 );
+			}
+
+			// cad feature
+			if( m_CADFeatureParamMap.FeatureMap.ContainsKey( m_szEditObjName )
+				&& m_CADFeatureParamMap.FeatureMap[ m_szEditObjName ] != null ) {
+				return CADFeatureMaker.GetCADFeatureDir( m_CADFeatureParamMap.FeatureMap[ m_szEditObjName ] );
+			}
+
+			// default dir
+			return new gp_Dir( 0, 1, 0 );
 		}
 
 		void UpdateAndRedrawResultTube()

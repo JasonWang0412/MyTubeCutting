@@ -23,6 +23,7 @@ using OCC.AIS;
 using OCC.Aspect;
 using OCC.BRep;
 using OCC.BRepTools;
+using OCC.gp;
 using OCC.Graphic3d;
 using OCC.IFSelect;
 using OCC.IGESControl;
@@ -216,7 +217,14 @@ namespace MyTubeCutting
 		public void FrontView()
 		{
 			if( myView != null ) {
-				myView.SetProj( V3d_TypeOfOrientation.V3d_Xpos );
+				myView.SetProj( V3d_TypeOfOrientation.V3d_Ypos );
+			}
+		}
+
+		public void BackView()
+		{
+			if( myView != null ) {
+				myView.SetProj( V3d_TypeOfOrientation.V3d_Yneg );
 			}
 		}
 
@@ -227,27 +235,6 @@ namespace MyTubeCutting
 			}
 		}
 
-		public void LeftView()
-		{
-			if( myView != null ) {
-				myView.SetProj( V3d_TypeOfOrientation.V3d_Ypos );
-			}
-		}
-
-		public void BackView()
-		{
-			if( myView != null ) {
-				myView.SetProj( V3d_TypeOfOrientation.V3d_Xneg );
-			}
-		}
-
-		public void RightView()
-		{
-			if( myView != null ) {
-				myView.SetProj( V3d_TypeOfOrientation.V3d_Yneg );
-			}
-		}
-
 		public void BottomView()
 		{
 			if( myView != null ) {
@@ -255,10 +242,31 @@ namespace MyTubeCutting
 			}
 		}
 
+		public void RightView()
+		{
+			if( myView != null ) {
+				myView.SetProj( V3d_TypeOfOrientation.V3d_Xpos );
+			}
+		}
+
+		public void LeftView()
+		{
+			if( myView != null ) {
+				myView.SetProj( V3d_TypeOfOrientation.V3d_Xneg );
+			}
+		}
+
 		public void IsometricView()
 		{
 			if( myView != null ) {
 				myView.SetProj( V3d_TypeOfOrientation.V3d_XposYnegZpos );
+			}
+		}
+
+		public void SetViewDir( gp_Dir dir )
+		{
+			if( myView != null ) {
+				myView.SetProj( dir.X(), dir.Y(), dir.Z() );
 			}
 		}
 
