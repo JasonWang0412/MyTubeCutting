@@ -2,6 +2,7 @@
 
 namespace MyCore.CAD
 {
+	// TODO: this class should belong to UI project
 	public class CADFeatureParamMap
 	{
 		public CADft_MainTubeParam MainTubeParam

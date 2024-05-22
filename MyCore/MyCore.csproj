@@ -63,6 +63,7 @@
     <Compile Include="CAD\CADFeatureParam\CADft_MainTubeParam.cs" />
     <Compile Include="CAD\CADFeatureParam\CADft_Type.cs" />
     <Compile Include="CAD\CADFeatureMaker\CADFeatureMaker.cs" />
+    <Compile Include="CAD\OCCTool\ExportHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Tool\CloneHelper.cs" />
     <Compile Include="CAD\OCCTool\OCCTool.cs" />
