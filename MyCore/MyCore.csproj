@@ -46,7 +46,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CAD\ArrayParam\ArrayParam.cs" />
-    <Compile Include="CAD\BendingNotch\BendingNotchShape_Type.cs" />
+    <Compile Include="CAD\BendingNotch\BendingNotch_Type.cs" />
     <Compile Include="CAD\BendingNotch\BN_BothSideFillet.cs" />
     <Compile Include="CAD\BendingNotch\BN_OneSideFillet.cs" />
     <Compile Include="CAD\BendingNotch\BN_VShape.cs" />

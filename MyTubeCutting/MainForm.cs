@@ -20,6 +20,7 @@ namespace MyTubeCutting
 			InitializeComponent();
 			m_btnEndCutter.Enabled = false;
 			m_btnBranchTube.Enabled = false;
+			m_btnBendingNotch.Enabled = false;
 
 			// initialize viewer
 			m_Viewer = new OCCViewer();
@@ -45,11 +46,13 @@ namespace MyTubeCutting
 			if( bExistMainTube == true ) {
 				m_btnEndCutter.Enabled = true;
 				m_btnBranchTube.Enabled = true;
+				m_btnBendingNotch.Enabled = true;
 				m_btnMainTube.Enabled = false;
 			}
 			else {
 				m_btnEndCutter.Enabled = false;
 				m_btnBranchTube.Enabled = false;
+				m_btnBendingNotch.Enabled = false;
 				m_btnMainTube.Enabled = true;
 			}
 		}
@@ -157,6 +160,35 @@ namespace MyTubeCutting
 
 			// set branch tube to tube editor
 			m_TubeCADEditor.AddBranchTube( branchTubeParam );
+		}
+
+		void m_btnBendingNotch_Click( object sender, System.EventArgs e )
+		{
+			BendingNotchTypeForm bendingNotchTypeForm = new BendingNotchTypeForm();
+			bendingNotchTypeForm.BendingNotchTypeSelected += BendingNotchTypeSelected;
+			bendingNotchTypeForm.Show();
+		}
+
+		void BendingNotchTypeSelected( BendingNotchType type )
+		{
+			// set bending notch parameter
+			IBendingNotchShape shape;
+			if( type == BendingNotchType.VShape ) {
+				double bendingAngle_deg = 90;
+				bool isOverCut = false;
+				double jointGapLength = 0;
+				shape = new BN_VShape( bendingAngle_deg, isOverCut, jointGapLength );
+			}
+			else {
+				MessageBox.Show( "The type is currenttly not supported." );
+				return;
+			}
+
+			double y = 50;
+			double gap = 0.5;
+			double angleB_deg = 0;
+			CADft_BendingNotchParam bendingNotchParam = new CADft_BendingNotchParam( shape, y, gap, angleB_deg );
+			m_TubeCADEditor.AddBendingNotch( bendingNotchParam );
 		}
 
 		void m_propgrdPropertyBar_PropertyValueChanged( object s, PropertyValueChangedEventArgs e )

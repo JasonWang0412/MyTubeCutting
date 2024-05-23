@@ -12,11 +12,11 @@ namespace MyCore.CAD.BendingNotch
 		}
 
 		[Browsable( false )]
-		public BendingNotchShape_Type Type
+		public BendingNotch_Type Type
 		{
 			get
 			{
-				return BendingNotchShape_Type.OneSideFillet;
+				return BendingNotch_Type.OneSideFillet;
 			}
 		}
 

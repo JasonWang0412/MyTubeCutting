@@ -51,6 +51,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Dialog\BendingNotchTypeForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialog\BendingNotchTypeForm.Designer.cs">
+      <DependentUpon>BendingNotchTypeForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Dialog\BranchTubeTypeForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -82,6 +88,9 @@
     <Compile Include="TubeCADEditor\TubeCADEditor.cs" />
     <Compile Include="OCCViewer\ViewerMouseAction.cs" />
     <Compile Include="TypeDefine\TypeDefine.cs" />
+    <EmbeddedResource Include="Dialog\BendingNotchTypeForm.resx">
+      <DependentUpon>BendingNotchTypeForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Dialog\BranchTubeTypeForm.resx">
       <DependentUpon>BranchTubeTypeForm.cs</DependentUpon>
     </EmbeddedResource>

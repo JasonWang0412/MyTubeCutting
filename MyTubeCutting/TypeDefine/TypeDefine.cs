@@ -11,4 +11,11 @@
 		Circle,
 		Rectangle
 	}
+
+	internal enum BendingNotchType
+	{
+		VShape,
+		BothSideFillet,
+		OneSideFillet
+	}
 }

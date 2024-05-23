@@ -14,11 +14,11 @@ namespace MyCore.CAD
 		}
 
 		[Browsable( false )]
-		public BendingNotchShape_Type Type
+		public BendingNotch_Type Type
 		{
 			get
 			{
-				return BendingNotchShape_Type.VShape;
+				return BendingNotch_Type.VShape;
 			}
 		}
 

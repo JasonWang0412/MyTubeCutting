@@ -2,7 +2,7 @@
 {
 	public interface IBendingNotchShape
 	{
-		BendingNotchShape_Type Type
+		BendingNotch_Type Type
 		{
 			get;
 		}

@@ -30,6 +30,7 @@ namespace MyTubeCutting
 		// action
 		int m_nEndCutterCount = 1;
 		int m_nBranchTubeCount = 1;
+		int m_nBendingNotchCount = 1;
 		const string MAIN_TUBE_NAME = "MainTube";
 		string m_szEditObjName;
 		ICADFeatureParam m_EdiObjParam;
@@ -73,6 +74,16 @@ namespace MyTubeCutting
 			}
 			string szName = GetNewBranchTubeName();
 			AddCADFeature( szName, branchTubeParam );
+		}
+
+		internal void AddBendingNotch( CADft_BendingNotchParam bendingNotchParam )
+		{
+			if( m_CADFeatureParamMap.MainTubeParam == null ) {
+				MessageBox.Show( "Please add main tube first." );
+				return;
+			}
+			string szName = GetNewBendingNotchName();
+			AddCADFeature( szName, bendingNotchParam );
 		}
 
 		internal void RemoveCADFeature()
@@ -236,6 +247,11 @@ namespace MyTubeCutting
 		string GetNewBranchTubeName()
 		{
 			return "BranchTube" + m_nBranchTubeCount++;
+		}
+
+		string GetNewBendingNotchName()
+		{
+			return "BendingNotch" + m_nBendingNotchCount++;
 		}
 
 		void DisplayObjectShape()

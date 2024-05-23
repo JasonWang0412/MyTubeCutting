@@ -1,6 +1,6 @@
 ﻿namespace MyCore.CAD
 {
-	public enum BendingNotchShape_Type
+	public enum BendingNotch_Type
 	{
 		VShape = 0,
 		BothSideFillet = 1,
