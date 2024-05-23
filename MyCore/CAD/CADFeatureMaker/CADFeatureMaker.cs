@@ -125,6 +125,9 @@ namespace MyCore.CAD
 			else if( cadFeatureParam.Type == CADFeatureType.BranchTube ) {
 				cadFeatureAIS = MakeBranchTubeAIS( (CADft_BranchTubeParam)cadFeatureParam, mainTubeParam );
 			}
+			else if( cadFeatureParam.Type == CADFeatureType.BendingNotch ) {
+				cadFeatureAIS = new AIS_Shape( MakeBendingNotchTopo( (CADft_BendingNotchParam)cadFeatureParam, mainTubeParam, false ) );
+			}
 
 			if( cadFeatureAIS == null ) {
 				return null;
@@ -153,6 +156,11 @@ namespace MyCore.CAD
 			else if( cadFeatureParam.Type == CADFeatureType.BranchTube ) {
 				CADft_BranchTubeParam branchTubeParam = (CADft_BranchTubeParam)cadFeatureParam;
 				GetBranchTubeDir( branchTubeParam.AAngle_deg, branchTubeParam.BAngle_deg, out gp_Dir dir );
+				return dir;
+			}
+			else if( cadFeatureParam.Type == CADFeatureType.BendingNotch ) {
+				CADft_BendingNotchParam bendingNotchParam = (CADft_BendingNotchParam)cadFeatureParam;
+				GetBendingNotchDir( bendingNotchParam.BAngle_deg, out gp_Dir dir );
 				return dir;
 			}
 			else {
@@ -246,11 +254,7 @@ namespace MyCore.CAD
 			// make a large face
 			// the face is for display only, the size is not important
 			Geom_Surface originalSurface = BRep_Tool.Surface( thePlane );
-			BoundingBox boundingBox = GetMainTubeBoundingBox( mainTubeParam );
-			double dWidth = boundingBox.MaxX - boundingBox.MinX;
-			double dHeight = boundingBox.MaxZ - boundingBox.MinZ;
-			double dLength = boundingBox.MaxY - boundingBox.MinY;
-			double dParam = Math.Sqrt( Math.Pow( dWidth, 2 ) + Math.Pow( dHeight, 2 ) + Math.Pow( dLength, 2 ) );
+			GetMainTubeBoundingBox( mainTubeParam, out double dParam );
 			Geom_RectangularTrimmedSurface refinedSurface = new Geom_RectangularTrimmedSurface( originalSurface, -dParam, dParam, -dParam, dParam );
 
 			// TODO: magic number 0.001
@@ -319,11 +323,7 @@ namespace MyCore.CAD
 				CADft_BranchTubeParam cloneParam = CloneHelper.Clone( branchTubeParam );
 
 				// get display size
-				BoundingBox boundingBox = GetMainTubeBoundingBox( mainTubeParam );
-				double dWidth = boundingBox.MaxX - boundingBox.MinX;
-				double dHeight = boundingBox.MaxZ - boundingBox.MinZ;
-				double dLength = boundingBox.MaxY - boundingBox.MinY;
-				double dSize = Math.Sqrt( Math.Pow( dWidth, 2 ) + Math.Pow( dHeight, 2 ) + Math.Pow( dLength, 2 ) );
+				GetMainTubeBoundingBox( mainTubeParam, out double dSize );
 
 				// set property
 				cloneParam.Length = dSize;
@@ -403,17 +403,70 @@ namespace MyCore.CAD
 		// make bending notch
 		static TopoDS_Shape MakeBendingNotchTopo( CADft_BendingNotchParam bendingNotchParam, CADft_MainTubeParam mainTubeParam, bool bInf )
 		{
-			// get the bending notch position
+			// get the main tube size after rotation
+			TopoDS_Wire mainTubeWire = OCCTool.MakeGeom2DWire( mainTubeParam.CrossSection.Shape, 0, new gp_Pnt( 0, 0, 0 ), new gp_Dir( 0, 1, 0 ), 0 );
+			if( mainTubeWire == null ) {
+				return null;
+			}
+			gp_Trsf trsfR = new gp_Trsf();
+			trsfR.SetRotation( new gp_Ax1( new gp_Pnt( 0, 0, 0 ), new gp_Dir( 0, 1, 0 ) ), bendingNotchParam.BAngle_deg * Math.PI / 180 );
+			BRepBuilderAPI_Transform transformR = new BRepBuilderAPI_Transform( mainTubeWire, trsfR );
+			if( transformR.IsDone() == false ) {
+				return null;
+			}
+			ExportHelper.ExportBrep( transformR.Shape(), "transformR", 0 );
+			BoundingBox boundingBox = OCCTool.GetBoundingBox( transformR.Shape() );
+			if( boundingBox == null ) {
+				return null;
+			}
+			double minZ = boundingBox.MinZ;
+			double maxZ = boundingBox.MaxZ;
 
 			// get the bending notch shape wire
+			double posY = bendingNotchParam.YPos;
+			double posZ = minZ + bendingNotchParam.GapFromButtom;
+			double angleB_deg = bendingNotchParam.BAngle_deg;
+			TopoDS_Wire notchWire = OCCTool.MakeBendingNotchWire( bendingNotchParam.Shape, posY, posZ, minZ, maxZ, angleB_deg );
 
 			// make the bending notch
+			GetBendingNotchDir( bendingNotchParam.BAngle_deg, out gp_Dir dir );
+			if( bInf ) {
+				return OCCTool.MakeConcretePrismByWire( notchWire, new gp_Vec( dir ), true );
+			}
+			else {
+				GetMainTubeBoundingBox( mainTubeParam, out double dSize );
 
-			return null;
+				// translate the notch wire to the start of prism
+				gp_Trsf trsf = new gp_Trsf();
+				gp_Vec transVec = new gp_Vec( dir );
+				transVec.Multiply( -dSize );
+				trsf.SetTranslation( transVec );
+				BRepBuilderAPI_Transform transform = new BRepBuilderAPI_Transform( notchWire, trsf );
+				if( transform.IsDone() == false ) {
+					return null;
+				}
+
+				// make the prism
+				gp_Vec prismVec = new gp_Vec( dir );
+				prismVec.Multiply( dSize * 2 );
+				return OCCTool.MakeConcretePrismByWire( TopoDS.ToWire( transform.Shape() ), prismVec, false );
+			}
+		}
+
+		static void GetBendingNotchDir( double dAngle_deg, out gp_Dir dir )
+		{
+			// the initail direction is (1, 0, 0)
+			gp_Dir dirInit = new gp_Dir( 1, 0, 0 );
+
+			// rotate around -Y axis by angle in radian
+			gp_Trsf transform = new gp_Trsf();
+			transform.SetRotation( new gp_Ax1( new gp_Pnt( 0, 0, 0 ), new gp_Dir( 0, -1, 0 ) ), dAngle_deg * Math.PI / 180 );
+
+			dir = dirInit.Transformed( transform );
 		}
 
 		// display size
-		static BoundingBox GetMainTubeBoundingBox( CADft_MainTubeParam mainTubeParam )
+		static BoundingBox GetMainTubeBoundingBox( CADft_MainTubeParam mainTubeParam, out double dSize )
 		{
 			double dWidth = 0;
 			double dHeight = 0;
@@ -427,6 +480,7 @@ namespace MyCore.CAD
 			}
 			double dLength = mainTubeParam.Length * 2;
 
+			dSize = Math.Sqrt( Math.Pow( dWidth, 2 ) + Math.Pow( dHeight, 2 ) + Math.Pow( dLength, 2 ) );
 			return new BoundingBox( -dWidth / 2, dWidth / 2, -dHeight / 2, dHeight / 2, 0, dLength );
 		}
 

@@ -1,4 +1,5 @@
 ﻿using OCC.BRepBuilderAPI;
+using OCC.BRepExtrema;
 using OCC.BRepPrimAPI;
 using OCC.Geom;
 using OCC.gp;
@@ -9,7 +10,8 @@ namespace MyCore.CAD
 {
 	public class OCCTool
 	{
-		public static TopoDS_Wire MakeGeom2DWire( IGeom2D basicGeom, double dNeckin, gp_Pnt center, gp_Dir dir, double dRotation )
+		// make wire
+		public static TopoDS_Wire MakeGeom2DWire( IGeom2D basicGeom, double dNeckin, gp_Pnt center, gp_Dir dir, double dRotation_deg )
 		{
 			// data protection
 			if( basicGeom == null || center == null || dir == null ) {
@@ -31,7 +33,7 @@ namespace MyCore.CAD
 			}
 
 			// transform wire
-			TopoDS_Shape transformedShape = TransformXOYBaseShape( wireXOY, center, dir, dRotation );
+			TopoDS_Shape transformedShape = TransformXOYBaseShape( wireXOY, center, dir, dRotation_deg );
 			if( transformedShape == null ) {
 				return null;
 			}
@@ -40,16 +42,59 @@ namespace MyCore.CAD
 			return resultWire;
 		}
 
-		public static TopoDS_Wire MakeBendingNotchWire( IBendingNotchShape shape, gp_Pnt center, gp_Dir dir )
+		public static TopoDS_Wire MakeBendingNotchWire( IBendingNotchShape shape,
+			double y, double z, double minZ, double maxZ, double angleB_deg )
 		{
-			return null;
+			// data protection
+			if( shape == null || shape.IsValid() == false ) {
+				return null;
+			}
+
+			TopoDS_Wire baseWire;
+			if( shape.Type == BendingNotch_Type.VShape ) {
+				baseWire = MakeYOZVShapeWire( (BN_VShape)shape, y, z, minZ, maxZ );
+			}
+			else {
+				return null;
+			}
+
+			// rotate wire around -Y axis by angleB
+			gp_Trsf trsf = new gp_Trsf();
+			trsf.SetRotation( new gp_Ax1( new gp_Pnt( 0, 0, 0 ), new gp_Dir( 0, -1, 0 ) ), angleB_deg * Math.PI / 180 );
+			BRepBuilderAPI_Transform wireTrsf = new BRepBuilderAPI_Transform( baseWire, trsf );
+			if( wireTrsf.IsDone() == false ) {
+				return null;
+			}
+
+			return TopoDS.ToWire( wireTrsf.Shape() );
 		}
 
-		public static TopoDS_Shape TransformXOYBaseShape( TopoDS_Shape shapeToTransform, gp_Pnt targetCenter, gp_Dir targetDir, double dRotation )
+		// get bounding box
+		public static BoundingBox GetBoundingBox( TopoDS_Shape shape )
+		{
+			// data protection
+			if( shape == null ) {
+				return null;
+			}
+
+			// get bounding box
+			double minX = GetBoundaryValue( shape, BoundaryType.MinX );
+			double maxX = GetBoundaryValue( shape, BoundaryType.MaxX );
+			double minY = GetBoundaryValue( shape, BoundaryType.MinY );
+			double maxY = GetBoundaryValue( shape, BoundaryType.MaxY );
+			double minZ = GetBoundaryValue( shape, BoundaryType.MinZ );
+			double maxZ = GetBoundaryValue( shape, BoundaryType.MaxZ );
+
+			BoundingBox BoundingBox = new BoundingBox( minX, maxX, minY, maxY, minZ, maxZ );
+			return BoundingBox;
+		}
+
+		// transform XOY base shape
+		public static TopoDS_Shape TransformXOYBaseShape( TopoDS_Shape shapeToTransform, gp_Pnt targetCenter, gp_Dir targetDir, double dRotation_deg )
 		{
 			// rotate shape aroud Z axis by dRotation
 			gp_Trsf transformR = new gp_Trsf();
-			transformR.SetRotation( new gp_Ax1( new gp_Pnt( 0, 0, 0 ), new gp_Dir( 0, 0, 1 ) ), dRotation );
+			transformR.SetRotation( new gp_Ax1( new gp_Pnt( 0, 0, 0 ), new gp_Dir( 0, 0, 1 ) ), dRotation_deg * Math.PI / 180 );
 
 			// rotate shape from Z to dir
 			gp_Quaternion quaternion = new gp_Quaternion( new gp_Vec( new gp_Dir( 0, 0, 1 ) ), new gp_Vec( targetDir ) );
@@ -69,6 +114,7 @@ namespace MyCore.CAD
 			return shapeTrsfFinal.Shape();
 		}
 
+		// make prism
 		public static TopoDS_Shape MakeConcretePrismByWire( TopoDS_Wire baseWire, gp_Vec vec, bool isInf )
 		{
 			// data protection
@@ -97,6 +143,7 @@ namespace MyCore.CAD
 			return branchTubeMaker.Shape();
 		}
 
+		// make wire
 		static TopoDS_Wire MakeXOYCircleWire( Geom2D_Circle circleParam, double dNeckin )
 		{
 			// data protection
@@ -230,6 +277,101 @@ namespace MyCore.CAD
 				return null;
 			}
 			return wireMaker.Wire();
+		}
+
+		static TopoDS_Wire MakeYOZVShapeWire( BN_VShape shape, double y, double z, double minZ, double maxZ )
+		{
+			// buttom point
+			gp_Pnt pButtom = new gp_Pnt( 0, y, z );
+
+			// top point
+			double ensuranceGap = 1;
+			double dHeight = maxZ + ensuranceGap - z;
+			double dHalfWidth = dHeight * Math.Tan( shape.BendingAngle_deg / 2 * Math.PI / 180 );
+			gp_Pnt pLeftTop = new gp_Pnt( 0, y - dHalfWidth, maxZ + ensuranceGap );
+			gp_Pnt pRightTop = new gp_Pnt( 0, y + dHalfWidth, maxZ + ensuranceGap );
+
+			// make edge
+			BRepBuilderAPI_MakeEdge edgeLeft = new BRepBuilderAPI_MakeEdge( pButtom, pLeftTop );
+			BRepBuilderAPI_MakeEdge edgeRight = new BRepBuilderAPI_MakeEdge( pButtom, pRightTop );
+			BRepBuilderAPI_MakeEdge edgeTop = new BRepBuilderAPI_MakeEdge( pLeftTop, pRightTop );
+			if( edgeLeft.IsDone() == false || edgeRight.IsDone() == false || edgeTop.IsDone() == false ) {
+				return null;
+			}
+
+			// make wire
+			BRepBuilderAPI_MakeWire wireMaker = new BRepBuilderAPI_MakeWire();
+			wireMaker.Add( edgeLeft.Edge() );
+			wireMaker.Add( edgeRight.Edge() );
+			wireMaker.Add( edgeTop.Edge() );
+			if( wireMaker.IsDone() == false ) {
+				return null;
+			}
+
+			return wireMaker.Wire();
+		}
+
+		// get bounding box
+		// u'll meet some bug if u use double.MaxValue or double.MinValue directly
+		const double MAX_VALUE = 999999;
+
+		static double GetBoundaryValue( TopoDS_Shape Shape, BoundaryType type )
+		{
+			TopoDS_Face boundaryTestFace = GetBoundingTestFace( type );
+			if( boundaryTestFace == null ) {
+				return 0;
+			}
+
+			// TODO: the distance API is not stable, this might from OCC
+			BRepExtrema_DistShapeShape dss = new BRepExtrema_DistShapeShape( boundaryTestFace, Shape );
+			dss.Perform();
+			double dis = dss.Value();
+
+			if( type == BoundaryType.MinX || type == BoundaryType.MinY || type == BoundaryType.MinZ ) {
+				return -MAX_VALUE + dis;
+			}
+			else {
+				return MAX_VALUE - dis;
+			}
+		}
+
+		static TopoDS_Face GetBoundingTestFace( BoundaryType type )
+		{
+			gp_Pnt center;
+			gp_Dir dir;
+			if( type == BoundaryType.MinX ) {
+				center = new gp_Pnt( -MAX_VALUE, 0, 0 );
+				dir = new gp_Dir( 1, 0, 0 );
+			}
+			else if( type == BoundaryType.MaxX ) {
+				center = new gp_Pnt( MAX_VALUE, 0, 0 );
+				dir = new gp_Dir( -1, 0, 0 );
+			}
+			else if( type == BoundaryType.MinY ) {
+				center = new gp_Pnt( 0, -MAX_VALUE, 0 );
+				dir = new gp_Dir( 0, 1, 0 );
+			}
+			else if( type == BoundaryType.MaxY ) {
+				center = new gp_Pnt( 0, MAX_VALUE, 0 );
+				dir = new gp_Dir( 0, -1, 0 );
+			}
+			else if( type == BoundaryType.MinZ ) {
+				center = new gp_Pnt( 0, 0, -MAX_VALUE );
+				dir = new gp_Dir( 0, 0, 1 );
+			}
+			else if( type == BoundaryType.MaxZ ) {
+				center = new gp_Pnt( 0, 0, MAX_VALUE );
+				dir = new gp_Dir( 0, 0, -1 );
+			}
+			else {
+				return null;
+			}
+			gp_Pln plane = new gp_Pln( center, dir );
+			BRepBuilderAPI_MakeFace makeFace = new BRepBuilderAPI_MakeFace( plane );
+			if( makeFace.IsDone() == false ) {
+				return null;
+			}
+			return makeFace.Face();
 		}
 	}
 }

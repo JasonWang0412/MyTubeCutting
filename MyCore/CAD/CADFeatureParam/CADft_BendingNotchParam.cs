@@ -23,6 +23,7 @@ namespace MyCore.CAD
 			}
 		}
 
+		[TypeConverter( typeof( ExpandableObjectConverter ) )]
 		public IBendingNotchShape Shape
 		{
 			get;

@@ -6,10 +6,9 @@ namespace MyCore.CAD
 	[Serializable]
 	public class BN_VShape : IBendingNotchShape
 	{
-		public BN_VShape( double bendingAngle_deg, bool isOverCut, double jointGapLength )
+		public BN_VShape( double bendingAngle_deg, double jointGapLength )
 		{
 			BendingAngle_deg = bendingAngle_deg;
-			IsOverCut = isOverCut;
 			JointGapLength = jointGapLength;
 		}
 
@@ -23,11 +22,6 @@ namespace MyCore.CAD
 		}
 
 		public double BendingAngle_deg
-		{
-			get; set;
-		}
-
-		public bool IsOverCut
 		{
 			get; set;
 		}

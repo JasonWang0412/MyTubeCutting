@@ -175,9 +175,8 @@ namespace MyTubeCutting
 			IBendingNotchShape shape;
 			if( type == BendingNotchType.VShape ) {
 				double bendingAngle_deg = 90;
-				bool isOverCut = false;
 				double jointGapLength = 0;
-				shape = new BN_VShape( bendingAngle_deg, isOverCut, jointGapLength );
+				shape = new BN_VShape( bendingAngle_deg, jointGapLength );
 			}
 			else {
 				MessageBox.Show( "The type is currenttly not supported." );
