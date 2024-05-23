@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 
 namespace MyCore.CAD
 {
@@ -17,6 +18,15 @@ namespace MyCore.CAD
 			TiltAngle_deg = tiltAngle_deg;
 			RotateAngle_deg = rotateAngle_deg;
 			Side = side;
+		}
+
+		[Browsable( false )]
+		public CADFeatureType Type
+		{
+			get
+			{
+				return CADFeatureType.EndCutter;
+			}
 		}
 
 		public double Center_Y
@@ -41,14 +51,6 @@ namespace MyCore.CAD
 		{
 			get;
 			set;
-		}
-
-		public CADFeatureType Type
-		{
-			get
-			{
-				return CADFeatureType.EndCutter;
-			}
 		}
 
 		public bool IsValid()

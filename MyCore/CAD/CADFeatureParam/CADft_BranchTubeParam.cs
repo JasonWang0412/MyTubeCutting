@@ -30,6 +30,15 @@ namespace MyCore.CAD
 			//ArrayParam = new ArrayParam();
 		}
 
+		[Browsable( false )]
+		public CADFeatureType Type
+		{
+			get
+			{
+				return CADFeatureType.BranchTube;
+			}
+		}
+
 		public double Center_X
 		{
 			get;
@@ -70,7 +79,6 @@ namespace MyCore.CAD
 		public IGeom2D Shape
 		{
 			get;
-			set;
 		}
 
 		public BranchIntersectDir IntersectDir
@@ -97,14 +105,6 @@ namespace MyCore.CAD
 		//	get;
 		//	set;
 		//}
-
-		public CADFeatureType Type
-		{
-			get
-			{
-				return CADFeatureType.BranchTube;
-			}
-		}
 
 		public bool IsValid()
 		{

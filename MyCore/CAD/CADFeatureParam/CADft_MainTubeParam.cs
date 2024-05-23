@@ -14,27 +14,26 @@ namespace MyCore.CAD
 			Length = length;
 		}
 
-
-		// TODO: dont know shit about this
-		[TypeConverter( typeof( ExpandableObjectConverter ) )]
-		public CrossSection CrossSection
-		{
-			get;
-			set;
-		}
-
-		public double Length
-		{
-			get;
-			set;
-		}
-
+		[Browsable( false )]
 		public CADFeatureType Type
 		{
 			get
 			{
 				return CADFeatureType.MainTube;
 			}
+		}
+
+		// TODO: dont know shit about this
+		[TypeConverter( typeof( ExpandableObjectConverter ) )]
+		public CrossSection CrossSection
+		{
+			get;
+		}
+
+		public double Length
+		{
+			get;
+			set;
 		}
 
 		public bool IsValid()
