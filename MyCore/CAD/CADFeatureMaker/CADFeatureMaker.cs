@@ -176,8 +176,8 @@ namespace MyCore.CAD
 			gp_Dir dir = new gp_Dir( 0, 1, 0 ); // y-axis
 
 			// TODO: extend tp no-center-tunnel tube
-			TopoDS_Wire outerWire = OCCTool.MakeShapeWire( mainTubeParam.CrossSection.Shape, 0, center, dir, 0 );
-			TopoDS_Wire innerWire = OCCTool.MakeShapeWire( mainTubeParam.CrossSection.Shape, mainTubeParam.CrossSection.Thickness, center, dir, 0 );
+			TopoDS_Wire outerWire = OCCTool.MakeGeom2DWire( mainTubeParam.CrossSection.Shape, 0, center, dir, 0 );
+			TopoDS_Wire innerWire = OCCTool.MakeGeom2DWire( mainTubeParam.CrossSection.Shape, mainTubeParam.CrossSection.Thickness, center, dir, 0 );
 			if( outerWire == null || innerWire == null ) {
 				return null;
 			}
@@ -283,9 +283,9 @@ namespace MyCore.CAD
 			gp_Trsf transformTilt = new gp_Trsf();
 			transformTilt.SetRotation( new gp_Ax1( new gp_Pnt( 0, 0, 0 ), new gp_Dir( 1, 0, 0 ) ), dTilt_deg * Math.PI / 180 );
 
-			// rotate around Y axis by rotate angle in radian
+			// rotate around -Y axis by rotate angle in radian
 			gp_Trsf transformRotate = new gp_Trsf();
-			transformRotate.SetRotation( new gp_Ax1( new gp_Pnt( 0, 0, 0 ), new gp_Dir( 0, 1, 0 ) ), dRotate_deg * Math.PI / 180 );
+			transformRotate.SetRotation( new gp_Ax1( new gp_Pnt( 0, 0, 0 ), new gp_Dir( 0, -1, 0 ) ), dRotate_deg * Math.PI / 180 );
 
 			gp_Trsf trsfFinal = transformRotate.Multiplied( transformTilt );
 			dir = dirInit.Transformed( trsfFinal );
@@ -362,7 +362,7 @@ namespace MyCore.CAD
 			}
 
 			// make branch tube
-			TopoDS_Wire outerWire = OCCTool.MakeShapeWire( branchTubeParam.Shape, 0, center, dir, branchTubeParam.SelfRotateAngle_deg );
+			TopoDS_Wire outerWire = OCCTool.MakeGeom2DWire( branchTubeParam.Shape, 0, center, dir, branchTubeParam.SelfRotateAngle_deg );
 			if( outerWire == null ) {
 				return null;
 			}
@@ -375,7 +375,7 @@ namespace MyCore.CAD
 			gp_Pnt center = new gp_Pnt( branchTubeParam.Center_X, branchTubeParam.Center_Y, branchTubeParam.Center_Z );
 
 			// make branch tube
-			TopoDS_Wire baseWire = OCCTool.MakeShapeWire( branchTubeParam.Shape, 0, center, dir, branchTubeParam.SelfRotateAngle_deg );
+			TopoDS_Wire baseWire = OCCTool.MakeGeom2DWire( branchTubeParam.Shape, 0, center, dir, branchTubeParam.SelfRotateAngle_deg );
 			if( baseWire == null ) {
 				return null;
 			}
@@ -385,19 +385,31 @@ namespace MyCore.CAD
 
 		static void GetBranchTubeDir( double dA_deg, double dB_deg, out gp_Dir dir )
 		{
-			// the initail direction is (0, 0, 1)
-			gp_Dir dirInit = new gp_Dir( 0, 0, 1 );
+			// the initail direction is (1, 0, 0)
+			gp_Dir dirInit = new gp_Dir( 1, 0, 0 );
 
 			// rotate around X axis by A angle in radian
 			gp_Trsf transformA = new gp_Trsf();
 			transformA.SetRotation( new gp_Ax1( new gp_Pnt( 0, 0, 0 ), new gp_Dir( 1, 0, 0 ) ), dA_deg * Math.PI / 180 );
 
-			// rotate around Y axis by B angle in radian
+			// rotate around -Y axis by B angle in radian
 			gp_Trsf transformB = new gp_Trsf();
-			transformB.SetRotation( new gp_Ax1( new gp_Pnt( 0, 0, 0 ), new gp_Dir( 0, 1, 0 ) ), dB_deg * Math.PI / 180 );
+			transformB.SetRotation( new gp_Ax1( new gp_Pnt( 0, 0, 0 ), new gp_Dir( 0, -1, 0 ) ), dB_deg * Math.PI / 180 );
 
 			gp_Trsf trsfFinal = transformB.Multiplied( transformA );
 			dir = dirInit.Transformed( trsfFinal );
+		}
+
+		// make bending notch
+		static TopoDS_Shape MakeBendingNotchTopo( CADft_BendingNotchParam bendingNotchParam, CADft_MainTubeParam mainTubeParam, bool bInf )
+		{
+			// get the bending notch position
+
+			// get the bending notch shape wire
+
+			// make the bending notch
+
+			return null;
 		}
 
 		// display size

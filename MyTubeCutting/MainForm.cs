@@ -154,7 +154,7 @@ namespace MyTubeCutting
 			double z = 0;
 			double selfRotateAngle_deg = 0;
 			double angleA_deg = 0;
-			double angleB_deg = 0;
+			double angleB_deg = 90;
 			BranchIntersectDir intersectDir = BranchIntersectDir.Positive;
 			CADft_BranchTubeParam branchTubeParam = new CADft_BranchTubeParam( x, y, z, selfRotateAngle_deg, angleA_deg, angleB_deg, shape, intersectDir, false, length );
 

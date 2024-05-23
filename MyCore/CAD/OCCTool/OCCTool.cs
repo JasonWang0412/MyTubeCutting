@@ -9,7 +9,7 @@ namespace MyCore.CAD
 {
 	public class OCCTool
 	{
-		public static TopoDS_Wire MakeShapeWire( IGeom2D basicGeom, double dNeckin, gp_Pnt center, gp_Dir dir, double dRotation )
+		public static TopoDS_Wire MakeGeom2DWire( IGeom2D basicGeom, double dNeckin, gp_Pnt center, gp_Dir dir, double dRotation )
 		{
 			// data protection
 			if( basicGeom == null || center == null || dir == null ) {
@@ -38,6 +38,11 @@ namespace MyCore.CAD
 
 			TopoDS_Wire resultWire = TopoDS.ToWire( transformedShape );
 			return resultWire;
+		}
+
+		public static TopoDS_Wire MakeBendingNotchWire( IBendingNotchShape shape, gp_Pnt center, gp_Dir dir )
+		{
+			return null;
 		}
 
 		public static TopoDS_Shape TransformXOYBaseShape( TopoDS_Shape shapeToTransform, gp_Pnt targetCenter, gp_Dir targetDir, double dRotation )
