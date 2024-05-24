@@ -282,16 +282,6 @@ namespace MyCore.CAD
 
 		static TopoDS_Wire MakeYOZVShapeWire( BN_VShape shape, double y, double z, double minZ, double maxZ )
 		{
-			/*
-			    3_______4
-			   _|      _|
-			  1\ 2   6/ 5
-			    \    /
-			     \  /
-			      \/
-			       0
-			*/
-
 			// calculate points
 			// height from 0 to 1, joint gap is the distance between 1 and 2
 			double dVHeight = maxZ - Math.Abs( shape.JointGapLength ) - z;
