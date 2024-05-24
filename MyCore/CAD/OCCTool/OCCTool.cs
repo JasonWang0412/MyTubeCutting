@@ -44,7 +44,7 @@ namespace MyCore.CAD
 		}
 
 		public static TopoDS_Wire MakeBendingNotchWire( IBendingNotchShape shape,
-			double y, double z, double minZ, double maxZ, double angleB_deg )
+			double y, double z, double minZ, double maxZ, double dThickness, double angleB_deg )
 		{
 			// data protection
 			if( shape == null || shape.IsValid() == false ) {
@@ -53,7 +53,13 @@ namespace MyCore.CAD
 
 			TopoDS_Wire baseWire;
 			if( shape.Type == BendingNotch_Type.VShape ) {
-				baseWire = MakeYOZVShapeWire( (BN_VShape)shape, y, z, minZ, maxZ );
+				baseWire = MakeYOZVShapeBNWire( (BN_VShape)shape, y, z, minZ, maxZ );
+			}
+			else if( shape.Type == BendingNotch_Type.BothSideFillet ) {
+				baseWire = MakeYOZBothSideBNWire( (BN_BothSideFillet)shape, y, z, minZ, maxZ, dThickness );
+			}
+			else if( shape.Type == BendingNotch_Type.OneSideFillet ) {
+				baseWire = MakeYOZOneSideBNWire( (BN_OneSideFillet)shape, y, z, minZ, maxZ, dThickness );
 			}
 			else {
 				return null;
@@ -280,13 +286,10 @@ namespace MyCore.CAD
 			return wireMaker.Wire();
 		}
 
-		static TopoDS_Wire MakeYOZVShapeWire( BN_VShape shape, double y, double z, double minZ, double maxZ )
+		static TopoDS_Wire MakeYOZVShapeBNWire( BN_VShape shape, double y, double z, double minZ, double maxZ )
 		{
 			// calculate points
-			// height from 0 to 1, joint gap is the distance between 1 and 2
 			double dVHeight = maxZ - Math.Abs( shape.JointGapLength ) - z;
-
-			// width from 1 to 6
 			double dVHalfWidth = dVHeight * Math.Tan( shape.BendingAngle_deg / 2 * Math.PI / 180 );
 
 			// this is ensure the size is big enough to cut the main tube
@@ -300,12 +303,12 @@ namespace MyCore.CAD
 			double z2 = z1;
 			double y3 = y2;
 			double z3 = z2 + Math.Abs( shape.JointGapLength ) + safeHeight;
-			double y4 = y3 + 2 * dVHalfWidth + Math.Abs( shape.JointGapLength );
-			double z4 = z3;
-			double y5 = y4;
-			double z5 = z4 - Math.Abs( shape.JointGapLength ) - safeHeight;
-			double y6 = y5 - Math.Abs( Math.Max( shape.JointGapLength, 0 ) );
-			double z6 = z5;
+			double y6 = y0 + dVHalfWidth;
+			double z6 = z0 + dVHeight;
+			double y5 = y6 + Math.Abs( Math.Max( shape.JointGapLength, 0 ) );
+			double z5 = z6;
+			double y4 = y5;
+			double z4 = z5 + Math.Abs( shape.JointGapLength ) + safeHeight;
 
 			// make points
 			gp_Pnt p0 = new gp_Pnt( 0, y0, z0 );
@@ -333,6 +336,134 @@ namespace MyCore.CAD
 			}
 
 			return wireMaker.Wire();
+		}
+
+		static TopoDS_Wire MakeYOZBothSideBNWire( BN_BothSideFillet shape, double y, double z, double minZ, double maxZ, double dThickness )
+		{
+			// calculate points
+			double dHalfAngle_Rad = shape.BendingAngle_deg * Math.PI / 180 / 2;
+			double dHalfArcLength = shape.FilletRadius * dHalfAngle_Rad;
+			double dOverCut = 0;
+			if( shape.IsOverCut && z - minZ > dThickness ) {
+				dOverCut = z - minZ - dThickness;
+			}
+
+			double y0 = y;
+			double z0 = z - dOverCut;
+			double y1 = y0 - dHalfArcLength;
+			double z1 = z0;
+			double y2 = y1;
+			double z2 = z1 + dOverCut; // equal to z
+			double y12 = y0 + dHalfArcLength;
+			double z12 = z0;
+			double y11 = y12;
+			double z11 = z12 + dOverCut; // equal to z
+
+			Geom_Circle circleL = new Geom_Circle( new gp_Ax2( new gp_Pnt( 0, y2, z2 + shape.FilletRadius ), new gp_Dir( 1, 0, 0 ) ), shape.FilletRadius );
+			Geom_Circle circleR = new Geom_Circle( new gp_Ax2( new gp_Pnt( 0, y11, z11 + shape.FilletRadius ), new gp_Dir( 1, 0, 0 ) ), shape.FilletRadius );
+			Geom_TrimmedCurve trimL = new Geom_TrimmedCurve( circleL, Math.PI, Math.PI + dHalfAngle_Rad, true );
+			Geom_TrimmedCurve trimR = new Geom_TrimmedCurve( circleR, Math.PI - dHalfAngle_Rad, Math.PI, true );
+			BRepBuilderAPI_MakeEdge edgeL = new BRepBuilderAPI_MakeEdge( trimL );
+			BRepBuilderAPI_MakeEdge edgeR = new BRepBuilderAPI_MakeEdge( trimR );
+			if( edgeL.IsDone() == false || edgeR.IsDone() == false ) {
+				return null;
+			}
+			gp_Pnt pL = trimL.Value( trimL.LastParameter() );
+			gp_Pnt pR = trimR.Value( trimR.FirstParameter() );
+			double y3 = pL.Y();
+			double z3 = pL.Z();
+			double y10 = pR.Y();
+			double z10 = pR.Z();
+
+			double centerZ = z3; // should be equal to z9
+			double dVHeight = maxZ - Math.Abs( shape.JointGapLength ) - centerZ;
+			double dVHalfWidth = dVHeight * Math.Tan( dHalfAngle_Rad );
+			double safeHeight = 1;
+			double y4 = y3 - dVHalfWidth;
+			double z4 = z3 + dVHeight;
+			double y5 = y4 - Math.Abs( Math.Min( shape.JointGapLength, 0 ) );
+			double z5 = z4;
+			double y6 = y5;
+			double z6 = z5 + Math.Abs( shape.JointGapLength ) + safeHeight;
+			double y9 = y10 + dVHalfWidth;
+			double z9 = z10 + dVHeight;
+			double y8 = y9 + Math.Abs( Math.Max( shape.JointGapLength, 0 ) );
+			double z8 = z9;
+			double y7 = y8;
+			double z7 = z8 + Math.Abs( shape.JointGapLength ) + safeHeight;
+
+			// make points
+			gp_Pnt p0 = new gp_Pnt( 0, y0, z0 );
+			gp_Pnt p1 = new gp_Pnt( 0, y1, z1 );
+			gp_Pnt p2 = new gp_Pnt( 0, y2, z2 );
+			gp_Pnt p3 = new gp_Pnt( 0, y3, z3 );
+			gp_Pnt p4 = new gp_Pnt( 0, y4, z4 );
+			gp_Pnt p5 = new gp_Pnt( 0, y5, z5 );
+			gp_Pnt p6 = new gp_Pnt( 0, y6, z6 );
+			gp_Pnt p7 = new gp_Pnt( 0, y7, z7 );
+			gp_Pnt p8 = new gp_Pnt( 0, y8, z8 );
+			gp_Pnt p9 = new gp_Pnt( 0, y9, z9 );
+			gp_Pnt p10 = new gp_Pnt( 0, y10, z10 );
+			gp_Pnt p11 = new gp_Pnt( 0, y11, z11 );
+			gp_Pnt p12 = new gp_Pnt( 0, y12, z12 );
+
+			// make wire
+			BRepBuilderAPI_MakeWire wireMaker = new BRepBuilderAPI_MakeWire();
+			BRepBuilderAPI_MakeEdge edge01 = new BRepBuilderAPI_MakeEdge( p0, p1 );
+			if( edge01.IsDone() ) {
+				wireMaker.Add( edge01.Edge() );
+			}
+			BRepBuilderAPI_MakeEdge edge12 = new BRepBuilderAPI_MakeEdge( p1, p2 );
+			if( edge12.IsDone() ) {
+				wireMaker.Add( edge12.Edge() );
+			}
+			wireMaker.Add( edgeL.Edge() );
+			BRepBuilderAPI_MakeEdge edge34 = new BRepBuilderAPI_MakeEdge( p3, p4 );
+			if( edge34.IsDone() ) {
+				wireMaker.Add( edge34.Edge() );
+			}
+			BRepBuilderAPI_MakeEdge edge45 = new BRepBuilderAPI_MakeEdge( p4, p5 );
+			if( edge45.IsDone() ) {
+				wireMaker.Add( edge45.Edge() );
+			}
+			BRepBuilderAPI_MakeEdge edge56 = new BRepBuilderAPI_MakeEdge( p5, p6 );
+			if( edge56.IsDone() ) {
+				wireMaker.Add( edge56.Edge() );
+			}
+			BRepBuilderAPI_MakeEdge edge67 = new BRepBuilderAPI_MakeEdge( p6, p7 );
+			if( edge67.IsDone() ) {
+				wireMaker.Add( edge67.Edge() );
+			}
+			BRepBuilderAPI_MakeEdge edge78 = new BRepBuilderAPI_MakeEdge( p7, p8 );
+			if( edge78.IsDone() ) {
+				wireMaker.Add( edge78.Edge() );
+			}
+			BRepBuilderAPI_MakeEdge edge89 = new BRepBuilderAPI_MakeEdge( p8, p9 );
+			if( edge89.IsDone() ) {
+				wireMaker.Add( edge89.Edge() );
+			}
+			BRepBuilderAPI_MakeEdge edge910 = new BRepBuilderAPI_MakeEdge( p9, p10 );
+			if( edge910.IsDone() ) {
+				wireMaker.Add( edge910.Edge() );
+			}
+			wireMaker.Add( edgeR.Edge() );
+			BRepBuilderAPI_MakeEdge edge1112 = new BRepBuilderAPI_MakeEdge( p11, p12 );
+			if( edge1112.IsDone() ) {
+				wireMaker.Add( edge1112.Edge() );
+			}
+			BRepBuilderAPI_MakeEdge edge120 = new BRepBuilderAPI_MakeEdge( p12, p0 );
+			if( edge120.IsDone() ) {
+				wireMaker.Add( edge120.Edge() );
+			}
+			if( wireMaker.IsDone() == false ) {
+				return null;
+			}
+			return wireMaker.Wire();
+		}
+
+		static TopoDS_Wire MakeYOZOneSideBNWire( BN_OneSideFillet shape, double y, double z, double minZ, double maxZ, double dThickness )
+		{
+			return null;
 		}
 
 		// get bounding box

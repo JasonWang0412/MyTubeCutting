@@ -459,7 +459,8 @@ namespace MyCore.CAD
 			double posY = bendingNotchParam.YPos;
 			double posZ = minZ + bendingNotchParam.GapFromButtom;
 			double angleB_deg = bendingNotchParam.BAngle_deg;
-			TopoDS_Wire notchWire = OCCTool.MakeBendingNotchWire( bendingNotchParam.Shape, posY, posZ, minZ, maxZ, angleB_deg );
+			double dThickness = mainTubeParam.CrossSection.Thickness;
+			TopoDS_Wire notchWire = OCCTool.MakeBendingNotchWire( bendingNotchParam.Shape, posY, posZ, minZ, maxZ, dThickness, angleB_deg );
 
 			// make the bending notch
 			// 1. get the direction and size

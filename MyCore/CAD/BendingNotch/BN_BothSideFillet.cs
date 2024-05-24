@@ -1,10 +1,10 @@
 ﻿using System;
 using System.ComponentModel;
 
-namespace MyCore.CAD.BendingNotch
+namespace MyCore.CAD
 {
 	[Serializable]
-	internal class BN_BothSideFillet : IBendingNotchShape
+	public class BN_BothSideFillet : IBendingNotchShape
 	{
 		public BN_BothSideFillet( double filletRadius, double bendingAngle_deg, bool isOverCut, double jointGapLength )
 		{

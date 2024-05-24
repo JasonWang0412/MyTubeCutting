@@ -1,10 +1,10 @@
 ﻿using System;
 using System.ComponentModel;
 
-namespace MyCore.CAD.BendingNotch
+namespace MyCore.CAD
 {
 	[Serializable]
-	internal class BN_OneSideFillet : IBendingNotchShape
+	public class BN_OneSideFillet : IBendingNotchShape
 	{
 		public BN_OneSideFillet( bool isOverCut )
 		{
