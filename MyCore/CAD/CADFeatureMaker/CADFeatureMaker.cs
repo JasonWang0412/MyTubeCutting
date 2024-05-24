@@ -30,6 +30,8 @@ namespace MyCore.CAD
 				.Where( param => param.Type == CADFeatureType.EndCutter ).Cast<CADft_EndCutterParam>().ToList();
 			List<CADft_BranchTubeParam> branchTubeParamList = map.FeatureMap.Values
 				.Where( param => param.Type == CADFeatureType.BranchTube ).Cast<CADft_BranchTubeParam>().ToList();
+			List<CADft_BendingNotchParam> bendingNotchParamList = map.FeatureMap.Values
+				.Where( param => param.Type == CADFeatureType.BendingNotch ).Cast<CADft_BendingNotchParam>().ToList();
 
 			// data protection
 			if( mainTubeParam == null ) {
@@ -40,6 +42,9 @@ namespace MyCore.CAD
 			}
 			if( branchTubeParamList == null ) {
 				branchTubeParamList = new List<CADft_BranchTubeParam>();
+			}
+			if( bendingNotchParamList == null ) {
+				bendingNotchParamList = new List<CADft_BendingNotchParam>();
 			}
 
 			// make main tube
@@ -105,6 +110,28 @@ namespace MyCore.CAD
 				}
 			}
 
+			// cut main tube by bending notches
+			foreach( CADft_BendingNotchParam oneBendingNotchParam in bendingNotchParamList ) {
+
+				// data protection
+				if( oneBendingNotchParam == null || oneBendingNotchParam.IsValid() == false ) {
+					continue;
+				}
+
+				// make bending notch
+				TopoDS_Shape oneBendingNotch = MakeBendingNotchTopo( oneBendingNotchParam, mainTubeParam, true );
+				if( oneBendingNotch == null ) {
+					continue;
+				}
+
+				// cut main tube
+				BRepAlgoAPI_Cut cut = new BRepAlgoAPI_Cut( mainTube, oneBendingNotch );
+				if( cut.IsDone() == false ) {
+					continue;
+				}
+				mainTube = cut.Shape();
+			}
+
 			return mainTube;
 		}
 
@@ -126,7 +153,7 @@ namespace MyCore.CAD
 				cadFeatureAIS = MakeBranchTubeAIS( (CADft_BranchTubeParam)cadFeatureParam, mainTubeParam );
 			}
 			else if( cadFeatureParam.Type == CADFeatureType.BendingNotch ) {
-				cadFeatureAIS = new AIS_Shape( MakeBendingNotchTopo( (CADft_BendingNotchParam)cadFeatureParam, mainTubeParam, false ) );
+				cadFeatureAIS = MakeBendingNotchAIS( (CADft_BendingNotchParam)cadFeatureParam, mainTubeParam );
 			}
 
 			if( cadFeatureAIS == null ) {
@@ -451,6 +478,15 @@ namespace MyCore.CAD
 				prismVec.Multiply( dSize * 2 );
 				return OCCTool.MakeConcretePrismByWire( TopoDS.ToWire( transform.Shape() ), prismVec, false );
 			}
+		}
+
+		static AIS_Shape MakeBendingNotchAIS( CADft_BendingNotchParam bendingNotchParam, CADft_MainTubeParam mainTubeParam )
+		{
+			TopoDS_Shape bendingNotch = MakeBendingNotchTopo( bendingNotchParam, mainTubeParam, false );
+			if( bendingNotch == null ) {
+				return null;
+			}
+			return new AIS_Shape( bendingNotch );
 		}
 
 		static void GetBendingNotchDir( double dAngle_deg, out gp_Dir dir )
