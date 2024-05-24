@@ -119,7 +119,8 @@ namespace MyCore.CAD
 				}
 
 				// make bending notch
-				TopoDS_Shape oneBendingNotch = MakeBendingNotchTopo( oneBendingNotchParam, mainTubeParam, true );
+				// u'll meet some bug (from OCC maybe) if u use infinity prism, ref: AUTO-12540
+				TopoDS_Shape oneBendingNotch = MakeBendingNotchTopo( oneBendingNotchParam, mainTubeParam );
 				if( oneBendingNotch == null ) {
 					continue;
 				}
@@ -161,7 +162,7 @@ namespace MyCore.CAD
 			}
 
 			Graphic3d_MaterialAspect aspect = new Graphic3d_MaterialAspect( Graphic3d_NameOfMaterial.Graphic3d_NOM_STONE );
-			aspect.SetTransparency( 0.5f );
+			aspect.SetTransparency( 0.8f );
 			aspect.SetColor( new Quantity_Color( Quantity_NameOfColor.Quantity_NOC_GREEN4 ) );
 			cadFeatureAIS.SetMaterial( aspect );
 			cadFeatureAIS.SetDisplayMode( 1 );
@@ -428,26 +429,31 @@ namespace MyCore.CAD
 		}
 
 		// make bending notch
-		static TopoDS_Shape MakeBendingNotchTopo( CADft_BendingNotchParam bendingNotchParam, CADft_MainTubeParam mainTubeParam, bool bInf )
+		static TopoDS_Shape MakeBendingNotchTopo( CADft_BendingNotchParam bendingNotchParam, CADft_MainTubeParam mainTubeParam )
 		{
-			// get the main tube size after rotation
-			TopoDS_Wire mainTubeWire = OCCTool.MakeGeom2DWire( mainTubeParam.CrossSection.Shape, 0, new gp_Pnt( 0, 0, 0 ), new gp_Dir( 0, 1, 0 ), 0 );
+			// get the main tube size after rotation (ON XY PLANE)
+			// 1. make the wire
+			TopoDS_Wire mainTubeWire = OCCTool.MakeGeom2DWire( mainTubeParam.CrossSection.Shape, 0, new gp_Pnt( 0, 0, 0 ), new gp_Dir( 0, 0, 1 ), 0 );
 			if( mainTubeWire == null ) {
 				return null;
 			}
+
+			// 2. rotate the wire (ON XY PLANE ALONG +Z)
 			gp_Trsf trsfR = new gp_Trsf();
-			trsfR.SetRotation( new gp_Ax1( new gp_Pnt( 0, 0, 0 ), new gp_Dir( 0, 1, 0 ) ), bendingNotchParam.BAngle_deg * Math.PI / 180 );
+			trsfR.SetRotation( new gp_Ax1( new gp_Pnt( 0, 0, 0 ), new gp_Dir( 0, 0, 1 ) ), bendingNotchParam.BAngle_deg * Math.PI / 180 );
 			BRepBuilderAPI_Transform transformR = new BRepBuilderAPI_Transform( mainTubeWire, trsfR );
 			if( transformR.IsDone() == false ) {
 				return null;
 			}
-			ExportHelper.ExportBrep( transformR.Shape(), "transformR", 0 );
-			BoundingBox boundingBox = OCCTool.GetBoundingBox( transformR.Shape() );
+			TopoDS_Shape shape = transformR.Shape();
+
+			// 3. get the extrema, there might meet some bug, ref: AUTO-12540
+			BoundingBox boundingBox = OCCTool.GetBoundingBox( shape );
 			if( boundingBox == null ) {
 				return null;
 			}
-			double minZ = boundingBox.MinZ;
-			double maxZ = boundingBox.MaxZ;
+			double minZ = boundingBox.MinY; // taking Y here
+			double maxZ = boundingBox.MaxY;
 
 			// get the bending notch shape wire
 			double posY = bendingNotchParam.YPos;
@@ -456,33 +462,29 @@ namespace MyCore.CAD
 			TopoDS_Wire notchWire = OCCTool.MakeBendingNotchWire( bendingNotchParam.Shape, posY, posZ, minZ, maxZ, angleB_deg );
 
 			// make the bending notch
+			// 1. get the direction and size
 			GetBendingNotchDir( bendingNotchParam.BAngle_deg, out gp_Dir dir );
-			if( bInf ) {
-				return OCCTool.MakeConcretePrismByWire( notchWire, new gp_Vec( dir ), true );
-			}
-			else {
-				GetMainTubeBoundingBox( mainTubeParam, out double dSize );
+			GetMainTubeBoundingBox( mainTubeParam, out double dSize );
 
-				// translate the notch wire to the start of prism
-				gp_Trsf trsf = new gp_Trsf();
-				gp_Vec transVec = new gp_Vec( dir );
-				transVec.Multiply( -dSize );
-				trsf.SetTranslation( transVec );
-				BRepBuilderAPI_Transform transform = new BRepBuilderAPI_Transform( notchWire, trsf );
-				if( transform.IsDone() == false ) {
-					return null;
-				}
-
-				// make the prism
-				gp_Vec prismVec = new gp_Vec( dir );
-				prismVec.Multiply( dSize * 2 );
-				return OCCTool.MakeConcretePrismByWire( TopoDS.ToWire( transform.Shape() ), prismVec, false );
+			// 2. translate the notch wire to the start of prism
+			gp_Trsf trsf = new gp_Trsf();
+			gp_Vec transVec = new gp_Vec( dir );
+			transVec.Multiply( -dSize );
+			trsf.SetTranslation( transVec );
+			BRepBuilderAPI_Transform transform = new BRepBuilderAPI_Transform( notchWire, trsf );
+			if( transform.IsDone() == false ) {
+				return null;
 			}
+
+			// 3. make the prism
+			gp_Vec prismVec = new gp_Vec( dir );
+			prismVec.Multiply( dSize * 2 );
+			return OCCTool.MakeConcretePrismByWire( TopoDS.ToWire( transform.Shape() ), prismVec, false );
 		}
 
 		static AIS_Shape MakeBendingNotchAIS( CADft_BendingNotchParam bendingNotchParam, CADft_MainTubeParam mainTubeParam )
 		{
-			TopoDS_Shape bendingNotch = MakeBendingNotchTopo( bendingNotchParam, mainTubeParam, false );
+			TopoDS_Shape bendingNotch = MakeBendingNotchTopo( bendingNotchParam, mainTubeParam );
 			if( bendingNotch == null ) {
 				return null;
 			}

@@ -38,11 +38,6 @@ namespace MyCore.CAD
 				return false;
 			}
 
-			// joint gap length should not be negative
-			if( JointGapLength < 0 ) {
-				return false;
-			}
-
 			return true;
 		}
 	}

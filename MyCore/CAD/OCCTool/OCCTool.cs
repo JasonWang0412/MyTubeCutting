@@ -5,6 +5,7 @@ using OCC.Geom;
 using OCC.gp;
 using OCC.TopoDS;
 using System;
+using System.Collections.Generic;
 
 namespace MyCore.CAD
 {
@@ -281,29 +282,62 @@ namespace MyCore.CAD
 
 		static TopoDS_Wire MakeYOZVShapeWire( BN_VShape shape, double y, double z, double minZ, double maxZ )
 		{
-			// buttom point
-			gp_Pnt pButtom = new gp_Pnt( 0, y, z );
+			/*
+			    3_______4
+			   _|      _|
+			  1\ 2   6/ 5
+			    \    /
+			     \  /
+			      \/
+			       0
+			*/
 
-			// top point
-			double ensuranceGap = 1;
-			double dHeight = maxZ + ensuranceGap - z;
-			double dHalfWidth = dHeight * Math.Tan( shape.BendingAngle_deg / 2 * Math.PI / 180 );
-			gp_Pnt pLeftTop = new gp_Pnt( 0, y - dHalfWidth, maxZ + ensuranceGap );
-			gp_Pnt pRightTop = new gp_Pnt( 0, y + dHalfWidth, maxZ + ensuranceGap );
+			// calculate points
+			// height from 0 to 1, joint gap is the distance between 1 and 2
+			double dVHeight = maxZ - Math.Abs( shape.JointGapLength ) - z;
 
-			// make edge
-			BRepBuilderAPI_MakeEdge edgeLeft = new BRepBuilderAPI_MakeEdge( pButtom, pLeftTop );
-			BRepBuilderAPI_MakeEdge edgeRight = new BRepBuilderAPI_MakeEdge( pButtom, pRightTop );
-			BRepBuilderAPI_MakeEdge edgeTop = new BRepBuilderAPI_MakeEdge( pLeftTop, pRightTop );
-			if( edgeLeft.IsDone() == false || edgeRight.IsDone() == false || edgeTop.IsDone() == false ) {
-				return null;
-			}
+			// width from 1 to 6
+			double dVHalfWidth = dVHeight * Math.Tan( shape.BendingAngle_deg / 2 * Math.PI / 180 );
+
+			// this is ensure the size is big enough to cut the main tube
+			double safeHeight = 1;
+
+			double y0 = y;
+			double z0 = z;
+			double y1 = y0 - dVHalfWidth;
+			double z1 = z0 + dVHeight;
+			double y2 = y1 - Math.Abs( Math.Min( shape.JointGapLength, 0 ) );
+			double z2 = z1;
+			double y3 = y2;
+			double z3 = z2 + Math.Abs( shape.JointGapLength ) + safeHeight;
+			double y4 = y3 + 2 * dVHalfWidth + Math.Abs( shape.JointGapLength );
+			double z4 = z3;
+			double y5 = y4;
+			double z5 = z4 - Math.Abs( shape.JointGapLength ) - safeHeight;
+			double y6 = y5 - Math.Abs( Math.Max( shape.JointGapLength, 0 ) );
+			double z6 = z5;
+
+			// make points
+			gp_Pnt p0 = new gp_Pnt( 0, y0, z0 );
+			gp_Pnt p1 = new gp_Pnt( 0, y1, z1 );
+			gp_Pnt p2 = new gp_Pnt( 0, y2, z2 );
+			gp_Pnt p3 = new gp_Pnt( 0, y3, z3 );
+			gp_Pnt p4 = new gp_Pnt( 0, y4, z4 );
+			gp_Pnt p5 = new gp_Pnt( 0, y5, z5 );
+			gp_Pnt p6 = new gp_Pnt( 0, y6, z6 );
+			List<gp_Pnt> points = new List<gp_Pnt> { p0, p1, p2, p3, p4, p5, p6, p0 };
 
 			// make wire
 			BRepBuilderAPI_MakeWire wireMaker = new BRepBuilderAPI_MakeWire();
-			wireMaker.Add( edgeLeft.Edge() );
-			wireMaker.Add( edgeRight.Edge() );
-			wireMaker.Add( edgeTop.Edge() );
+			for( int i = 0; i < points.Count - 1; i++ ) {
+				BRepBuilderAPI_MakeEdge edgeMaker = new BRepBuilderAPI_MakeEdge( points[ i ], points[ i + 1 ] );
+
+				// some sgement would not exist depends on the joint gap
+				if( edgeMaker.IsDone() == false ) {
+					continue;
+				}
+				wireMaker.Add( edgeMaker.Edge() );
+			}
 			if( wireMaker.IsDone() == false ) {
 				return null;
 			}
@@ -322,7 +356,7 @@ namespace MyCore.CAD
 				return 0;
 			}
 
-			// TODO: the distance API is not stable, this might from OCC
+			// TODO: the distance API is not stable, this might from OCC, ref: AUTO-12540
 			BRepExtrema_DistShapeShape dss = new BRepExtrema_DistShapeShape( boundaryTestFace, Shape );
 			dss.Perform();
 			double dis = dss.Value();
