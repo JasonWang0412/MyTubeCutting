@@ -12,6 +12,7 @@ namespace MyCore.CAD
 			YPos = y;
 			GapFromButtom = gap;
 			BAngle_deg = angleB_deg;
+			ArrayParam = new ArrayParam();
 		}
 
 		[Browsable( false )]
@@ -44,6 +45,12 @@ namespace MyCore.CAD
 			get; set;
 		}
 
+		[TypeConverter( typeof( ExpandableObjectConverter ) )]
+		public ArrayParam ArrayParam
+		{
+			get; set;
+		}
+
 		public bool IsValid()
 		{
 			// shape should not be null and should be valid
@@ -58,6 +65,11 @@ namespace MyCore.CAD
 
 			// B angle should be in rangge [-360,360]
 			if( BAngle_deg < -360 || BAngle_deg > 360 ) {
+				return false;
+			}
+
+			// array param should not be null and should be valid
+			if( ArrayParam == null || ArrayParam.IsValid() == false ) {
 				return false;
 			}
 

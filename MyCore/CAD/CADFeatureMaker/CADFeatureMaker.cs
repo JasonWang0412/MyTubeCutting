@@ -90,7 +90,7 @@ namespace MyCore.CAD
 				}
 
 				// cut main tube
-				// find all shapes in branchTube if it is compound
+				// find all shapes in oneBranchTube if it is compound
 				// u'll meet some bug (from OCC maybe) if u use compound shape directly
 				if( oneBranchTube.ShapeType() == TopAbs_ShapeEnum.TopAbs_COMPOUND ) {
 					foreach( TopoDS_Shape oneArrayElemnt in oneBranchTube.elementsAsList ) {
@@ -119,18 +119,30 @@ namespace MyCore.CAD
 				}
 
 				// make bending notch
-				// u'll meet some bug (from OCC maybe) if u use infinity prism, ref: AUTO-12540
 				TopoDS_Shape oneBendingNotch = MakeBendingNotchTopo( oneBendingNotchParam, mainTubeParam );
 				if( oneBendingNotch == null ) {
 					continue;
 				}
 
 				// cut main tube
-				BRepAlgoAPI_Cut cut = new BRepAlgoAPI_Cut( mainTube, oneBendingNotch );
-				if( cut.IsDone() == false ) {
-					continue;
+				// find all shapes in oneBendingNotch if it is compound
+				// u'll meet some bug (from OCC maybe) if u use compound shape directly
+				if( oneBendingNotch.ShapeType() == TopAbs_ShapeEnum.TopAbs_COMPOUND ) {
+					foreach( TopoDS_Shape oneArrayElemnt in oneBendingNotch.elementsAsList ) {
+						BRepAlgoAPI_Cut cut = new BRepAlgoAPI_Cut( mainTube, oneArrayElemnt );
+						if( cut.IsDone() == false ) {
+							continue;
+						}
+						mainTube = cut.Shape();
+					}
 				}
-				mainTube = cut.Shape();
+				else {
+					BRepAlgoAPI_Cut cut = new BRepAlgoAPI_Cut( mainTube, oneBendingNotch );
+					if( cut.IsDone() == false ) {
+						continue;
+					}
+					mainTube = cut.Shape();
+				}
 			}
 
 			return mainTube;
@@ -427,7 +439,7 @@ namespace MyCore.CAD
 			gp_Trsf transformB = new gp_Trsf();
 			transformB.SetRotation( new gp_Ax1( new gp_Pnt( 0, 0, 0 ), new gp_Dir( 0, -1, 0 ) ), dB_deg * Math.PI / 180 );
 
-			gp_Trsf trsfFinal = transformB.Multiplied( transformA );
+			gp_Trsf trsfFinal = transformA.Multiplied( transformB );
 			dir = dirInit.Transformed( trsfFinal );
 		}
 
@@ -483,7 +495,17 @@ namespace MyCore.CAD
 			// 3. make the prism
 			gp_Vec prismVec = new gp_Vec( dir );
 			prismVec.Multiply( dSize * 2 );
-			return OCCTool.MakeConcretePrismByWire( TopoDS.ToWire( transform.Shape() ), prismVec, false );
+			TopoDS_Shape bendingNotch = OCCTool.MakeConcretePrismByWire( TopoDS.ToWire( transform.Shape() ), prismVec, false );
+			if( bendingNotch == null ) {
+				return null;
+			}
+
+			// make the array
+			TopoDS_Shape arrayBendingNotch = OCCTool.MakeArrayCompound( bendingNotch, bendingNotchParam.ArrayParam );
+			if( arrayBendingNotch == null ) {
+				return bendingNotch;
+			}
+			return arrayBendingNotch;
 		}
 
 		static AIS_Shape MakeBendingNotchAIS( CADft_BendingNotchParam bendingNotchParam, CADft_MainTubeParam mainTubeParam )

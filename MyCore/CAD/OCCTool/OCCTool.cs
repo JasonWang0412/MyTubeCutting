@@ -124,7 +124,7 @@ namespace MyCore.CAD
 		}
 
 		// make prism
-		// a lot of bug happens when using Inf, not recommended
+		// a lot of bug happens when using Inf, not recommended, ref: AUTO-12540
 		public static TopoDS_Shape MakeConcretePrismByWire( TopoDS_Wire baseWire, gp_Vec vec, bool isInf )
 		{
 			// data protection
