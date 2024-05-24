@@ -328,7 +328,16 @@ namespace MyCore.CAD
 		{
 			TopoDS_Shape branchTube;
 			if( branchTubeParam.IsCutThrough ) {
-				branchTube = MakeBranchTubeTopo_CutThrough( branchTubeParam );
+				CADft_BranchTubeParam cloneParam = CloneHelper.Clone( branchTubeParam );
+
+				// set property
+				// u'll meet some bug (from OCC maybe) if u use infinity prism
+				const double MAX_VALUE = 999999;
+				cloneParam.Length = MAX_VALUE;
+				cloneParam.IntersectDir = BranchIntersectDir.Both;
+
+				// make branch tube
+				branchTube = MakeBranchTubeTopo_ByLength( cloneParam );
 			}
 			else {
 				branchTube = MakeBranchTubeTopo_ByLength( branchTubeParam );
@@ -403,20 +412,6 @@ namespace MyCore.CAD
 				return null;
 			}
 			return OCCTool.MakeConcretePrismByWire( outerWire, prismVec, false );
-		}
-
-		static TopoDS_Shape MakeBranchTubeTopo_CutThrough( CADft_BranchTubeParam branchTubeParam )
-		{
-			GetBranchTubeDir( branchTubeParam.AAngle_deg, branchTubeParam.BAngle_deg, out gp_Dir dir );
-			gp_Pnt center = new gp_Pnt( branchTubeParam.Center_X, branchTubeParam.Center_Y, branchTubeParam.Center_Z );
-
-			// make branch tube
-			TopoDS_Wire baseWire = OCCTool.MakeGeom2DWire( branchTubeParam.Shape, 0, center, dir, branchTubeParam.SelfRotateAngle_deg );
-			if( baseWire == null ) {
-				return null;
-			}
-			gp_Vec vec = new gp_Vec( dir );
-			return OCCTool.MakeConcretePrismByWire( baseWire, vec, true );
 		}
 
 		static void GetBranchTubeDir( double dA_deg, double dB_deg, out gp_Dir dir )

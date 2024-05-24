@@ -124,6 +124,7 @@ namespace MyCore.CAD
 		}
 
 		// make prism
+		// a lot of bug happens when using Inf, not recommended
 		public static TopoDS_Shape MakeConcretePrismByWire( TopoDS_Wire baseWire, gp_Vec vec, bool isInf )
 		{
 			// data protection
@@ -176,7 +177,7 @@ namespace MyCore.CAD
 				for( int i = 1; i < arrayParam.LinearCount; i++ ) {
 
 					// caluculate the linear offset distance
-					double dOffset = arrayParam.LinearDistance * i;
+					double dOffset = arrayParam.LinearDistance * i * ( arrayParam.LinearDirection == ArrayDirection.Positive ? 1 : -1 );
 
 					// get the transformation along Y axis
 					gp_Trsf trsf = new gp_Trsf();
@@ -192,7 +193,7 @@ namespace MyCore.CAD
 				for( int i = 1; i < arrayParam.AngularCount; i++ ) {
 
 					// calculate the angular offset distance
-					double dAngle_Deg = arrayParam.AngularDistance_Deg * i;
+					double dAngle_Deg = arrayParam.AngularDistance_Deg * i * ( arrayParam.AngularDirection == ArrayDirection.Positive ? 1 : -1 );
 
 					// get the transformation around Y axis
 					gp_Trsf trsf = new gp_Trsf();
@@ -217,8 +218,7 @@ namespace MyCore.CAD
 			}
 
 			// if any exception occurs, return the original shape
-			catch( Exception ex )
-			{
+			catch( Exception ex ) {
 				return oneFeature;
 			}
 		}

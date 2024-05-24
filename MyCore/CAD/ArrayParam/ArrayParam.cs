@@ -5,7 +5,7 @@ namespace MyCore.CAD
 	public enum ArrayDirection
 	{
 		Positive = 0,
-		Negative = 1
+		Negative = 1,
 	}
 
 	[Serializable]
@@ -15,8 +15,10 @@ namespace MyCore.CAD
 		{
 			LinearCount = 1;
 			LinearDistance = 50;
+			LinearDirection = ArrayDirection.Positive;
 			AngularCount = 1;
 			AngularDistance_Deg = 90;
+			AngularDirection = ArrayDirection.Positive;
 		}
 
 		public int LinearCount
@@ -31,6 +33,12 @@ namespace MyCore.CAD
 			set;
 		}
 
+		public ArrayDirection LinearDirection
+		{
+			get;
+			set;
+		}
+
 		public int AngularCount
 		{
 			get;
@@ -38,6 +46,12 @@ namespace MyCore.CAD
 		}
 
 		public double AngularDistance_Deg
+		{
+			get;
+			set;
+		}
+
+		public ArrayDirection AngularDirection
 		{
 			get;
 			set;
