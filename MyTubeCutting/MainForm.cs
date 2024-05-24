@@ -40,23 +40,7 @@ namespace MyTubeCutting
 			m_treeObjBrowser.KeyDown += m_treeObjBrowser_KeyDown;
 		}
 
-		void MainTubeStatusChanged( bool bExistMainTube )
-		{
-			// set button status
-			if( bExistMainTube == true ) {
-				m_btnEndCutter.Enabled = true;
-				m_btnBranchTube.Enabled = true;
-				m_btnBendingNotch.Enabled = true;
-				m_btnMainTube.Enabled = false;
-			}
-			else {
-				m_btnEndCutter.Enabled = false;
-				m_btnBranchTube.Enabled = false;
-				m_btnBendingNotch.Enabled = false;
-				m_btnMainTube.Enabled = true;
-			}
-		}
-
+		// viewer action
 		void m_panViewer_MouseDown( object sender, MouseEventArgs e )
 		{
 			ViewerMouseAction.MouseDown( e, m_Viewer, ref m_nXMousePosition, ref m_nYMousePosition );
@@ -75,6 +59,24 @@ namespace MyTubeCutting
 		void m_panViewer_Paint( object sender, PaintEventArgs e )
 		{
 			m_Viewer.UpdateView();
+		}
+
+		// cad feature action
+		void MainTubeStatusChanged( bool bExistMainTube )
+		{
+			// set button status
+			if( bExistMainTube == true ) {
+				m_btnEndCutter.Enabled = true;
+				m_btnBranchTube.Enabled = true;
+				m_btnBendingNotch.Enabled = true;
+				m_btnMainTube.Enabled = false;
+			}
+			else {
+				m_btnEndCutter.Enabled = false;
+				m_btnBranchTube.Enabled = false;
+				m_btnBendingNotch.Enabled = false;
+				m_btnMainTube.Enabled = true;
+			}
 		}
 
 		void m_btnMainTube_Click( object sender, System.EventArgs e )
@@ -187,7 +189,8 @@ namespace MyTubeCutting
 			}
 			else if( type == BendingNotchType.OneSideFillet ) {
 				bool isOverCut = false;
-				shape = new BN_OneSideFillet( isOverCut, NotchSide.Left );
+				NotchSide side = NotchSide.Left;
+				shape = new BN_OneSideFillet( isOverCut, side );
 			}
 			else {
 				MessageBox.Show( "The type is currenttly not supported." );
@@ -201,6 +204,7 @@ namespace MyTubeCutting
 			m_TubeCADEditor.AddBendingNotch( bendingNotchParam );
 		}
 
+		// tube editor action
 		void m_propgrdPropertyBar_PropertyValueChanged( object s, PropertyValueChangedEventArgs e )
 		{
 			m_TubeCADEditor.UpdateObjectProperty( s, e );
@@ -239,6 +243,7 @@ namespace MyTubeCutting
 			}
 		}
 
+		// view action
 		void m_btnX_Pos_Click( object sender, System.EventArgs e )
 		{
 			m_Viewer.RightView();

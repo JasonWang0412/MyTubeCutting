@@ -295,12 +295,9 @@ namespace MyTubeCutting
 			m_Viewer.UpdateView();
 		}
 
-		void RefreshCutPlaneShape()
+		void RefreshAIS()
 		{
 			foreach( KeyValuePair<string, ICADFeatureParam> pair in m_CADFeatureParamMap.FeatureMap ) {
-				if( pair.Value.Type != CADFeatureType.EndCutter ) {
-					continue;
-				}
 
 				// create new ais
 				ICADFeatureParam cadFeatureParam = m_CADFeatureParamMap.FeatureMap[ pair.Key ];
@@ -357,8 +354,8 @@ namespace MyTubeCutting
 			}
 			else if( type == EditType.ModifyMainTube ) {
 
-				// need to refresh cut plane shape when main tube size changed
-				RefreshCutPlaneShape();
+				// need to refresh cad feature AIS shape when main tube size changed
+				RefreshAIS();
 			}
 			else if( type == EditType.AddCADFeature ) {
 

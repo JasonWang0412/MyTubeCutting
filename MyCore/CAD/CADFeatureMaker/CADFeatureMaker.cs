@@ -84,7 +84,7 @@ namespace MyCore.CAD
 				}
 
 				// make branch tube
-				TopoDS_Shape oneBranchTube = MakeBranchTubeTopo( oneBranchTubeParam );
+				TopoDS_Shape oneBranchTube = MakeBranchTubeTopo( oneBranchTubeParam, mainTubeParam, true );
 				if( oneBranchTube == null ) {
 					continue;
 				}
@@ -336,23 +336,30 @@ namespace MyCore.CAD
 		}
 
 		// make branch tube
-		static TopoDS_Shape MakeBranchTubeTopo( CADft_BranchTubeParam branchTubeParam )
+		static TopoDS_Shape MakeBranchTubeTopo( CADft_BranchTubeParam branchTubeParam, CADft_MainTubeParam mainTubeParam, bool bForCut )
 		{
 			TopoDS_Shape branchTube;
 			if( branchTubeParam.IsCutThrough ) {
 				CADft_BranchTubeParam cloneParam = CloneHelper.Clone( branchTubeParam );
+				double dSize;
+				if( bForCut ) {
+					// u'll meet some bug (from OCC maybe) if u use infinity prism
+					const double MAX_VALUE = 999999;
+					dSize = MAX_VALUE;
+				}
+				else {
+					GetMainTubeBoundingBox( mainTubeParam, out dSize );
+				}
 
 				// set property
-				// u'll meet some bug (from OCC maybe) if u use infinity prism
-				const double MAX_VALUE = 999999;
-				cloneParam.Length = MAX_VALUE;
+				cloneParam.Length = dSize;
 				cloneParam.IntersectDir = BranchIntersectDir.Both;
 
 				// make branch tube
-				branchTube = MakeBranchTubeTopo_ByLength( cloneParam );
+				branchTube = MakeBranchTubePrism( cloneParam );
 			}
 			else {
-				branchTube = MakeBranchTubeTopo_ByLength( branchTubeParam );
+				branchTube = MakeBranchTubePrism( branchTubeParam );
 			}
 
 			if( branchTube == null ) {
@@ -369,37 +376,14 @@ namespace MyCore.CAD
 
 		static AIS_Shape MakeBranchTubeAIS( CADft_BranchTubeParam branchTubeParam, CADft_MainTubeParam mainTubeParam )
 		{
-			TopoDS_Shape branchTube;
-
-			if( branchTubeParam.IsCutThrough ) {
-				CADft_BranchTubeParam cloneParam = CloneHelper.Clone( branchTubeParam );
-
-				// get display size
-				GetMainTubeBoundingBox( mainTubeParam, out double dSize );
-
-				// set property
-				cloneParam.Length = dSize;
-				cloneParam.IntersectDir = BranchIntersectDir.Both;
-
-				// make branch tube
-				branchTube = MakeBranchTubeTopo_ByLength( cloneParam );
-			}
-			else {
-				branchTube = MakeBranchTubeTopo_ByLength( branchTubeParam );
-			}
-
+			TopoDS_Shape branchTube = MakeBranchTubeTopo( branchTubeParam, mainTubeParam, false );
 			if( branchTube == null ) {
 				return null;
 			}
-
-			TopoDS_Shape arrayBranchTube = OCCTool.MakeArrayCompound( branchTube, branchTubeParam.ArrayParam );
-			if( arrayBranchTube == null ) {
-				return new AIS_Shape( branchTube );
-			}
-			return new AIS_Shape( arrayBranchTube );
+			return new AIS_Shape( branchTube );
 		}
 
-		static TopoDS_Shape MakeBranchTubeTopo_ByLength( CADft_BranchTubeParam branchTubeParam )
+		static TopoDS_Shape MakeBranchTubePrism( CADft_BranchTubeParam branchTubeParam )
 		{
 			// calculate prism vector
 			gp_Pnt center;
@@ -460,10 +444,9 @@ namespace MyCore.CAD
 			if( transformR.IsDone() == false ) {
 				return null;
 			}
-			TopoDS_Shape shape = transformR.Shape();
 
 			// 3. get the extrema, there might meet some bug, ref: AUTO-12540
-			BoundingBox boundingBox = OCCTool.GetBoundingBox( shape );
+			BoundingBox boundingBox = OCCTool.GetBoundingBox( transformR.Shape() );
 			if( boundingBox == null ) {
 				return null;
 			}
@@ -476,9 +459,13 @@ namespace MyCore.CAD
 			double angleB_deg = bendingNotchParam.BAngle_deg;
 			double dThickness = mainTubeParam.CrossSection.Thickness;
 			TopoDS_Wire notchWire = OCCTool.MakeBendingNotchWire( bendingNotchParam.Shape, posY, posZ, minZ, maxZ, dThickness, angleB_deg );
+			if( notchWire == null ) {
+				return null;
+			}
 
 			// make the bending notch
 			// 1. get the direction and size
+			// bending notch can use bounding box size for both display and cut
 			GetBendingNotchDir( bendingNotchParam.BAngle_deg, out gp_Dir dir );
 			GetMainTubeBoundingBox( mainTubeParam, out double dSize );
 
@@ -500,7 +487,7 @@ namespace MyCore.CAD
 				return null;
 			}
 
-			// make the array
+			// make array
 			TopoDS_Shape arrayBendingNotch = OCCTool.MakeArrayCompound( bendingNotch, bendingNotchParam.ArrayParam );
 			if( arrayBendingNotch == null ) {
 				return bendingNotch;

@@ -55,7 +55,7 @@ namespace MyCore.CAD
 
 			TopoDS_Wire baseWire;
 			if( shape.Type == BendingNotch_Type.VShape ) {
-				baseWire = MakeYOZVShapeBNWire( (BN_VShape)shape, y, z, minZ, maxZ );
+				baseWire = MakeYOZVShapeBNWire( (BN_VShape)shape, y, z, maxZ );
 			}
 			else if( shape.Type == BendingNotch_Type.BothSideFillet ) {
 				baseWire = MakeYOZBothSideBNWire( (BN_BothSideFillet)shape, y, z, minZ, maxZ, dThickness );
@@ -64,6 +64,9 @@ namespace MyCore.CAD
 				baseWire = MakeYOZOneSideBNWire( (BN_OneSideFillet)shape, y, z, minZ, maxZ, dThickness );
 			}
 			else {
+				return null;
+			}
+			if( baseWire == null ) {
 				return null;
 			}
 
@@ -359,7 +362,7 @@ namespace MyCore.CAD
 			return wireMaker.Wire();
 		}
 
-		static TopoDS_Wire MakeYOZVShapeBNWire( BN_VShape shape, double y, double z, double minZ, double maxZ )
+		static TopoDS_Wire MakeYOZVShapeBNWire( BN_VShape shape, double y, double z, double maxZ )
 		{
 			// calculate points
 			double dVHeight = maxZ - Math.Abs( shape.JointGapLength ) - z;
