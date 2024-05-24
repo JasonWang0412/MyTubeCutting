@@ -14,9 +14,9 @@ namespace MyCore.CAD
 		public ArrayParam()
 		{
 			LinearCount = 1;
-			LinearDistance = 10;
+			LinearDistance = 50;
 			AngularCount = 1;
-			AngularDistance_Deg = 30;
+			AngularDistance_Deg = 90;
 		}
 
 		public int LinearCount

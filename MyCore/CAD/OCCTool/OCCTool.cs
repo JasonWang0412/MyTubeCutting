@@ -1,8 +1,10 @@
-﻿using OCC.BRepBuilderAPI;
+﻿using OCC.BRep;
+using OCC.BRepBuilderAPI;
 using OCC.BRepExtrema;
 using OCC.BRepPrimAPI;
 using OCC.Geom;
 using OCC.gp;
+using OCC.TopLoc;
 using OCC.TopoDS;
 using System;
 using System.Collections.Generic;
@@ -148,6 +150,77 @@ namespace MyCore.CAD
 				return null;
 			}
 			return branchTubeMaker.Shape();
+		}
+
+		// make array
+		public static TopoDS_Shape MakeArrayCompound( TopoDS_Shape oneFeature, ArrayParam arrayParam )
+		{
+			// data protection
+			if( oneFeature == null || arrayParam == null || arrayParam.IsValid() == false ) {
+				return null;
+			}
+			if( arrayParam.LinearCount == 1 && arrayParam.AngularCount == 1 ) {
+				return oneFeature;
+			}
+
+			try {
+				// create compound
+				TopoDS_Compound compound = new TopoDS_Compound();
+				TopoDS_Shape compoundShape = compound;
+				BRep_Builder builder = new BRep_Builder();
+				builder.MakeCompound( ref compound );
+
+				// make linear array
+				List<TopoDS_Shape> linearArrayShapeList = new List<TopoDS_Shape>();
+				linearArrayShapeList.Add( oneFeature );
+				for( int i = 1; i < arrayParam.LinearCount; i++ ) {
+
+					// caluculate the linear offset distance
+					double dOffset = arrayParam.LinearDistance * i;
+
+					// get the transformation along Y axis
+					gp_Trsf trsf = new gp_Trsf();
+					trsf.SetTranslation( new gp_Vec( 0, dOffset, 0 ) );
+					TopoDS_Shape oneLinearCopy = oneFeature.Moved( new TopLoc_Location( trsf ) );
+
+					linearArrayShapeList.Add( oneLinearCopy );
+				}
+
+				// make angular array
+				List<List<TopoDS_Shape>> angularArrayShapeList = new List<List<TopoDS_Shape>>();
+				angularArrayShapeList.Add( linearArrayShapeList );
+				for( int i = 1; i < arrayParam.AngularCount; i++ ) {
+
+					// calculate the angular offset distance
+					double dAngle_Deg = arrayParam.AngularDistance_Deg * i;
+
+					// get the transformation around Y axis
+					gp_Trsf trsf = new gp_Trsf();
+					trsf.SetRotation( new gp_Ax1( new gp_Pnt( 0, 0, 0 ), new gp_Dir( 0, -1, 0 ) ), dAngle_Deg * Math.PI / 180 );
+
+					List<TopoDS_Shape> oneAngularArray = new List<TopoDS_Shape>();
+					foreach( TopoDS_Shape oneLinearCopy in linearArrayShapeList ) {
+						TopoDS_Shape oneAngularCopy = oneLinearCopy.Moved( new TopLoc_Location( trsf ) );
+						oneAngularArray.Add( oneAngularCopy );
+					}
+					angularArrayShapeList.Add( oneAngularArray );
+				}
+
+				// add all shapes to compound
+				foreach( List<TopoDS_Shape> oneAngularArray in angularArrayShapeList ) {
+					foreach( TopoDS_Shape oneLinearCopy in oneAngularArray ) {
+						builder.Add( ref compoundShape, oneLinearCopy );
+					}
+				}
+
+				return compound;
+			}
+
+			// if any exception occurs, return the original shape
+			catch( Exception ex )
+			{
+				return oneFeature;
+			}
 		}
 
 		// make wire

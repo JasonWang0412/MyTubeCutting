@@ -326,21 +326,24 @@ namespace MyCore.CAD
 		// make branch tube
 		static TopoDS_Shape MakeBranchTubeTopo( CADft_BranchTubeParam branchTubeParam )
 		{
+			TopoDS_Shape branchTube;
 			if( branchTubeParam.IsCutThrough ) {
-				return MakeBranchTubeTopo_CutThrough( branchTubeParam );
+				branchTube = MakeBranchTubeTopo_CutThrough( branchTubeParam );
 			}
 			else {
-				return MakeBranchTubeTopo_ByLength( branchTubeParam );
+				branchTube = MakeBranchTubeTopo_ByLength( branchTubeParam );
 			}
 
-			//if( branchTubeParam.ArrayParam.LinearCount <= 1 && branchTubeParam.ArrayParam.AngularCount <= 1 ) {
-			//	return branchTubeMaker.Shape();
-			//}
+			if( branchTube == null ) {
+				return null;
+			}
 
-			//// make array
-			//TopoDS_Shape oneBranchTube = branchTubeMaker.Shape();
-			//TopoDS_Shape arrayBranchTube = MakeArrayCompound( oneBranchTube, branchTubeParam.ArrayParam );
-			//return arrayBranchTube;
+			// make array
+			TopoDS_Shape arrayBranchTube = OCCTool.MakeArrayCompound( branchTube, branchTubeParam.ArrayParam );
+			if( arrayBranchTube == null ) {
+				return branchTube;
+			}
+			return arrayBranchTube;
 		}
 
 		static AIS_Shape MakeBranchTubeAIS( CADft_BranchTubeParam branchTubeParam, CADft_MainTubeParam mainTubeParam )
@@ -367,7 +370,12 @@ namespace MyCore.CAD
 			if( branchTube == null ) {
 				return null;
 			}
-			return new AIS_Shape( branchTube );
+
+			TopoDS_Shape arrayBranchTube = OCCTool.MakeArrayCompound( branchTube, branchTubeParam.ArrayParam );
+			if( arrayBranchTube == null ) {
+				return new AIS_Shape( branchTube );
+			}
+			return new AIS_Shape( arrayBranchTube );
 		}
 
 		static TopoDS_Shape MakeBranchTubeTopo_ByLength( CADft_BranchTubeParam branchTubeParam )
@@ -521,61 +529,6 @@ namespace MyCore.CAD
 
 			dSize = Math.Sqrt( Math.Pow( dWidth, 2 ) + Math.Pow( dHeight, 2 ) + Math.Pow( dLength, 2 ) );
 			return new BoundingBox( -dWidth / 2, dWidth / 2, -dHeight / 2, dHeight / 2, 0, dLength );
-		}
-
-		// make array
-		static TopoDS_Shape MakeArrayCompound( TopoDS_Shape oneFeature, ArrayParam arrayParam )
-		{
-			// create compound
-			TopoDS_Compound compound = new TopoDS_Compound();
-			TopoDS_Shape compoundShape = compound;
-			BRep_Builder builder = new BRep_Builder();
-			builder.MakeCompound( ref compound );
-
-			// make linear array
-			List<TopoDS_Shape> linearArrayShapeList = new List<TopoDS_Shape>();
-			linearArrayShapeList.Add( oneFeature );
-			for( int i = 1; i < arrayParam.LinearCount; i++ ) {
-
-				// caluculate the linear offset distance
-				double dOffset = arrayParam.LinearDistance * i;
-
-				// get the transformation along Y axis
-				gp_Trsf trsf = new gp_Trsf();
-				trsf.SetTranslation( new gp_Vec( 0, dOffset, 0 ) );
-				TopoDS_Shape oneLinearCopy = oneFeature.Moved( new OCC.TopLoc.TopLoc_Location( trsf ) );
-
-				linearArrayShapeList.Add( oneLinearCopy );
-			}
-
-			// make angular array
-			List<List<TopoDS_Shape>> angularArrayShapeList = new List<List<TopoDS_Shape>>();
-			angularArrayShapeList.Add( linearArrayShapeList );
-			for( int i = 1; i < arrayParam.AngularCount; i++ ) {
-
-				// calculate the angular offset distance
-				double dAngle_Deg = arrayParam.AngularDistance_Deg * i;
-
-				// get the transformation around Y axis
-				gp_Trsf trsf = new gp_Trsf();
-				trsf.SetRotation( new gp_Ax1( new gp_Pnt( 0, 0, 0 ), new gp_Dir( 0, 1, 0 ) ), dAngle_Deg * Math.PI / 180 );
-
-				List<TopoDS_Shape> oneAngularArray = new List<TopoDS_Shape>();
-				foreach( TopoDS_Shape oneLinearCopy in linearArrayShapeList ) {
-					TopoDS_Shape oneAngularCopy = oneLinearCopy.Moved( new OCC.TopLoc.TopLoc_Location( trsf ) );
-					oneAngularArray.Add( oneAngularCopy );
-				}
-				angularArrayShapeList.Add( oneAngularArray );
-			}
-
-			// add all shapes to compound
-			foreach( List<TopoDS_Shape> oneAngularArray in angularArrayShapeList ) {
-				foreach( TopoDS_Shape oneLinearCopy in oneAngularArray ) {
-					builder.Add( ref compoundShape, oneLinearCopy );
-				}
-			}
-
-			return compound;
 		}
 	}
 }

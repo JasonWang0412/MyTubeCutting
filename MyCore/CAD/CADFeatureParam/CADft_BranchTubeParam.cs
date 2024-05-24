@@ -27,7 +27,7 @@ namespace MyCore.CAD
 			IntersectDir = intersectDir;
 			IsCutThrough = isCutThrough;
 			Length = length;
-			//ArrayParam = new ArrayParam();
+			ArrayParam = new ArrayParam();
 		}
 
 		[Browsable( false )]
@@ -99,12 +99,12 @@ namespace MyCore.CAD
 			set;
 		}
 
-		//[TypeConverter( typeof( ExpandableObjectConverter ) )]
-		//public ArrayParam ArrayParam
-		//{
-		//	get;
-		//	set;
-		//}
+		[TypeConverter( typeof( ExpandableObjectConverter ) )]
+		public ArrayParam ArrayParam
+		{
+			get;
+			set;
+		}
 
 		public bool IsValid()
 		{
@@ -133,15 +133,10 @@ namespace MyCore.CAD
 				return false;
 			}
 
-			// array param should not be null
-			//if( ArrayParam == null ) {
-			//	return false;
-			//}
-
-			// array param should be valid
-			//if( ArrayParam.IsValid() == false ) {
-			//	return false;
-			//}
+			// array param should not be null and should be valid
+			if( ArrayParam == null || ArrayParam.IsValid() == false ) {
+				return false;
+			}
 
 			return true;
 		}
