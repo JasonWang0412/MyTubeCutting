@@ -363,9 +363,9 @@ namespace MyCore.CAD
 			Geom_Circle circleR = new Geom_Circle( new gp_Ax2( new gp_Pnt( 0, y11, z11 + shape.FilletRadius ), new gp_Dir( 1, 0, 0 ) ), shape.FilletRadius );
 			Geom_TrimmedCurve trimL = new Geom_TrimmedCurve( circleL, Math.PI, Math.PI + dHalfAngle_Rad, true );
 			Geom_TrimmedCurve trimR = new Geom_TrimmedCurve( circleR, Math.PI - dHalfAngle_Rad, Math.PI, true );
-			BRepBuilderAPI_MakeEdge edgeL = new BRepBuilderAPI_MakeEdge( trimL );
-			BRepBuilderAPI_MakeEdge edgeR = new BRepBuilderAPI_MakeEdge( trimR );
-			if( edgeL.IsDone() == false || edgeR.IsDone() == false ) {
+			BRepBuilderAPI_MakeEdge edgeCircleL = new BRepBuilderAPI_MakeEdge( trimL );
+			BRepBuilderAPI_MakeEdge edgeCircleR = new BRepBuilderAPI_MakeEdge( trimR );
+			if( edgeCircleL.IsDone() == false || edgeCircleR.IsDone() == false ) {
 				return null;
 			}
 			gp_Pnt pL = trimL.Value( trimL.LastParameter() );
@@ -417,7 +417,7 @@ namespace MyCore.CAD
 			if( edge12.IsDone() ) {
 				wireMaker.Add( edge12.Edge() );
 			}
-			wireMaker.Add( edgeL.Edge() );
+			wireMaker.Add( edgeCircleL.Edge() );
 			BRepBuilderAPI_MakeEdge edge34 = new BRepBuilderAPI_MakeEdge( p3, p4 );
 			if( edge34.IsDone() ) {
 				wireMaker.Add( edge34.Edge() );
@@ -446,7 +446,7 @@ namespace MyCore.CAD
 			if( edge910.IsDone() ) {
 				wireMaker.Add( edge910.Edge() );
 			}
-			wireMaker.Add( edgeR.Edge() );
+			wireMaker.Add( edgeCircleR.Edge() );
 			BRepBuilderAPI_MakeEdge edge1112 = new BRepBuilderAPI_MakeEdge( p11, p12 );
 			if( edge1112.IsDone() ) {
 				wireMaker.Add( edge1112.Edge() );
@@ -463,7 +463,82 @@ namespace MyCore.CAD
 
 		static TopoDS_Wire MakeYOZOneSideBNWire( BN_OneSideFillet shape, double y, double z, double minZ, double maxZ, double dThickness )
 		{
-			return null;
+			// calculate points
+			double dArcRadius = maxZ - z;
+			double dArcLength = dArcRadius * Math.PI / 2;
+			double dOverCut = 0;
+			if( shape.IsOverCut && z - minZ > dThickness ) {
+				dOverCut = z - minZ - dThickness;
+			}
+			double y0 = y;
+			double z0 = z - dOverCut;
+			double y1 = y0;
+			double z1 = z0 + dOverCut; // equal to z
+			double y2 = y1;
+			double z2 = z1 + dArcRadius; // equal to maxZ
+
+			double dTopLength = dArcLength - dArcRadius;
+			double y3 = y2 + dTopLength;
+			double z3 = z2;
+
+			Geom_Circle circle = new Geom_Circle( new gp_Ax2( new gp_Pnt( 0, y + dArcLength, z + dArcRadius ), new gp_Dir( 1, 0, 0 ) ), dArcRadius );
+			Geom_TrimmedCurve trim = new Geom_TrimmedCurve( circle, Math.PI / 2, Math.PI, true );
+			BRepBuilderAPI_MakeEdge edgeCircle = new BRepBuilderAPI_MakeEdge( trim );
+			if( edgeCircle.IsDone() == false ) {
+				return null;
+			}
+
+			double y5 = y0 + dArcLength;
+			double z5 = z0;
+			double y4 = y5;
+			double z4 = z5 + dOverCut; // equal to z
+
+			// make points
+			gp_Pnt p0 = new gp_Pnt( 0, y0, z0 );
+			gp_Pnt p1 = new gp_Pnt( 0, y1, z1 );
+			gp_Pnt p2 = new gp_Pnt( 0, y2, z2 );
+			gp_Pnt p3 = new gp_Pnt( 0, y3, z3 );
+			gp_Pnt p4 = new gp_Pnt( 0, y4, z4 );
+			gp_Pnt p5 = new gp_Pnt( 0, y5, z5 );
+
+			// make wire
+			BRepBuilderAPI_MakeWire wireMaker = new BRepBuilderAPI_MakeWire();
+			BRepBuilderAPI_MakeEdge edge01 = new BRepBuilderAPI_MakeEdge( p0, p1 );
+			if( edge01.IsDone() ) {
+				wireMaker.Add( edge01.Edge() );
+			}
+			BRepBuilderAPI_MakeEdge edge12 = new BRepBuilderAPI_MakeEdge( p1, p2 );
+			if( edge12.IsDone() ) {
+				wireMaker.Add( edge12.Edge() );
+			}
+			BRepBuilderAPI_MakeEdge edge23 = new BRepBuilderAPI_MakeEdge( p2, p3 );
+			if( edge23.IsDone() ) {
+				wireMaker.Add( edge23.Edge() );
+			}
+			wireMaker.Add( edgeCircle.Edge() );
+			BRepBuilderAPI_MakeEdge edge45 = new BRepBuilderAPI_MakeEdge( p4, p5 );
+			if( edge45.IsDone() ) {
+				wireMaker.Add( edge45.Edge() );
+			}
+			BRepBuilderAPI_MakeEdge edge50 = new BRepBuilderAPI_MakeEdge( p5, p0 );
+			if( edge50.IsDone() ) {
+				wireMaker.Add( edge50.Edge() );
+			}
+			if( wireMaker.IsDone() == false ) {
+				return null;
+			}
+			if( shape.Side == NotchSide.Left ) {
+				return wireMaker.Wire();
+			}
+
+			// flip the wire by rotate 180 degree around Z axis and center <0, y, 0>
+			gp_Trsf trsf = new gp_Trsf();
+			trsf.SetRotation( new gp_Ax1( new gp_Pnt( 0, y, 0 ), new gp_Dir( 0, 0, 1 ) ), Math.PI );
+			BRepBuilderAPI_Transform wireTrsf = new BRepBuilderAPI_Transform( wireMaker.Wire(), trsf );
+			if( wireTrsf.IsDone() == false ) {
+				return null;
+			}
+			return TopoDS.ToWire( wireTrsf.Shape() );
 		}
 
 		// get bounding box

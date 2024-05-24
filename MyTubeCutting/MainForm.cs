@@ -179,7 +179,7 @@ namespace MyTubeCutting
 				shape = new BN_VShape( bendingAngle_deg, jointGapLength );
 			}
 			else if( type == BendingNotchType.BothSideFillet ) {
-				double filletRadius = 10;
+				double filletRadius = 25;
 				double bendingAngle_deg = 90;
 				bool isOverCut = false;
 				double jointGapLength = 0;
@@ -187,7 +187,7 @@ namespace MyTubeCutting
 			}
 			else if( type == BendingNotchType.OneSideFillet ) {
 				bool isOverCut = false;
-				shape = new BN_OneSideFillet( isOverCut );
+				shape = new BN_OneSideFillet( isOverCut, NotchSide.Left );
 			}
 			else {
 				MessageBox.Show( "The type is currenttly not supported." );

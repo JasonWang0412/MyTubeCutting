@@ -3,12 +3,19 @@ using System.ComponentModel;
 
 namespace MyCore.CAD
 {
+	public enum NotchSide
+	{
+		Left,
+		Right,
+	}
+
 	[Serializable]
 	public class BN_OneSideFillet : IBendingNotchShape
 	{
-		public BN_OneSideFillet( bool isOverCut )
+		public BN_OneSideFillet( bool isOverCut, NotchSide side )
 		{
 			IsOverCut = isOverCut;
+			Side = side;
 		}
 
 		[Browsable( false )]
@@ -21,6 +28,11 @@ namespace MyCore.CAD
 		}
 
 		public bool IsOverCut
+		{
+			get; set;
+		}
+
+		public NotchSide Side
 		{
 			get; set;
 		}
