@@ -207,7 +207,7 @@ namespace MyTubeCutting
 		// tube editor action
 		void m_propgrdPropertyBar_PropertyValueChanged( object s, PropertyValueChangedEventArgs e )
 		{
-			m_TubeCADEditor.UpdateObjectProperty( s, e );
+			m_TubeCADEditor.ModifyObjectProperty( s, e );
 		}
 
 		void m_treeObjBrowser_AfterSelect( object sender, TreeViewEventArgs e )

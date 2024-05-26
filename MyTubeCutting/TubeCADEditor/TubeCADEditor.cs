@@ -102,7 +102,10 @@ namespace MyTubeCutting
 
 			// remove cad feature
 			else if( m_CADFeatureParamMap.FeatureMap.ContainsKey( m_szEditObjName ) ) {
-				RemoveCADFeature( m_szEditObjName );
+
+				// set command
+				RemoveCadFeatureCommand command = new RemoveCadFeatureCommand( m_szEditObjName, m_CADFeatureParamMap );
+				DoCommand( command );
 			}
 		}
 
@@ -121,7 +124,7 @@ namespace MyTubeCutting
 			ShowObjectProperty();
 		}
 
-		internal void UpdateObjectProperty( object s, PropertyValueChangedEventArgs e )
+		internal void ModifyObjectProperty( object s, PropertyValueChangedEventArgs e )
 		{
 			// if new parameter is invalid, restore old parameter and show property
 			if( m_EdiObjParam.IsValid() == false ) {
@@ -131,7 +134,6 @@ namespace MyTubeCutting
 
 			// main tube
 			if( m_szEditObjName == MAIN_TUBE_NAME ) {
-
 				ModifyMainTubeCommand command = new ModifyMainTubeCommand( MAIN_TUBE_NAME, CloneHelper.Clone( m_EdiObjParam ), m_CADFeatureParamMap );
 				DoCommand( command );
 			}
@@ -141,6 +143,24 @@ namespace MyTubeCutting
 				ModifyCadFeatureCommand command = new ModifyCadFeatureCommand( m_szEditObjName, CloneHelper.Clone( m_EdiObjParam ), m_CADFeatureParamMap );
 				DoCommand( command );
 			}
+		}
+
+		internal gp_Dir GetEditObjectDir()
+		{
+			// main tube
+			if( m_szEditObjName == MAIN_TUBE_NAME
+				&& m_CADFeatureParamMap.MainTubeParam != null ) {
+				return new gp_Dir( 0, 1, 0 );
+			}
+
+			// cad feature
+			if( m_CADFeatureParamMap.FeatureMap.ContainsKey( m_szEditObjName )
+				&& m_CADFeatureParamMap.FeatureMap[ m_szEditObjName ] != null ) {
+				return CADFeatureMaker.GetCADFeatureDir( m_CADFeatureParamMap.FeatureMap[ m_szEditObjName ] );
+			}
+
+			// default dir
+			return new gp_Dir( 0, 1, 0 );
 		}
 
 		internal void Undo()
@@ -177,24 +197,6 @@ namespace MyTubeCutting
 			m_CADEditRedoCommandQueue.RemoveAt( m_CADEditRedoCommandQueue.Count - 1 );
 		}
 
-		internal gp_Dir GetEditObjectDir()
-		{
-			// main tube
-			if( m_szEditObjName == MAIN_TUBE_NAME
-				&& m_CADFeatureParamMap.MainTubeParam != null ) {
-				return new gp_Dir( 0, 1, 0 );
-			}
-
-			// cad feature
-			if( m_CADFeatureParamMap.FeatureMap.ContainsKey( m_szEditObjName )
-				&& m_CADFeatureParamMap.FeatureMap[ m_szEditObjName ] != null ) {
-				return CADFeatureMaker.GetCADFeatureDir( m_CADFeatureParamMap.FeatureMap[ m_szEditObjName ] );
-			}
-
-			// default dir
-			return new gp_Dir( 0, 1, 0 );
-		}
-
 		void UpdateAndRedrawResultTube()
 		{
 			// remove all shape if main tube not exist
@@ -206,12 +208,11 @@ namespace MyTubeCutting
 			// remove old tube
 			if( m_ResultTubeAIS != null ) {
 				m_Viewer.GetAISContext().Remove( m_ResultTubeAIS, false );
+				m_ResultTubeAIS = null;
 			}
 
 			// make new tube
 			TopoDS_Shape tubeShape = CADFeatureMaker.MakeResultTube( m_CADFeatureParamMap );
-
-			// data protection
 			if( tubeShape == null ) {
 				return;
 			}
@@ -229,13 +230,6 @@ namespace MyTubeCutting
 		{
 			// set command
 			AddCadFeatureCommand command = new AddCadFeatureCommand( szName, cadFeatureParam, m_CADFeatureParamMap );
-			DoCommand( command );
-		}
-
-		void RemoveCADFeature( string szName )
-		{
-			// set command
-			RemoveCadFeatureCommand command = new RemoveCadFeatureCommand( szName, m_CADFeatureParamMap );
 			DoCommand( command );
 		}
 
@@ -264,7 +258,7 @@ namespace MyTubeCutting
 			}
 
 			// display selected object shape
-			if( m_CADFeatureNameAISMap.ContainsKey( m_szEditObjName ) == false ) {
+			if( m_CADFeatureNameAISMap.ContainsKey( m_szEditObjName ) == false || m_CADFeatureNameAISMap[ m_szEditObjName ] == null ) {
 				return;
 			}
 			m_Viewer.GetAISContext().Display( m_CADFeatureNameAISMap[ m_szEditObjName ], false );
@@ -300,7 +294,11 @@ namespace MyTubeCutting
 			foreach( KeyValuePair<string, ICADFeatureParam> pair in m_CADFeatureParamMap.FeatureMap ) {
 
 				// create new ais
-				ICADFeatureParam cadFeatureParam = m_CADFeatureParamMap.FeatureMap[ pair.Key ];
+				ICADFeatureParam cadFeatureParam = pair.Value;
+				if( cadFeatureParam == null ) {
+					MessageBox.Show( "Error: CAD Feature param not found in map." );
+					return;
+				}
 				AIS_Shape cadFeatureAIS = CADFeatureMaker.MakeCADFeatureAIS( cadFeatureParam, m_CADFeatureParamMap.MainTubeParam );
 				if( cadFeatureAIS == null ) {
 					MessageBox.Show( "Error: CAD Feature AIS generated failed." );
@@ -318,6 +316,7 @@ namespace MyTubeCutting
 			m_Viewer.UpdateView();
 		}
 
+		// TODO: code refine here
 		void UpdateEditorAfterCommand( EditType type, string szObjectName )
 		{
 			if( type == EditType.AddMainTube ) {
@@ -430,6 +429,7 @@ namespace MyTubeCutting
 			UpdateAndRedrawResultTube();
 		}
 
+		// TODO: let command check validility, and return the procees when check failed
 		void DoCommand( ICADEditCommand command )
 		{
 			command.EditFinished += UpdateEditorAfterCommand;
