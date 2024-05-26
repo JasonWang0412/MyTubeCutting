@@ -8,8 +8,6 @@ namespace MyTubeCutting
 		{
 			m_szMainTubeName = szMainTubeName;
 			m_BackupMainTubeParam = paramMap.MainTubeParam;
-
-			// send whole param map to yield the pointer of the main tube param
 			m_CADFeatureParamMap = paramMap;
 		}
 

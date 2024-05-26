@@ -1,26 +1,25 @@
 ﻿using MyCore.CAD;
-using System.Collections.Generic;
 
 namespace MyTubeCutting
 {
 	internal class RemoveCadFeatureCommand : ICADEditCommand
 	{
-		public RemoveCadFeatureCommand( string szFeatureName, Dictionary<string, ICADFeatureParam> editCADFeatureNameParamMap )
+		public RemoveCadFeatureCommand( string szFeatureName, CADFeatureParamMap paramMap )
 		{
 			m_szFeatureName = szFeatureName;
-			m_BackupCADFeatureParam = editCADFeatureNameParamMap[ szFeatureName ];
-			m_CADFeatureNameParamMap = editCADFeatureNameParamMap;
+			m_BackupCADFeatureParam = paramMap.FeatureMap[ szFeatureName ];
+			m_CADFeatureParamMap = paramMap;
 		}
 
 		public void Do()
 		{
 			// data protection
-			if( m_CADFeatureNameParamMap.ContainsKey( m_szFeatureName ) == false ) {
+			if( m_CADFeatureParamMap.FeatureMap.ContainsKey( m_szFeatureName ) == false ) {
 				return;
 			}
 
 			// remove the feature
-			m_CADFeatureNameParamMap.Remove( m_szFeatureName );
+			m_CADFeatureParamMap.FeatureMap.Remove( m_szFeatureName );
 
 			// invoke the event
 			EditFinished?.Invoke( EditType.RemoveCADFeature, m_szFeatureName );
@@ -29,7 +28,7 @@ namespace MyTubeCutting
 		public void Undo()
 		{
 			// add the feature back
-			m_CADFeatureNameParamMap.Add( m_szFeatureName, m_BackupCADFeatureParam );
+			m_CADFeatureParamMap.FeatureMap.Add( m_szFeatureName, m_BackupCADFeatureParam );
 
 			// invoke the event
 			EditFinished?.Invoke( EditType.AddCADFeature, m_szFeatureName );
@@ -39,6 +38,6 @@ namespace MyTubeCutting
 
 		string m_szFeatureName;
 		ICADFeatureParam m_BackupCADFeatureParam;
-		Dictionary<string, ICADFeatureParam> m_CADFeatureNameParamMap;
+		CADFeatureParamMap m_CADFeatureParamMap;
 	}
 }

@@ -138,7 +138,7 @@ namespace MyTubeCutting
 
 			// cad feature
 			else if( m_CADFeatureParamMap.FeatureMap.ContainsKey( m_szEditObjName ) ) {
-				ModifyCadFeatureCommand command = new ModifyCadFeatureCommand( m_szEditObjName, CloneHelper.Clone( m_EdiObjParam ), m_CADFeatureParamMap.FeatureMap );
+				ModifyCadFeatureCommand command = new ModifyCadFeatureCommand( m_szEditObjName, CloneHelper.Clone( m_EdiObjParam ), m_CADFeatureParamMap );
 				DoCommand( command );
 			}
 		}
@@ -228,14 +228,14 @@ namespace MyTubeCutting
 		void AddCADFeature( string szName, ICADFeatureParam cadFeatureParam )
 		{
 			// set command
-			AddCadFeatureCommand command = new AddCadFeatureCommand( szName, cadFeatureParam, m_CADFeatureParamMap.FeatureMap );
+			AddCadFeatureCommand command = new AddCadFeatureCommand( szName, cadFeatureParam, m_CADFeatureParamMap );
 			DoCommand( command );
 		}
 
 		void RemoveCADFeature( string szName )
 		{
 			// set command
-			RemoveCadFeatureCommand command = new RemoveCadFeatureCommand( szName, m_CADFeatureParamMap.FeatureMap );
+			RemoveCadFeatureCommand command = new RemoveCadFeatureCommand( szName, m_CADFeatureParamMap );
 			DoCommand( command );
 		}
 

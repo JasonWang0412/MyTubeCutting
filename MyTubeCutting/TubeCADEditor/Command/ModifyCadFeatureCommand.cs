@@ -1,19 +1,15 @@
 ﻿using MyCore.CAD;
 using MyCore.Tool;
-using System.Collections.Generic;
 
 namespace MyTubeCutting
 {
 	internal class ModifyCadFeatureCommand : ICADEditCommand
 	{
-		public event CADEditFinishEventHandler EditFinished;
-
-		public ModifyCadFeatureCommand( string szFeatureName, ICADFeatureParam newCADFeatureParam,
-			Dictionary<string, ICADFeatureParam> editCADFeatureNameParamMap )
+		public ModifyCadFeatureCommand( string szFeatureName, ICADFeatureParam newCADFeatureParam, CADFeatureParamMap paramMap )
 		{
 			m_szFeatureName = szFeatureName;
 			m_newCADFeatureParam = newCADFeatureParam;
-			m_CADFeatureNameParamMap = editCADFeatureNameParamMap;
+			m_CADFeatureParamMap = paramMap;
 		}
 
 		public void Do()
@@ -24,15 +20,15 @@ namespace MyTubeCutting
 			}
 
 			// data protection
-			if( m_CADFeatureNameParamMap.ContainsKey( m_szFeatureName ) == false ) {
+			if( m_CADFeatureParamMap.FeatureMap.ContainsKey( m_szFeatureName ) == false ) {
 				return;
 			}
 
 			// backup the old value
-			m_oldCADFeatureParam = m_CADFeatureNameParamMap[ m_szFeatureName ];
+			m_oldCADFeatureParam = m_CADFeatureParamMap.FeatureMap[ m_szFeatureName ];
 
 			// clone and update the new value
-			m_CADFeatureNameParamMap[ m_szFeatureName ] = CloneHelper.Clone( m_newCADFeatureParam );
+			m_CADFeatureParamMap.FeatureMap[ m_szFeatureName ] = CloneHelper.Clone( m_newCADFeatureParam );
 
 			// invoke the event
 			EditFinished?.Invoke( EditType.ModifyCADFeature, m_szFeatureName );
@@ -41,20 +37,22 @@ namespace MyTubeCutting
 		public void Undo()
 		{
 			// data protection
-			if( m_CADFeatureNameParamMap.ContainsKey( m_szFeatureName ) == false ) {
+			if( m_CADFeatureParamMap.FeatureMap.ContainsKey( m_szFeatureName ) == false ) {
 				return;
 			}
 
 			// restore the old value
-			m_CADFeatureNameParamMap[ m_szFeatureName ] = m_oldCADFeatureParam;
+			m_CADFeatureParamMap.FeatureMap[ m_szFeatureName ] = m_oldCADFeatureParam;
 
 			// invoke the event
 			EditFinished?.Invoke( EditType.ModifyCADFeature, m_szFeatureName );
 		}
 
+		public event CADEditFinishEventHandler EditFinished;
+
 		string m_szFeatureName;
 		ICADFeatureParam m_newCADFeatureParam;
 		ICADFeatureParam m_oldCADFeatureParam;
-		Dictionary<string, ICADFeatureParam> m_CADFeatureNameParamMap;
+		CADFeatureParamMap m_CADFeatureParamMap;
 	}
 }
