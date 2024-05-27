@@ -14,7 +14,7 @@
 
 	internal interface ICADEditCommand
 	{
-		void Do();
+		CommandErrorCode Do();
 
 		void Undo();
 

@@ -90,20 +90,12 @@ namespace MyTubeCutting
 		{
 			// remove main tube
 			if( m_szEditObjName == MAIN_TUBE_NAME ) {
-
-				// can not remove main tube when there exist CAD Features
-				if( m_CADFeatureParamMap.FeatureMap.Count != 0 ) {
-					MessageBox.Show( "Cannot remove main tube when there exist CAD Features." );
-					return;
-				}
 				RemoveMainTubeCommand command = new RemoveMainTubeCommand( MAIN_TUBE_NAME, m_CADFeatureParamMap );
 				DoCommand( command );
 			}
 
 			// remove cad feature
-			else if( m_CADFeatureParamMap.FeatureMap.ContainsKey( m_szEditObjName ) ) {
-
-				// set command
+			else {
 				RemoveCadFeatureCommand command = new RemoveCadFeatureCommand( m_szEditObjName, m_CADFeatureParamMap );
 				DoCommand( command );
 			}
@@ -126,22 +118,23 @@ namespace MyTubeCutting
 
 		internal void ModifyObjectProperty( object s, PropertyValueChangedEventArgs e )
 		{
-			// if new parameter is invalid, restore old parameter and show property
-			if( m_EdiObjParam.IsValid() == false ) {
-				ShowObjectProperty();
-				return;
-			}
-
+			CommandErrorCode error;
 			// main tube
 			if( m_szEditObjName == MAIN_TUBE_NAME ) {
 				ModifyMainTubeCommand command = new ModifyMainTubeCommand( MAIN_TUBE_NAME, CloneHelper.Clone( m_EdiObjParam ), m_CADFeatureParamMap );
-				DoCommand( command );
+				error = DoCommand( command );
 			}
 
 			// cad feature
-			else if( m_CADFeatureParamMap.FeatureMap.ContainsKey( m_szEditObjName ) ) {
+			else {
 				ModifyCadFeatureCommand command = new ModifyCadFeatureCommand( m_szEditObjName, CloneHelper.Clone( m_EdiObjParam ), m_CADFeatureParamMap );
-				DoCommand( command );
+				error = DoCommand( command );
+			}
+
+			if( error != CommandErrorCode.OK ) {
+
+				// show original property when modify failed
+				ShowObjectProperty();
 			}
 		}
 
@@ -228,7 +221,7 @@ namespace MyTubeCutting
 
 		void AddCADFeature( string szName, ICADFeatureParam cadFeatureParam )
 		{
-			// set command
+			// TODO: let command check validility
 			AddCadFeatureCommand command = new AddCadFeatureCommand( szName, cadFeatureParam, m_CADFeatureParamMap );
 			DoCommand( command );
 		}
@@ -258,8 +251,11 @@ namespace MyTubeCutting
 			}
 
 			// display selected object shape
-			if( m_CADFeatureNameAISMap.ContainsKey( m_szEditObjName ) == false || m_CADFeatureNameAISMap[ m_szEditObjName ] == null ) {
-				return;
+			else {
+				if( m_CADFeatureNameAISMap.ContainsKey( m_szEditObjName ) == false || m_CADFeatureNameAISMap[ m_szEditObjName ] == null ) {
+					MessageBox.Show( "Error: CAD Feature AIS not found in map." );
+					return;
+				}
 			}
 			m_Viewer.GetAISContext().Display( m_CADFeatureNameAISMap[ m_szEditObjName ], false );
 			m_Viewer.UpdateView();
@@ -269,12 +265,20 @@ namespace MyTubeCutting
 		{
 			// here we need to use the pointer of the object, a null check is necessary
 			// main tube
-			if( m_szEditObjName == MAIN_TUBE_NAME && m_CADFeatureParamMap.MainTubeParam != null ) {
+			if( m_szEditObjName == MAIN_TUBE_NAME ) {
+				if( m_CADFeatureParamMap.MainTubeParam == null ) {
+					MessageBox.Show( "Error: Main tube param not found in map." );
+					return;
+				}
 				m_EdiObjParam = CloneHelper.Clone( m_CADFeatureParamMap.MainTubeParam );
 			}
 
 			// cad feature
-			else if( m_CADFeatureParamMap.FeatureMap.ContainsKey( m_szEditObjName ) && m_CADFeatureParamMap.FeatureMap[ m_szEditObjName ] != null ) {
+			else {
+				if( m_CADFeatureParamMap.FeatureMap.ContainsKey( m_szEditObjName ) == false || m_CADFeatureParamMap.FeatureMap[ m_szEditObjName ] == null ) {
+					MessageBox.Show( "Error: CAD Feature param not found in map." );
+					return;
+				}
 				m_EdiObjParam = CloneHelper.Clone( m_CADFeatureParamMap.FeatureMap[ m_szEditObjName ] );
 			}
 			m_propgrdPropertyBar.SelectedObject = m_EdiObjParam;
@@ -316,14 +320,13 @@ namespace MyTubeCutting
 			m_Viewer.UpdateView();
 		}
 
-		// TODO: code refine here
 		void UpdateEditorAfterCommand( EditType type, string szObjectName )
 		{
 			if( type == EditType.AddMainTube ) {
 
-				// remove old main tube node from object browser if exist, should not happen
-				if( m_MainTubeNode != null ) {
-					m_treeObjBrowser.Nodes.Remove( m_MainTubeNode );
+				// remove old node from object browser if exist, should not happen
+				if( m_treeObjBrowser.Nodes.Count != 0 ) {
+					m_treeObjBrowser.Nodes.Clear();
 				}
 
 				// add new main tube node
@@ -335,21 +338,19 @@ namespace MyTubeCutting
 				SetEditObject( MAIN_TUBE_NAME );
 
 				// invoke the main tube status changed event
-				MainTubeStatusChanged( true );
+				MainTubeStatusChanged?.Invoke( true );
 			}
 			else if( type == EditType.RemoveMainTube ) {
 
 				// remove main tube node from object browser
-				m_treeObjBrowser.Nodes.Remove( m_MainTubeNode );
-
-				// set null to main tube node
+				m_treeObjBrowser.Nodes.Clear();
 				m_MainTubeNode = null;
 
 				// update property bar, need to set null to clear the property bar
 				m_propgrdPropertyBar.SelectedObject = null;
 
 				// invoke the main tube status changed event
-				MainTubeStatusChanged( false );
+				MainTubeStatusChanged?.Invoke( false );
 			}
 			else if( type == EditType.ModifyMainTube ) {
 
@@ -382,12 +383,10 @@ namespace MyTubeCutting
 			else if( type == EditType.RemoveCADFeature ) {
 
 				// remove from display and map
-				if( m_CADFeatureNameAISMap.ContainsKey( szObjectName ) == false ) {
-					MessageBox.Show( "Error: CAD Feature AIS not found in map." );
-					return;
+				if( m_CADFeatureNameAISMap.ContainsKey( szObjectName ) ) {
+					m_Viewer.GetAISContext().Remove( m_CADFeatureNameAISMap[ szObjectName ], false );
+					m_CADFeatureNameAISMap.Remove( szObjectName );
 				}
-				m_Viewer.GetAISContext().Remove( m_CADFeatureNameAISMap[ szObjectName ], false );
-				m_CADFeatureNameAISMap.Remove( szObjectName );
 
 				// TODO: reconstruct object browser, check main tube node first
 				m_MainTubeNode.Nodes.RemoveByKey( szObjectName );
@@ -396,46 +395,48 @@ namespace MyTubeCutting
 			}
 			else if( type == EditType.ModifyCADFeature ) {
 
-				// get old ais from map
-				if( m_CADFeatureNameAISMap.ContainsKey( szObjectName ) == false ) {
-					MessageBox.Show( "Error: CAD Feature AIS not found in map." );
-					return;
-				}
-				AIS_Shape cadFeatureAIS = m_CADFeatureNameAISMap[ m_szEditObjName ];
-
-				// remove old ais from viewer
-				m_Viewer.GetAISContext().Remove( cadFeatureAIS, false );
-
 				// data protection
 				if( m_CADFeatureParamMap.FeatureMap.ContainsKey( szObjectName ) == false || m_CADFeatureParamMap.FeatureMap[ szObjectName ] == null ) {
 					MessageBox.Show( "Error: CAD Feature param not found in map." );
 					return;
 				}
 
-				// create new ais
+				// make new ais
 				ICADFeatureParam cadFeatureParam = m_CADFeatureParamMap.FeatureMap[ m_szEditObjName ];
-				cadFeatureAIS = CADFeatureMaker.MakeCADFeatureAIS( cadFeatureParam, m_CADFeatureParamMap.MainTubeParam );
-				if( cadFeatureAIS == null ) {
+				AIS_Shape newCADFeatureAIS = CADFeatureMaker.MakeCADFeatureAIS( cadFeatureParam, m_CADFeatureParamMap.MainTubeParam );
+				if( newCADFeatureAIS == null ) {
 					MessageBox.Show( "Error: CAD Feature AIS generated failed." );
 					return;
 				}
 
+				// remove old ais from display and map
+				if( m_CADFeatureNameAISMap.ContainsKey( szObjectName ) ) {
+					m_Viewer.GetAISContext().Remove( m_CADFeatureNameAISMap[ szObjectName ], false );
+					m_CADFeatureNameAISMap.Remove( szObjectName );
+				}
+
 				// display new ais and update ais map
-				m_Viewer.GetAISContext().Display( cadFeatureAIS, false );
-				m_CADFeatureNameAISMap[ m_szEditObjName ] = cadFeatureAIS;
+				m_Viewer.GetAISContext().Display( newCADFeatureAIS, false );
+				m_CADFeatureNameAISMap[ m_szEditObjName ] = newCADFeatureAIS;
 			}
 
 			// update display
 			UpdateAndRedrawResultTube();
 		}
 
-		// TODO: let command check validility, and return the procees when check failed
-		void DoCommand( ICADEditCommand command )
+		CommandErrorCode DoCommand( ICADEditCommand command )
 		{
 			command.EditFinished += UpdateEditorAfterCommand;
-			command.Do();
+			CommandErrorCode error = command.Do();
+			if( error != CommandErrorCode.OK ) {
+
+				// TODO: show error message
+				MessageBox.Show( "Error: Command failed." );
+				return error;
+			}
 			m_CADEditUndoCommandQueue.Add( command );
 			m_CADEditRedoCommandQueue.Clear();
+			return error;
 		}
 	}
 }

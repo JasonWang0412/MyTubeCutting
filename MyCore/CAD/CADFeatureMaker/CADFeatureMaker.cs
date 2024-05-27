@@ -174,7 +174,7 @@ namespace MyCore.CAD
 			}
 
 			Graphic3d_MaterialAspect aspect = new Graphic3d_MaterialAspect( Graphic3d_NameOfMaterial.Graphic3d_NOM_STONE );
-			aspect.SetTransparency( 0.8f );
+			aspect.SetTransparency( 0.5f );
 			aspect.SetColor( new Quantity_Color( Quantity_NameOfColor.Quantity_NOC_GREEN4 ) );
 			cadFeatureAIS.SetMaterial( aspect );
 			cadFeatureAIS.SetDisplayMode( 1 );

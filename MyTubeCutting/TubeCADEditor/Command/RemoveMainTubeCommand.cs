@@ -7,27 +7,30 @@ namespace MyTubeCutting
 		public RemoveMainTubeCommand( string szMainTubeName, CADFeatureParamMap paramMap )
 		{
 			m_szMainTubeName = szMainTubeName;
-			m_BackupMainTubeParam = paramMap.MainTubeParam;
 			m_CADFeatureParamMap = paramMap;
 		}
 
-		public void Do()
+		public CommandErrorCode Do()
 		{
-			// can not remove when cad feature is not empty
-			if( m_CADFeatureParamMap.FeatureMap.Count != 0 ) {
-				return;
+			// data protection
+			if( m_CADFeatureParamMap == null ) {
+				return CommandErrorCode.InvalidMap;
 			}
 
-			// data protection
-			if( m_CADFeatureParamMap.MainTubeParam == null ) {
-				return;
+			// can not remove when cad feature is not empty
+			if( m_CADFeatureParamMap.FeatureMap.Count != 0 ) {
+				return CommandErrorCode.CanNotRemoveMainTube;
 			}
+
+			// backup the old value
+			m_BackupMainTubeParam = m_CADFeatureParamMap.MainTubeParam;
 
 			// remove the main tube
 			m_CADFeatureParamMap.MainTubeParam = null;
 
 			// invoke the event
 			EditFinished?.Invoke( EditType.RemoveMainTube, m_szMainTubeName );
+			return CommandErrorCode.OK;
 		}
 
 		public void Undo()

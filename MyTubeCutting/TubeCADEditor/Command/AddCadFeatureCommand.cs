@@ -11,11 +11,14 @@ namespace MyTubeCutting
 			m_CADFeatureParamMap = paramMap;
 		}
 
-		public void Do()
+		public CommandErrorCode Do()
 		{
-			// check validility
-			if( m_CADFeatureParam.IsValid() == false ) {
-				return;
+			// data protection
+			if( m_CADFeatureParamMap == null || m_CADFeatureParamMap.FeatureMap == null ) {
+				return CommandErrorCode.InvalidMap;
+			}
+			if( m_CADFeatureParam == null || m_CADFeatureParam.IsValid() == false ) {
+				return CommandErrorCode.InvalidParam;
 			}
 
 			// add the new feature
@@ -23,15 +26,11 @@ namespace MyTubeCutting
 
 			// invoke the event
 			EditFinished?.Invoke( EditType.AddCADFeature, m_szFeatureName );
+			return CommandErrorCode.OK;
 		}
 
 		public void Undo()
 		{
-			// data protection
-			if( m_CADFeatureParamMap.FeatureMap.ContainsKey( m_szFeatureName ) == false ) {
-				return;
-			}
-
 			// remove the feature
 			m_CADFeatureParamMap.FeatureMap.Remove( m_szFeatureName );
 

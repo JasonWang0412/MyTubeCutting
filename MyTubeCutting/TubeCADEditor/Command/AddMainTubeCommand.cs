@@ -11,11 +11,14 @@ namespace MyTubeCutting
 			m_CADFeatureParamMap = paramMap;
 		}
 
-		public void Do()
+		public CommandErrorCode Do()
 		{
-			// check validility
-			if( m_MainTubeParam.IsValid() == false ) {
-				return;
+			// data protection
+			if( m_CADFeatureParamMap == null ) {
+				return CommandErrorCode.InvalidMap;
+			}
+			if( m_MainTubeParam == null || m_MainTubeParam.IsValid() == false ) {
+				return CommandErrorCode.InvalidParam;
 			}
 
 			// add the new main tube
@@ -23,15 +26,11 @@ namespace MyTubeCutting
 
 			// invoke the event
 			EditFinished?.Invoke( EditType.AddMainTube, m_szMainTubeName );
+			return CommandErrorCode.OK;
 		}
 
 		public void Undo()
 		{
-			// data protection
-			if( m_CADFeatureParamMap.MainTubeParam == null ) {
-				return;
-			}
-
 			// remove the main tube
 			m_CADFeatureParamMap.MainTubeParam = null;
 
