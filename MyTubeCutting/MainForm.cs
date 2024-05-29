@@ -85,7 +85,7 @@ namespace MyTubeCutting
 			mainTubeShapeForm.MainTubeTypeSelected += MainTubeTypeSelected;
 
 			// TODO: make it show from center of main form
-			mainTubeShapeForm.Show();
+			mainTubeShapeForm.ShowDialog();
 		}
 
 		void MainTubeTypeSelected( MainTubeType type )
@@ -128,7 +128,7 @@ namespace MyTubeCutting
 		{
 			BranchTubeTypeForm branchTubeTypeForm = new BranchTubeTypeForm();
 			branchTubeTypeForm.BranchTubeTypeSelected += BranchTubeTypeSelected;
-			branchTubeTypeForm.Show();
+			branchTubeTypeForm.ShowDialog();
 		}
 
 		void BranchTubeTypeSelected( BranchTubeType type )
@@ -168,7 +168,7 @@ namespace MyTubeCutting
 		{
 			BendingNotchTypeForm bendingNotchTypeForm = new BendingNotchTypeForm();
 			bendingNotchTypeForm.BendingNotchTypeSelected += BendingNotchTypeSelected;
-			bendingNotchTypeForm.Show();
+			bendingNotchTypeForm.ShowDialog();
 		}
 
 		void BendingNotchTypeSelected( BendingNotchType type )

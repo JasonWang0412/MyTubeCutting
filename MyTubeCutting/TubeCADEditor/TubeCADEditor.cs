@@ -110,9 +110,6 @@ namespace MyTubeCutting
 			if( string.IsNullOrEmpty( szObjName ) ) {
 				return;
 			}
-			if( szObjName == m_szEditObjName ) {
-				return;
-			}
 
 			m_szEditObjName = szObjName;
 			DisplayObjectShape();
