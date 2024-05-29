@@ -1,4 +1,5 @@
-﻿using OCC.TopoDS;
+﻿using OCC.STEPControl;
+using OCC.TopoDS;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -69,6 +70,17 @@ namespace MyCore.CAD
 				string filePath = Path.Combine( combinedPath, "_" + nCount.ToString() + "_" + szType + "_" + i.ToString( GetFormat( ShapeList.Count ) ) + ".brep" );
 				OCC.BRepTools.BRepTools.Write( ShapeList[ i ], filePath );
 			}
+		}
+
+		public static void ExportStep( TopoDS_Shape shape, string szType )
+		{
+			string combinedPath = MakeDir( szType );
+
+			// 儲存新檔案
+			string filePath = Path.Combine( combinedPath, szType + ".stp" );
+			STEPControl_Writer writer = new STEPControl_Writer();
+			writer.Transfer( shape, STEPControl_StepModelType.STEPControl_AsIs );
+			writer.Write( filePath );
 		}
 
 		static string MakeDir( string szType, int nCount = 0 )

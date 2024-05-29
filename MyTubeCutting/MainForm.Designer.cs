@@ -28,6 +28,7 @@
 		private void InitializeComponent()
 		{
 			this.m_panViewer = new System.Windows.Forms.Panel();
+			this.m_btnBendingNotch = new System.Windows.Forms.Button();
 			this.m_btnISO = new System.Windows.Forms.Button();
 			this.m_btnDir_Neg = new System.Windows.Forms.Button();
 			this.m_btnDir_Pos = new System.Windows.Forms.Button();
@@ -44,7 +45,7 @@
 			this.m_treeObjBrowser = new System.Windows.Forms.TreeView();
 			this.m_panPropertyBar = new System.Windows.Forms.Panel();
 			this.m_propgrdPropertyBar = new System.Windows.Forms.PropertyGrid();
-			this.m_btnBendingNotch = new System.Windows.Forms.Button();
+			this.m_btnExport = new System.Windows.Forms.Button();
 			this.m_panViewer.SuspendLayout();
 			this.m_panObjBrowser.SuspendLayout();
 			this.m_panPropertyBar.SuspendLayout();
@@ -52,6 +53,7 @@
 			// 
 			// m_panViewer
 			// 
+			this.m_panViewer.Controls.Add(this.m_btnExport);
 			this.m_panViewer.Controls.Add(this.m_btnBendingNotch);
 			this.m_panViewer.Controls.Add(this.m_btnISO);
 			this.m_panViewer.Controls.Add(this.m_btnDir_Neg);
@@ -73,6 +75,16 @@
 			this.m_panViewer.MouseDown += new System.Windows.Forms.MouseEventHandler(this.m_panViewer_MouseDown);
 			this.m_panViewer.MouseMove += new System.Windows.Forms.MouseEventHandler(this.m_panViewer_MouseMove);
 			this.m_panViewer.MouseWheel += new System.Windows.Forms.MouseEventHandler(this.m_panViewer_MouseWheel);
+			// 
+			// m_btnBendingNotch
+			// 
+			this.m_btnBendingNotch.Location = new System.Drawing.Point(394, 105);
+			this.m_btnBendingNotch.Name = "m_btnBendingNotch";
+			this.m_btnBendingNotch.Size = new System.Drawing.Size(100, 25);
+			this.m_btnBendingNotch.TabIndex = 12;
+			this.m_btnBendingNotch.Text = "BendingNotch";
+			this.m_btnBendingNotch.UseVisualStyleBackColor = true;
+			this.m_btnBendingNotch.Click += new System.EventHandler(this.m_btnBendingNotch_Click);
 			// 
 			// m_btnISO
 			// 
@@ -228,15 +240,15 @@
 			this.m_propgrdPropertyBar.TabIndex = 0;
 			this.m_propgrdPropertyBar.PropertyValueChanged += new System.Windows.Forms.PropertyValueChangedEventHandler(this.m_propgrdPropertyBar_PropertyValueChanged);
 			// 
-			// m_btnBendingNotch
+			// m_btnExport
 			// 
-			this.m_btnBendingNotch.Location = new System.Drawing.Point(394, 105);
-			this.m_btnBendingNotch.Name = "m_btnBendingNotch";
-			this.m_btnBendingNotch.Size = new System.Drawing.Size(100, 25);
-			this.m_btnBendingNotch.TabIndex = 12;
-			this.m_btnBendingNotch.Text = "BendingNotch";
-			this.m_btnBendingNotch.UseVisualStyleBackColor = true;
-			this.m_btnBendingNotch.Click += new System.EventHandler(this.m_btnBendingNotch_Click);
+			this.m_btnExport.Location = new System.Drawing.Point(13, 163);
+			this.m_btnExport.Name = "m_btnExport";
+			this.m_btnExport.Size = new System.Drawing.Size(86, 23);
+			this.m_btnExport.TabIndex = 13;
+			this.m_btnExport.Text = "Export";
+			this.m_btnExport.UseVisualStyleBackColor = true;
+			this.m_btnExport.Click += new System.EventHandler(this.m_btnExport_Click);
 			// 
 			// MainForm
 			// 
@@ -276,6 +288,7 @@
 		private System.Windows.Forms.Button m_btnX_Neg;
 		private System.Windows.Forms.Button m_btnX_Pos;
 		private System.Windows.Forms.Button m_btnBendingNotch;
+		private System.Windows.Forms.Button m_btnExport;
 	}
 }
 

@@ -24,6 +24,9 @@ namespace MyTubeCutting
 		AIS_Shape m_ResultTubeAIS;
 		Dictionary<string, AIS_Shape> m_CADFeatureNameAISMap = new Dictionary<string, AIS_Shape>();
 
+		// the result shape
+		TopoDS_Shape m_ResultTubeTopo;
+
 		// object browser map
 		TreeNode m_MainTubeNode;
 
@@ -190,6 +193,11 @@ namespace MyTubeCutting
 			m_CADEditRedoCommandQueue.RemoveAt( m_CADEditRedoCommandQueue.Count - 1 );
 		}
 
+		internal void ExportStep()
+		{
+			ExportHelper.ExportStep( m_ResultTubeTopo, "ResultTube" );
+		}
+
 		void UpdateAndRedrawResultTube()
 		{
 			// remove all shape if main tube not exist
@@ -211,6 +219,7 @@ namespace MyTubeCutting
 			}
 
 			// display new tube
+			m_ResultTubeTopo = tubeShape;
 			m_ResultTubeAIS = new AIS_Shape( tubeShape );
 			Graphic3d_MaterialAspect aspect = new Graphic3d_MaterialAspect( Graphic3d_NameOfMaterial.Graphic3d_NOM_STEEL );
 			m_ResultTubeAIS.SetMaterial( aspect );

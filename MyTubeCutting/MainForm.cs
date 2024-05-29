@@ -243,6 +243,11 @@ namespace MyTubeCutting
 			}
 		}
 
+		void m_btnExport_Click( object sender, System.EventArgs e )
+		{
+			m_TubeCADEditor.ExportStep();
+		}
+
 		// view action
 		void m_btnX_Pos_Click( object sender, System.EventArgs e )
 		{
