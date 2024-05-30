@@ -1,7 +1,7 @@
 ﻿using MyCore.CAD;
 using MyCore.Tool;
 
-namespace MyTubeCutting
+namespace MyCADUI
 {
 	internal class ModifyCadFeatureCommand : ICADEditCommand
 	{

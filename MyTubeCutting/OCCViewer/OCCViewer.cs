@@ -36,7 +36,7 @@ using OCC.V3d;
 using OCC.WNT;
 using System;
 
-namespace MyTubeCutting
+namespace MyCADUI
 {
 	public class OCCViewer : IDisposable
 	{

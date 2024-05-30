@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 
-namespace MyTubeCutting
+namespace MyCADUI
 {
 	public partial class BranchTubeTypeForm : Form
 	{

@@ -1,4 +1,4 @@
-﻿namespace MyTubeCutting
+﻿namespace MyCADUI
 {
 	delegate void CADEditFinishEventHandler( EditType type, string szObjectName );
 

@@ -1,6 +1,6 @@
-﻿namespace MyTubeCutting
+﻿namespace MyCADUI
 {
-	partial class MainForm
+	partial class CADEditMainForm
 	{
 		/// <summary>
 		/// Required designer variable.

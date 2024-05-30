@@ -2,9 +2,9 @@
 using OCC.gp;
 using System.Windows.Forms;
 
-namespace MyTubeCutting
+namespace MyCADUI
 {
-	public partial class MainForm : Form
+	public partial class CADEditMainForm : Form
 	{
 		// viewer property
 		OCCViewer m_Viewer;
@@ -14,7 +14,7 @@ namespace MyTubeCutting
 		// tube editor property
 		TubeCADEditor m_TubeCADEditor;
 
-		public MainForm()
+		public CADEditMainForm()
 		{
 			// initalize component
 			InitializeComponent();

@@ -1,6 +1,6 @@
 ﻿using System.Windows.Forms;
 
-namespace MyTubeCutting
+namespace MyCADUI
 {
 	internal class ViewerMouseAction
 	{

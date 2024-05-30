@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 
-namespace MyTubeCutting
+namespace MyCADUI
 {
 	internal class TubeCADEditor
 	{

@@ -1,4 +1,4 @@
-﻿namespace MyTubeCutting
+﻿namespace MyCADUI
 {
 	partial class BranchTubeTypeForm
 	{

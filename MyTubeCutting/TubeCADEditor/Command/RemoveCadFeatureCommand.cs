@@ -1,6 +1,6 @@
 ﻿using MyCore.CAD;
 
-namespace MyTubeCutting
+namespace MyCADUI
 {
 	internal class RemoveCadFeatureCommand : ICADEditCommand
 	{
