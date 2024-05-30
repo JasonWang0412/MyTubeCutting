@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34601.278
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyCADUI", "MyTubeCutting\MyCADUI.csproj", "{BFF7C63C-3306-49FC-A435-9F8AC0DE001E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyCADUI", "MyCADUI\MyCADUI.csproj", "{BFF7C63C-3306-49FC-A435-9F8AC0DE001E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyCore", "MyCore\MyCore.csproj", "{65F21621-44BF-4E0A-B3E2-AD3CF215418A}"
 EndProject
