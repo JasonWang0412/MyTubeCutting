@@ -57,9 +57,15 @@
     <Compile Include="CADParam\CrossSection\CrossSection.cs" />
     <Compile Include="CADParam\CrossSection\CS_CircleCheck.cs" />
     <Compile Include="CADParam\CrossSection\CS_DefaultCheck.cs" />
+    <Compile Include="CADParam\CrossSection\CS_DShapeCheck.cs" />
+    <Compile Include="CADParam\CrossSection\CS_FlatOvalCheck.cs" />
+    <Compile Include="CADParam\CrossSection\CS_OvalCheck.cs" />
     <Compile Include="CADParam\CrossSection\CS_RectangleCheck.cs" />
     <Compile Include="CADParam\CrossSection\ICrossSectionCheck.cs" />
     <Compile Include="CADParam\Geom2D\Geom2D_Circle.cs" />
+    <Compile Include="CADParam\Geom2D\Geom2D_DShape.cs" />
+    <Compile Include="CADParam\Geom2D\Geom2D_FlatOval.cs" />
+    <Compile Include="CADParam\Geom2D\Geom2D_Oval.cs" />
     <Compile Include="CADParam\Geom2D\Geom2D_Rectangle.cs" />
     <Compile Include="CADParam\Geom2D\Geom2D_Type.cs" />
     <Compile Include="CADParam\Geom2D\IGeom2D.cs" />
