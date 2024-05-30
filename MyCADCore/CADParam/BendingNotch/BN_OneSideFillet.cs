@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MyLanguageManager;
+using System;
 using System.ComponentModel;
 
 namespace MyCADCore
@@ -27,11 +28,13 @@ namespace MyCADCore
 			}
 		}
 
+		[MyDisplayName( "BN_OneSideFillet", "IsOverCut" )]
 		public bool IsOverCut
 		{
 			get; set;
 		}
 
+		[MyDisplayName( "BN_OneSideFillet", "Side" )]
 		public NotchSide Side
 		{
 			get; set;

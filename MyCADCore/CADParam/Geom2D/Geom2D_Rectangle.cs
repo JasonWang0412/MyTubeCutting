@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MyLanguageManager;
+using System;
 using System.ComponentModel;
 
 namespace MyCADCore
@@ -22,16 +23,19 @@ namespace MyCADCore
 			}
 		}
 
+		[MyDisplayName( "Geom2D_Rectangle", "Width" )]
 		public double Width
 		{
 			get; set;
 		}
 
+		[MyDisplayName( "Geom2D_Rectangle", "Height" )]
 		public double Height
 		{
 			get; set;
 		}
 
+		[MyDisplayName( "Geom2D_Rectangle", "Fillet" )]
 		public double Fillet
 		{
 			get; set;

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MyLanguageManager;
+using System;
 using System.ComponentModel;
 
 namespace MyCADCore
@@ -25,11 +26,13 @@ namespace MyCADCore
 
 		// TODO: dont know shit about this
 		[TypeConverter( typeof( ExpandableObjectConverter ) )]
+		[MyDisplayName( "CADft_MainTubeParam", "CrossSection" )]
 		public CrossSection CrossSection
 		{
 			get;
 		}
 
+		[MyDisplayName( "CADft_MainTubeParam", "Length" )]
 		public double Length
 		{
 			get;

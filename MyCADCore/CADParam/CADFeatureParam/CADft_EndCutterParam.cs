@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MyLanguageManager;
+using System;
 using System.ComponentModel;
 
 namespace MyCADCore
@@ -29,24 +30,28 @@ namespace MyCADCore
 			}
 		}
 
+		[MyDisplayName( "CADft_EndCutterParam", "Center_Y" )]
 		public double Center_Y
 		{
 			get;
 			set;
 		}
 
+		[MyDisplayName( "CADft_EndCutterParam", "TiltAngle_deg" )]
 		public double TiltAngle_deg
 		{
 			get;
 			set;
 		}
 
+		[MyDisplayName( "CADft_EndCutterParam", "RotateAngle_deg" )]
 		public double RotateAngle_deg
 		{
 			get;
 			set;
 		}
 
+		[MyDisplayName( "CADft_EndCutterParam", "Side" )]
 		public EEndSide Side
 		{
 			get;

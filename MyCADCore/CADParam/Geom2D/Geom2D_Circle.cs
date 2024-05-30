@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MyLanguageManager;
+using System;
 using System.ComponentModel;
 
 namespace MyCADCore
@@ -20,6 +21,7 @@ namespace MyCADCore
 			}
 		}
 
+		[MyDisplayName( "Geom2D_Circle", "Radius" )]
 		public double Radius
 		{
 			get; set;

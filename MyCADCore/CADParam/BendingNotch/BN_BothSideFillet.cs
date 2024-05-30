@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MyLanguageManager;
+using System;
 using System.ComponentModel;
 
 namespace MyCADCore
@@ -23,21 +24,25 @@ namespace MyCADCore
 			}
 		}
 
+		[MyDisplayName( "BN_BothSideFillet", "FilletRadius" )]
 		public double FilletRadius
 		{
 			get; set;
 		}
 
+		[MyDisplayName( "BN_BothSideFillet", "BendingAngle_deg" )]
 		public double BendingAngle_deg
 		{
 			get; set;
 		}
 
+		[MyDisplayName( "BN_BothSideFillet", "IsOverCut" )]
 		public bool IsOverCut
 		{
 			get; set;
 		}
 
+		[MyDisplayName( "BN_BothSideFillet", "JointGapLength" )]
 		public double JointGapLength
 		{
 			get; set;

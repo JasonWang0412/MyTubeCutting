@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MyLanguageManager;
+using System;
 using System.ComponentModel;
 
 namespace MyCADCore
@@ -25,27 +26,32 @@ namespace MyCADCore
 		}
 
 		[TypeConverter( typeof( ExpandableObjectConverter ) )]
+		[MyDisplayName( "CADft_BendingNotchParam", "Shape" )]
 		public IBendingNotchShape Shape
 		{
 			get;
 		}
 
+		[MyDisplayName( "CADft_BendingNotchParam", "YPos" )]
 		public double YPos
 		{
 			get; set;
 		}
 
+		[MyDisplayName( "CADft_BendingNotchParam", "GapFromButtom" )]
 		public double GapFromButtom
 		{
 			get; set;
 		}
 
+		[MyDisplayName( "CADft_BendingNotchParam", "BAngle_deg" )]
 		public double BAngle_deg
 		{
 			get; set;
 		}
 
 		[TypeConverter( typeof( ExpandableObjectConverter ) )]
+		[MyDisplayName( "CADft_BendingNotchParam", "ArrayParam" )]
 		public ArrayParam ArrayParam
 		{
 			get; set;

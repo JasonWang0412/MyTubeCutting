@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MyLanguageManager;
+using System;
 using System.ComponentModel;
 
 namespace MyCADCore
@@ -39,36 +40,42 @@ namespace MyCADCore
 			}
 		}
 
+		[MyDisplayName( "CADft_BranchTubeParam", "Center_X" )]
 		public double Center_X
 		{
 			get;
 			set;
 		}
 
+		[MyDisplayName( "CADft_BranchTubeParam", "Center_Y" )]
 		public double Center_Y
 		{
 			get;
 			set;
 		}
 
+		[MyDisplayName( "CADft_BranchTubeParam", "Center_Z" )]
 		public double Center_Z
 		{
 			get;
 			set;
 		}
 
+		[MyDisplayName( "CADft_BranchTubeParam", "SelfRotateAngle_deg" )]
 		public double SelfRotateAngle_deg
 		{
 			get;
 			set;
 		}
 
+		[MyDisplayName( "CADft_BranchTubeParam", "AAngle_deg" )]
 		public double AAngle_deg
 		{
 			get;
 			set;
 		}
 
+		[MyDisplayName( "CADft_BranchTubeParam", "BAngle_deg" )]
 		public double BAngle_deg
 		{
 			get;
@@ -76,23 +83,27 @@ namespace MyCADCore
 		}
 
 		[TypeConverter( typeof( ExpandableObjectConverter ) )]
+		[MyDisplayName( "CADft_BranchTubeParam", "Shape" )]
 		public IGeom2D Shape
 		{
 			get;
 		}
 
+		[MyDisplayName( "CADft_BranchTubeParam", "IntersectDir" )]
 		public BranchIntersectDir IntersectDir
 		{
 			get;
 			set;
 		}
 
+		[MyDisplayName( "CADft_BranchTubeParam", "IsCutThrough" )]
 		public bool IsCutThrough
 		{
 			get;
 			set;
 		}
 
+		[MyDisplayName( "CADft_BranchTubeParam", "Length" )]
 		public double Length
 		{
 			get;
@@ -100,6 +111,7 @@ namespace MyCADCore
 		}
 
 		[TypeConverter( typeof( ExpandableObjectConverter ) )]
+		[MyDisplayName( "CADft_BranchTubeParam", "ArrayParam" )]
 		public ArrayParam ArrayParam
 		{
 			get;

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MyLanguageManager;
+using System;
 
 namespace MyCADCore
 {
@@ -21,36 +22,42 @@ namespace MyCADCore
 			AngularDirection = ArrayDirection.Positive;
 		}
 
+		[MyDisplayName( "ArrayParam", "LinearCount" )]
 		public int LinearCount
 		{
 			get;
 			set;
 		}
 
+		[MyDisplayName( "ArrayParam", "LinearDistance" )]
 		public double LinearDistance
 		{
 			get;
 			set;
 		}
 
+		[MyDisplayName( "ArrayParam", "LinearDirection" )]
 		public ArrayDirection LinearDirection
 		{
 			get;
 			set;
 		}
 
+		[MyDisplayName( "ArrayParam", "AngularCount" )]
 		public int AngularCount
 		{
 			get;
 			set;
 		}
 
+		[MyDisplayName( "ArrayParam", "AngularDistance" )]
 		public double AngularDistance_Deg
 		{
 			get;
 			set;
 		}
 
+		[MyDisplayName( "ArrayParam", "AngularDirection" )]
 		public ArrayDirection AngularDirection
 		{
 			get;

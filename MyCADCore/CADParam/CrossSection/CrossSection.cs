@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MyLanguageManager;
+using System;
 using System.ComponentModel;
 
 namespace MyCADCore
@@ -24,11 +25,13 @@ namespace MyCADCore
 		}
 
 		[TypeConverter( typeof( ExpandableObjectConverter ) )]
+		[MyDisplayName( "CrossSection", "Shape" )]
 		public IGeom2D Shape
 		{
 			get;
 		}
 
+		[MyDisplayName( "CrossSection", "Thickness" )]
 		public double Thickness
 		{
 			get; set;

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MyLanguageManager;
+using System;
 using System.ComponentModel;
 
 namespace MyCADCore
@@ -21,11 +22,13 @@ namespace MyCADCore
 			}
 		}
 
+		[MyDisplayName( "BN_VShape", "BendingAngle_deg" )]
 		public double BendingAngle_deg
 		{
 			get; set;
 		}
 
+		[MyDisplayName( "BN_VShape", "JointGapLength" )]
 		public double JointGapLength
 		{
 			get; set;

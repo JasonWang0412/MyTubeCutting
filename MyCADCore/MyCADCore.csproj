@@ -73,6 +73,10 @@
     <Compile Include="OCCTool\OCCTool.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\MyLanguageManager\MyLanguageManager.csproj">
+      <Project>{04fcc0ce-27d3-4262-b609-d776490124ee}</Project>
+      <Name>MyLanguageManager</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Utility\Utility.csproj">
       <Project>{e3e8855e-f88f-42b6-9f5f-bb02d8221353}</Project>
       <Name>Utility</Name>
