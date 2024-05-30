@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyCADCore", "MyCADCore\MyCA
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Utility", "Utility\Utility.csproj", "{E3E8855E-F88F-42B6-9F5F-BB02D8221353}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyLanguageManager", "MyLanguageManager\MyLanguageManager.csproj", "{04FCC0CE-27D3-4262-B609-D776490124EE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{E3E8855E-F88F-42B6-9F5F-BB02D8221353}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E3E8855E-F88F-42B6-9F5F-BB02D8221353}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E3E8855E-F88F-42B6-9F5F-BB02D8221353}.Release|Any CPU.Build.0 = Release|Any CPU
+		{04FCC0CE-27D3-4262-B609-D776490124EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{04FCC0CE-27D3-4262-B609-D776490124EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{04FCC0CE-27D3-4262-B609-D776490124EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{04FCC0CE-27D3-4262-B609-D776490124EE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
