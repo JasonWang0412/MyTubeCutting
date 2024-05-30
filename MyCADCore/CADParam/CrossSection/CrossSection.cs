@@ -19,6 +19,15 @@ namespace MyCADCore
 			else if( shape.Type == Geom2D_Type.Rectangle ) {
 				m_CrossSectionCheck = new CS_RectangleCheck( this );
 			}
+			else if( shape.Type == Geom2D_Type.Oval ) {
+				m_CrossSectionCheck = new CS_OvalCheck( this );
+			}
+			else if( shape.Type == Geom2D_Type.FlatOval ) {
+				m_CrossSectionCheck = new CS_FlatOvalCheck( this );
+			}
+			else if( shape.Type == Geom2D_Type.DShape ) {
+				m_CrossSectionCheck = new CS_DShapeCheck( this );
+			}
 			else {
 				m_CrossSectionCheck = new CS_DefaultCheck();
 			}
