@@ -1,5 +1,4 @@
 ﻿using MyCADCore;
-using MyCADCore.Tool;
 using OCC.AIS;
 using OCC.gp;
 using OCC.Graphic3d;
@@ -7,6 +6,7 @@ using OCC.TopoDS;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
+using Utility;
 
 namespace MyCADUI
 {

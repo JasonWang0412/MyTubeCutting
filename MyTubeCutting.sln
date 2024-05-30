@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyCADUI", "MyCADUI\MyCADUI.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyCADCore", "MyCADCore\MyCADCore.csproj", "{65F21621-44BF-4E0A-B3E2-AD3CF215418A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Utility", "Utility\Utility.csproj", "{E3E8855E-F88F-42B6-9F5F-BB02D8221353}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{65F21621-44BF-4E0A-B3E2-AD3CF215418A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{65F21621-44BF-4E0A-B3E2-AD3CF215418A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{65F21621-44BF-4E0A-B3E2-AD3CF215418A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E3E8855E-F88F-42B6-9F5F-BB02D8221353}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E3E8855E-F88F-42B6-9F5F-BB02D8221353}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E3E8855E-F88F-42B6-9F5F-BB02D8221353}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E3E8855E-F88F-42B6-9F5F-BB02D8221353}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

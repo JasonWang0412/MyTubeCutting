@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace MyCADCore
+namespace Utility
 {
 	public class ExportHelper
 	{

@@ -11,10 +11,10 @@ using System.Collections.Generic;
 
 namespace MyCADCore
 {
-	public class OCCTool
+	internal class OCCTool
 	{
 		// make wire
-		public static TopoDS_Wire MakeGeom2DWire( IGeom2D basicGeom, double dNeckin, gp_Pnt center, gp_Dir dir, double dRotation_deg )
+		internal static TopoDS_Wire MakeGeom2DWire( IGeom2D basicGeom, double dNeckin, gp_Pnt center, gp_Dir dir, double dRotation_deg )
 		{
 			// data protection
 			if( basicGeom == null || center == null || dir == null ) {
@@ -45,7 +45,7 @@ namespace MyCADCore
 			return resultWire;
 		}
 
-		public static TopoDS_Wire MakeBendingNotchWire( IBendingNotchShape shape,
+		internal static TopoDS_Wire MakeBendingNotchWire( IBendingNotchShape shape,
 			double y, double z, double minZ, double maxZ, double dThickness, double angleB_deg )
 		{
 			// data protection
@@ -82,7 +82,7 @@ namespace MyCADCore
 		}
 
 		// get bounding box
-		public static BoundingBox GetBoundingBox( TopoDS_Shape shape )
+		internal static BoundingBox GetBoundingBox( TopoDS_Shape shape )
 		{
 			// data protection
 			if( shape == null ) {
@@ -102,7 +102,7 @@ namespace MyCADCore
 		}
 
 		// transform XOY base shape
-		public static TopoDS_Shape TransformXOYBaseShape( TopoDS_Shape shapeToTransform, gp_Pnt targetCenter, gp_Dir targetDir, double dRotation_deg )
+		internal static TopoDS_Shape TransformXOYBaseShape( TopoDS_Shape shapeToTransform, gp_Pnt targetCenter, gp_Dir targetDir, double dRotation_deg )
 		{
 			// rotate shape aroud Z axis by dRotation
 			gp_Trsf transformR = new gp_Trsf();
@@ -128,7 +128,7 @@ namespace MyCADCore
 
 		// make prism
 		// a lot of bug happens when using Inf, not recommended, ref: AUTO-12540
-		public static TopoDS_Shape MakeConcretePrismByWire( TopoDS_Wire baseWire, gp_Vec vec, bool isInf )
+		internal static TopoDS_Shape MakeConcretePrismByWire( TopoDS_Wire baseWire, gp_Vec vec, bool isInf )
 		{
 			// data protection
 			if( baseWire == null ) {
@@ -157,7 +157,7 @@ namespace MyCADCore
 		}
 
 		// make array
-		public static TopoDS_Shape MakeArrayCompound( TopoDS_Shape oneFeature, ArrayParam arrayParam )
+		internal static TopoDS_Shape MakeArrayCompound( TopoDS_Shape oneFeature, ArrayParam arrayParam )
 		{
 			// data protection
 			if( oneFeature == null || arrayParam == null || arrayParam.IsValid() == false ) {

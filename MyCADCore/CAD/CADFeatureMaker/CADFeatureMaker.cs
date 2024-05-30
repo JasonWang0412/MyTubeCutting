@@ -1,5 +1,4 @@
-﻿using MyCADCore.Tool;
-using OCC.AIS;
+﻿using OCC.AIS;
 using OCC.BRep;
 using OCC.BRepAlgoAPI;
 using OCC.BRepBuilderAPI;
@@ -13,6 +12,7 @@ using OCC.TopoDS;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Utility;
 
 namespace MyCADCore
 {
