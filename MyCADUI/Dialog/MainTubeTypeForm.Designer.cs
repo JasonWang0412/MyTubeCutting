@@ -29,9 +29,9 @@
 		{
 			this.m_btnCircle = new System.Windows.Forms.Button();
 			this.m_btnRectangle = new System.Windows.Forms.Button();
-			this.button3 = new System.Windows.Forms.Button();
-			this.button4 = new System.Windows.Forms.Button();
-			this.button5 = new System.Windows.Forms.Button();
+			this.m_btnOval = new System.Windows.Forms.Button();
+			this.m_btnFlatOval = new System.Windows.Forms.Button();
+			this.m_btnDShape = new System.Windows.Forms.Button();
 			this.SuspendLayout();
 			// 
 			// m_btnCircle
@@ -54,44 +54,44 @@
 			this.m_btnRectangle.UseVisualStyleBackColor = true;
 			this.m_btnRectangle.Click += new System.EventHandler(this.m_btnRectangle_Click);
 			// 
-			// button3
+			// m_btnOval
 			// 
-			this.button3.Enabled = false;
-			this.button3.Location = new System.Drawing.Point(174, 12);
-			this.button3.Name = "button3";
-			this.button3.Size = new System.Drawing.Size(75, 23);
-			this.button3.TabIndex = 2;
-			this.button3.Text = "button3";
-			this.button3.UseVisualStyleBackColor = true;
+			this.m_btnOval.Location = new System.Drawing.Point(174, 12);
+			this.m_btnOval.Name = "m_btnOval";
+			this.m_btnOval.Size = new System.Drawing.Size(75, 23);
+			this.m_btnOval.TabIndex = 2;
+			this.m_btnOval.Text = "Oval";
+			this.m_btnOval.UseVisualStyleBackColor = true;
+			this.m_btnOval.Click += new System.EventHandler(this.m_btnOval_Click);
 			// 
-			// button4
+			// m_btnFlatOval
 			// 
-			this.button4.Enabled = false;
-			this.button4.Location = new System.Drawing.Point(255, 12);
-			this.button4.Name = "button4";
-			this.button4.Size = new System.Drawing.Size(75, 23);
-			this.button4.TabIndex = 3;
-			this.button4.Text = "button4";
-			this.button4.UseVisualStyleBackColor = true;
+			this.m_btnFlatOval.Location = new System.Drawing.Point(255, 12);
+			this.m_btnFlatOval.Name = "m_btnFlatOval";
+			this.m_btnFlatOval.Size = new System.Drawing.Size(75, 23);
+			this.m_btnFlatOval.TabIndex = 3;
+			this.m_btnFlatOval.Text = "FlatOval";
+			this.m_btnFlatOval.UseVisualStyleBackColor = true;
+			this.m_btnFlatOval.Click += new System.EventHandler(this.m_btnFlatOval_Click);
 			// 
-			// button5
+			// m_btnDShape
 			// 
-			this.button5.Enabled = false;
-			this.button5.Location = new System.Drawing.Point(336, 12);
-			this.button5.Name = "button5";
-			this.button5.Size = new System.Drawing.Size(75, 23);
-			this.button5.TabIndex = 4;
-			this.button5.Text = "button5";
-			this.button5.UseVisualStyleBackColor = true;
+			this.m_btnDShape.Location = new System.Drawing.Point(336, 12);
+			this.m_btnDShape.Name = "m_btnDShape";
+			this.m_btnDShape.Size = new System.Drawing.Size(75, 23);
+			this.m_btnDShape.TabIndex = 4;
+			this.m_btnDShape.Text = "DShape";
+			this.m_btnDShape.UseVisualStyleBackColor = true;
+			this.m_btnDShape.Click += new System.EventHandler(this.m_btnDShape_Click);
 			// 
 			// MainTubeTypeForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(434, 61);
-			this.Controls.Add(this.button5);
-			this.Controls.Add(this.button4);
-			this.Controls.Add(this.button3);
+			this.Controls.Add(this.m_btnDShape);
+			this.Controls.Add(this.m_btnFlatOval);
+			this.Controls.Add(this.m_btnOval);
 			this.Controls.Add(this.m_btnRectangle);
 			this.Controls.Add(this.m_btnCircle);
 			this.Name = "MainTubeTypeForm";
@@ -105,8 +105,8 @@
 
 		private System.Windows.Forms.Button m_btnCircle;
 		private System.Windows.Forms.Button m_btnRectangle;
-		private System.Windows.Forms.Button button3;
-		private System.Windows.Forms.Button button4;
-		private System.Windows.Forms.Button button5;
+		private System.Windows.Forms.Button m_btnOval;
+		private System.Windows.Forms.Button m_btnFlatOval;
+		private System.Windows.Forms.Button m_btnDShape;
 	}
 }

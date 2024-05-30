@@ -94,24 +94,43 @@ namespace MyCADUI
 			CADft_MainTubeParam mainTubeParam;
 			double dThickness = 2;
 			double dTubeLength = 100;
+			CrossSection crossSection;
 			if( type == MainTubeType.Circle ) {
 				double dRadius = 25;
 				Geom2D_Circle shape = new Geom2D_Circle( dRadius );
-				CrossSection crossSection = new CrossSection( shape, dThickness );
-				mainTubeParam = new CADft_MainTubeParam( crossSection, dTubeLength );
+				crossSection = new CrossSection( shape, dThickness );
 			}
 			else if( type == MainTubeType.Rectangle ) {
 				double dWidth = 50;
 				double dHeight = 50;
 				double dFillet = 5;
 				Geom2D_Rectangle shape = new Geom2D_Rectangle( dWidth, dHeight, dFillet );
-				CrossSection crossSection = new CrossSection( shape, dThickness );
-				mainTubeParam = new CADft_MainTubeParam( crossSection, dTubeLength );
+				crossSection = new CrossSection( shape, dThickness );
+			}
+			else if( type == MainTubeType.Oval ) {
+				double dWidth = 50;
+				double dHeight = 40;
+				Geom2D_Oval shape = new Geom2D_Oval( dWidth, dHeight );
+				crossSection = new CrossSection( shape, dThickness );
+			}
+			else if( type == MainTubeType.FlatOval ) {
+				double dWidth = 50;
+				double dRadius = 20;
+				Geom2D_FlatOval shape = new Geom2D_FlatOval( dWidth, dRadius );
+				crossSection = new CrossSection( shape, dThickness );
+			}
+			else if( type == MainTubeType.DShape ) {
+				double dWidth = 50;
+				double dHeight = 60;
+				double dFillet = 5;
+				Geom2D_DShape shape = new Geom2D_DShape( dWidth, dHeight, dFillet );
+				crossSection = new CrossSection( shape, dThickness );
 			}
 			else {
 				MessageBox.Show( "The type is currenttly not supported." );
 				return;
 			}
+			mainTubeParam = new CADft_MainTubeParam( crossSection, dTubeLength );
 
 			// set main tube to tube editor
 			m_TubeCADEditor.AddMainTube( mainTubeParam );
@@ -143,8 +162,24 @@ namespace MyCADUI
 			else if( type == BranchTubeType.Rectangle ) {
 				double dWidth = 20;
 				double dHeight = 20;
-				double dFillet = 5;
+				double dFillet = 2;
 				shape = new Geom2D_Rectangle( dWidth, dHeight, dFillet );
+			}
+			else if( type == BranchTubeType.Oval ) {
+				double dWidth = 20;
+				double dHeight = 10;
+				shape = new Geom2D_Oval( dWidth, dHeight );
+			}
+			else if( type == BranchTubeType.FlatOval ) {
+				double dWidth = 20;
+				double dRadius = 10;
+				shape = new Geom2D_FlatOval( dWidth, dRadius );
+			}
+			else if( type == BranchTubeType.DShape ) {
+				double dWidth = 20;
+				double dHeight = 25;
+				double dFillet = 2;
+				shape = new Geom2D_DShape( dWidth, dHeight, dFillet );
 			}
 			else {
 				MessageBox.Show( "The type is currenttly not supported." );

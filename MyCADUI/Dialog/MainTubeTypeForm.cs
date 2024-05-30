@@ -22,6 +22,24 @@ namespace MyCADUI
 			Close();
 		}
 
+		void m_btnOval_Click( object sender, EventArgs e )
+		{
+			MainTubeTypeSelected?.Invoke( MainTubeType.Oval );
+			Close();
+		}
+
+		void m_btnFlatOval_Click( object sender, EventArgs e )
+		{
+			MainTubeTypeSelected?.Invoke( MainTubeType.FlatOval );
+			Close();
+		}
+
+		void m_btnDShape_Click( object sender, EventArgs e )
+		{
+			MainTubeTypeSelected?.Invoke( MainTubeType.DShape );
+			Close();
+		}
+
 		internal delegate void MainTubeTypeSelectedHandler( MainTubeType type );
 		internal event MainTubeTypeSelectedHandler MainTubeTypeSelected;
 	}

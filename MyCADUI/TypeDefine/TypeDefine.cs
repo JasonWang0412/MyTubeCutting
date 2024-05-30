@@ -3,19 +3,25 @@
 	internal enum MainTubeType
 	{
 		Circle,
-		Rectangle
+		Rectangle,
+		Oval,
+		FlatOval,
+		DShape,
 	}
 
 	internal enum BranchTubeType
 	{
 		Circle,
-		Rectangle
+		Rectangle,
+		Oval,
+		FlatOval,
+		DShape,
 	}
 
 	internal enum BendingNotchType
 	{
 		VShape,
 		BothSideFillet,
-		OneSideFillet
+		OneSideFillet,
 	}
 }

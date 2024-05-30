@@ -22,6 +22,24 @@ namespace MyCADUI
 			Close();
 		}
 
+		void m_btnOval_Click( object sender, EventArgs e )
+		{
+			BranchTubeTypeSelected?.Invoke( BranchTubeType.Oval );
+			Close();
+		}
+
+		void m_btnFlatOval_Click( object sender, EventArgs e )
+		{
+			BranchTubeTypeSelected?.Invoke( BranchTubeType.FlatOval );
+			Close();
+		}
+
+		void m_btnDShape_Click( object sender, EventArgs e )
+		{
+			BranchTubeTypeSelected?.Invoke( BranchTubeType.DShape );
+			Close();
+		}
+
 		internal delegate void BranchTubeTypeSelectedHandler( BranchTubeType type );
 		internal event BranchTubeTypeSelectedHandler BranchTubeTypeSelected;
 	}
