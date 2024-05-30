@@ -125,7 +125,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\MyCore\MyCADCore.csproj">
+    <ProjectReference Include="..\MyCADCore\MyCADCore.csproj">
       <Project>{65f21621-44bf-4e0a-b3e2-ad3cf215418a}</Project>
       <Name>MyCADCore</Name>
     </ProjectReference>
