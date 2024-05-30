@@ -7,8 +7,8 @@
     <ProjectGuid>{65F21621-44BF-4E0A-B3E2-AD3CF215418A}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MyCore</RootNamespace>
-    <AssemblyName>MyCore</AssemblyName>
+    <RootNamespace>MyCADCore</RootNamespace>
+    <AssemblyName>MyCADCore</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>

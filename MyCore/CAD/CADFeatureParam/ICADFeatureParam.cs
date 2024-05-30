@@ -1,4 +1,4 @@
-﻿namespace MyCore.CAD
+﻿namespace MyCADCore
 {
 	public interface ICADFeatureParam
 	{

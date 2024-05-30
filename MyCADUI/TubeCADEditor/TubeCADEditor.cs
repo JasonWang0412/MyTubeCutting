@@ -1,5 +1,5 @@
-﻿using MyCore.CAD;
-using MyCore.Tool;
+﻿using MyCADCore;
+using MyCADCore.Tool;
 using OCC.AIS;
 using OCC.gp;
 using OCC.Graphic3d;

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MyCore.CAD
+namespace MyCADCore
 {
 	[Serializable]
 	internal class CS_RectangleCheck : ICrossSectionCheck

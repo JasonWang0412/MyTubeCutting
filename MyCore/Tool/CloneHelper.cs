@@ -1,4 +1,4 @@
-﻿namespace MyCore.Tool
+﻿namespace MyCADCore.Tool
 {
 	public class CloneHelper
 	{

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 
-namespace MyCore.CAD
+namespace MyCADCore
 {
 	[Serializable]
 	public class CrossSection

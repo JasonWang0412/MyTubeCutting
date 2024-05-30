@@ -1,4 +1,4 @@
-﻿using MyCore.CAD;
+﻿using MyCADCore;
 using OCC.gp;
 using System.Windows.Forms;
 

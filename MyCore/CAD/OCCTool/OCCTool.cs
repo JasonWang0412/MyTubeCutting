@@ -9,7 +9,7 @@ using OCC.TopoDS;
 using System;
 using System.Collections.Generic;
 
-namespace MyCore.CAD
+namespace MyCADCore
 {
 	public class OCCTool
 	{

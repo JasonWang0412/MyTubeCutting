@@ -1,4 +1,4 @@
-﻿namespace MyCore.CAD
+﻿namespace MyCADCore
 {
 	public enum Geom2D_Type
 	{

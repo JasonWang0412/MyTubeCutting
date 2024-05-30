@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MyCore.CAD
+namespace MyCADCore
 {
 	public enum ArrayDirection
 	{

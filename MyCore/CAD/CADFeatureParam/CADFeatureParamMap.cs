@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace MyCore.CAD
+namespace MyCADCore
 {
 	// TODO: this class should belong to UI project
 	public class CADFeatureParamMap

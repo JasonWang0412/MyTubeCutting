@@ -1,4 +1,4 @@
-﻿namespace MyCore.CAD
+﻿namespace MyCADCore
 {
 	internal interface ICrossSectionCheck
 	{

@@ -1,4 +1,4 @@
-﻿using MyCore.CAD;
+﻿using MyCADCore;
 
 namespace MyCADUI
 {

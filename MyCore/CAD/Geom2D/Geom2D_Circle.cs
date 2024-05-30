@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 
-namespace MyCore.CAD
+namespace MyCADCore
 {
 	[Serializable]
 	public class Geom2D_Circle : IGeom2D

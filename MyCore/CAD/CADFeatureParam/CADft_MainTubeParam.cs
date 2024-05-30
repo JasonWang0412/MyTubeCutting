@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 
-namespace MyCore.CAD
+namespace MyCADCore
 {
 
 	// TODO: dont know shit about this

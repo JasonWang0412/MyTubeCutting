@@ -1,4 +1,4 @@
-﻿using MyCore.Tool;
+﻿using MyCADCore.Tool;
 using OCC.AIS;
 using OCC.BRep;
 using OCC.BRepAlgoAPI;
@@ -14,7 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace MyCore.CAD
+namespace MyCADCore
 {
 	public class CADFeatureMaker
 	{
