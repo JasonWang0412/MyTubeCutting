@@ -1,0 +1,5 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResMap>
+  <Message ID="BendingAngle_deg" Content="折彎角度" />
+  <Message ID="JointGapLength" Content="拼接口長度" />
+</ResMap>

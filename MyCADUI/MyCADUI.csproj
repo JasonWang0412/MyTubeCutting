@@ -139,6 +139,7 @@
   <PropertyGroup>
     <PostBuildEvent>copy /Y $(SolutionDir)reference\OCCwrapCSharp.dll $(TargetDir)
 xcopy /S /I /D /Y $(SolutionDir)reference\3rdparty $(TargetDir)
-xcopy /S /I /D /Y $(SolutionDir)reference\OCC7.6.0-vc14-64CompilationResults $(TargetDir)</PostBuildEvent>
+xcopy /S /I /D /Y $(SolutionDir)reference\OCC7.6.0-vc14-64CompilationResults $(TargetDir)
+xcopy /S /I /Y $(SolutionDir)Config $(TargetDir)Config</PostBuildEvent>
   </PropertyGroup>
 </Project>

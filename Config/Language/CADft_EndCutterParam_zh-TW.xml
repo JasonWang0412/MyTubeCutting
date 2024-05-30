@@ -1,0 +1,7 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ResMap>
+  <Message ID="Center_Y" Content="Y位置" />
+  <Message ID="TiltAngle_deg" Content="傾斜角度" />
+  <Message ID="RotateAngle_deg" Content="旋轉角度" />
+  <Message ID="Side" Content="切斷方向" />
+</ResMap>
