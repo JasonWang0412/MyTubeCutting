@@ -28,6 +28,15 @@ namespace MyCADCore
 			else if( basicGeom.Type == Geom2D_Type.Rectangle ) {
 				wireXOY = MakeXOYRectangleWire( (Geom2D_Rectangle)basicGeom, dNeckin );
 			}
+			else if( basicGeom.Type == Geom2D_Type.Oval ) {
+				wireXOY = MakeXOYOvalWire( (Geom2D_Oval)basicGeom, dNeckin );
+			}
+			else if( basicGeom.Type == Geom2D_Type.FlatOval ) {
+				wireXOY = MakeXOYFlatOvalWire( (Geom2D_FlatOval)basicGeom, dNeckin );
+			}
+			else if( basicGeom.Type == Geom2D_Type.DShape ) {
+				wireXOY = MakeXOYDShapeWire( (Geom2D_DShape)basicGeom, dNeckin );
+			}
 			else {
 				return null;
 			}
@@ -227,15 +236,10 @@ namespace MyCADCore
 		}
 
 		// make wire
-		static TopoDS_Wire MakeXOYCircleWire( Geom2D_Circle circleParam, double dNeckin )
+		static TopoDS_Wire MakeXOYCircleWire( Geom2D_Circle param, double dNeckin )
 		{
-			// data protection
-			if( circleParam == null ) {
-				return null;
-			}
-
 			// get radius
-			double dRadius = circleParam.Radius - dNeckin;
+			double dRadius = param.Radius - dNeckin;
 			if( dRadius <= 0 ) {
 				return null;
 			}
@@ -253,22 +257,17 @@ namespace MyCADCore
 			return wireMaker.Wire();
 		}
 
-		static TopoDS_Wire MakeXOYRectangleWire( Geom2D_Rectangle rectParam, double dNeckin )
+		static TopoDS_Wire MakeXOYRectangleWire( Geom2D_Rectangle param, double dNeckin )
 		{
-			// data protection
-			if( rectParam == null ) {
-				return null;
-			}
-
 			// get width and height
-			double width = rectParam.Width - 2 * dNeckin;
-			double height = rectParam.Height - 2 * dNeckin;
+			double width = param.Width - 2 * dNeckin;
+			double height = param.Height - 2 * dNeckin;
 			if( width <= 0 || height <= 0 ) {
 				return null;
 			}
 
 			// get fillet
-			double fillet = rectParam.Fillet - dNeckin;
+			double fillet = param.Fillet - dNeckin;
 			if( fillet >= width / 2 || fillet >= height / 2 ) {
 				return null;
 			}
@@ -356,6 +355,164 @@ namespace MyCADCore
 			}
 
 			// make wire
+			if( wireMaker.IsDone() == false ) {
+				return null;
+			}
+			return wireMaker.Wire();
+		}
+
+		static TopoDS_Wire MakeXOYOvalWire( Geom2D_Oval param, double dNeckin )
+		{
+			// get width and height
+			double width = param.Width - 2 * dNeckin;
+			double height = param.Height - 2 * dNeckin;
+			if( width <= 0 || height <= 0 ) {
+				return null;
+			}
+
+			// make oval edge on XY plane
+			gp_Elips gpOval = new gp_Elips( new gp_Ax2( new gp_Pnt( 0, 0, 0 ), new gp_Dir( 0, 0, 1 ) ), width / 2, height / 2 );
+			BRepBuilderAPI_MakeEdge edgeMaker = new BRepBuilderAPI_MakeEdge( gpOval, 0, Math.PI * 2 );
+			if( edgeMaker.IsDone() == false ) {
+				return null;
+			}
+
+			// make wire
+			BRepBuilderAPI_MakeWire wireMaker = new BRepBuilderAPI_MakeWire( edgeMaker.Edge() );
+			if( wireMaker.IsDone() == false ) {
+				return null;
+			}
+			return wireMaker.Wire();
+		}
+
+		static TopoDS_Wire MakeXOYFlatOvalWire( Geom2D_FlatOval param, double dNeckin )
+		{
+			// get radius and flat length
+			double dRadius = param.Radius - dNeckin;
+			double dFlatLength = ( param.Width - 2 * dNeckin ) - ( 2 * dRadius );
+			if( dRadius <= 0 || dFlatLength <= 0 ) {
+				return null;
+			}
+
+			// the left half circle (pi/2 ~ 3pi/2)
+			Geom_Circle circleL = new Geom_Circle( new gp_Ax2( new gp_Pnt( -dFlatLength / 2, 0, 0 ), new gp_Dir( 0, 0, 1 ) ), dRadius );
+			Geom_TrimmedCurve trimL = new Geom_TrimmedCurve( circleL, Math.PI / 2, 3 * Math.PI / 2, true );
+			BRepBuilderAPI_MakeEdge edgeCircleL = new BRepBuilderAPI_MakeEdge( trimL );
+			if( edgeCircleL.IsDone() == false ) {
+				return null;
+			}
+
+			// the right half circle (-pi/2 ~ pi/2)
+			Geom_Circle circleR = new Geom_Circle( new gp_Ax2( new gp_Pnt( dFlatLength / 2, 0, 0 ), new gp_Dir( 0, 0, 1 ) ), dRadius );
+			Geom_TrimmedCurve trimR = new Geom_TrimmedCurve( circleR, -Math.PI / 2, Math.PI / 2, true );
+			BRepBuilderAPI_MakeEdge edgeCircleR = new BRepBuilderAPI_MakeEdge( trimR );
+			if( edgeCircleR.IsDone() == false ) {
+				return null;
+			}
+
+			// top flat line
+			gp_Pnt pTop1 = new gp_Pnt( -dFlatLength / 2, dRadius, 0 );
+			gp_Pnt pTop2 = new gp_Pnt( dFlatLength / 2, dRadius, 0 );
+			BRepBuilderAPI_MakeEdge edgeTop = new BRepBuilderAPI_MakeEdge( pTop1, pTop2 );
+			if( edgeTop.IsDone() == false ) {
+				return null;
+			}
+
+			// bottom flat line
+			gp_Pnt pBottom1 = new gp_Pnt( -dFlatLength / 2, -dRadius, 0 );
+			gp_Pnt pBottom2 = new gp_Pnt( dFlatLength / 2, -dRadius, 0 );
+			BRepBuilderAPI_MakeEdge edgeBottom = new BRepBuilderAPI_MakeEdge( pBottom1, pBottom2 );
+			if( edgeBottom.IsDone() == false ) {
+				return null;
+			}
+
+			// make wire
+			BRepBuilderAPI_MakeWire wireMaker = new BRepBuilderAPI_MakeWire();
+			wireMaker.Add( edgeTop.Edge() );
+			wireMaker.Add( edgeCircleR.Edge() );
+			wireMaker.Add( edgeBottom.Edge() );
+			wireMaker.Add( edgeCircleL.Edge() );
+			if( wireMaker.IsDone() == false ) {
+				return null;
+			}
+			return wireMaker.Wire();
+		}
+
+		static TopoDS_Wire MakeXOYDShapeWire( Geom2D_DShape param, double dNeckin )
+		{
+			// get fillet, D radius and flat height
+			double fillet = param.FilletRadius - dNeckin;
+			if( fillet < 0 ) {
+				fillet = 0;
+			}
+			double dDRadius = param.Width / 2 - dNeckin;
+			double dFlatHeight = param.Height - fillet - dDRadius - 2 * dNeckin;
+			if( dDRadius <= 0 || dDRadius <= fillet || dFlatHeight <= 0 ) {
+				return null;
+			}
+
+			// make the fillet
+			BRepBuilderAPI_MakeEdge edgeCircleL = null;
+			BRepBuilderAPI_MakeEdge edgeCircleR = null;
+			if( fillet > 0 ) {
+
+				// left fillet
+				Geom_Circle circleL = new Geom_Circle( new gp_Ax2( new gp_Pnt( -dDRadius + fillet, dFlatHeight, 0 ), new gp_Dir( 0, 0, 1 ) ), fillet );
+				Geom_TrimmedCurve trimL = new Geom_TrimmedCurve( circleL, Math.PI / 2, Math.PI, true );
+				edgeCircleL = new BRepBuilderAPI_MakeEdge( trimL );
+				if( edgeCircleL.IsDone() == false ) {
+					return null;
+				}
+
+				// right fillet
+				Geom_Circle circleR = new Geom_Circle( new gp_Ax2( new gp_Pnt( dDRadius - fillet, dFlatHeight, 0 ), new gp_Dir( 0, 0, 1 ) ), fillet );
+				Geom_TrimmedCurve trimR = new Geom_TrimmedCurve( circleR, 0, Math.PI / 2, true );
+				edgeCircleR = new BRepBuilderAPI_MakeEdge( trimR );
+				if( edgeCircleR.IsDone() == false ) {
+					return null;
+				}
+			}
+
+			// make the D shape
+			Geom_Circle circleD = new Geom_Circle( new gp_Ax2( new gp_Pnt( 0, 0, 0 ), new gp_Dir( 0, 0, 1 ) ), dDRadius );
+			Geom_TrimmedCurve trimD = new Geom_TrimmedCurve( circleD, Math.PI, 2 * Math.PI, true );
+			BRepBuilderAPI_MakeEdge edgeCircleD = new BRepBuilderAPI_MakeEdge( trimD );
+			if( edgeCircleD.IsDone() == false ) {
+				return null;
+			}
+
+			// make the flat line
+			gp_Pnt pLeft1 = new gp_Pnt( -dDRadius, 0, 0 );
+			gp_Pnt pLeft2 = new gp_Pnt( -dDRadius, dFlatHeight, 0 );
+			BRepBuilderAPI_MakeEdge edgeLeft = new BRepBuilderAPI_MakeEdge( pLeft1, pLeft2 );
+			if( edgeLeft.IsDone() == false ) {
+				return null;
+			}
+			gp_Pnt pRight1 = new gp_Pnt( dDRadius, 0, 0 );
+			gp_Pnt pRight2 = new gp_Pnt( dDRadius, dFlatHeight, 0 );
+			BRepBuilderAPI_MakeEdge edgeRight = new BRepBuilderAPI_MakeEdge( pRight1, pRight2 );
+			if( edgeRight.IsDone() == false ) {
+				return null;
+			}
+			gp_Pnt pTop1 = new gp_Pnt( -dDRadius + fillet, dFlatHeight + fillet, 0 );
+			gp_Pnt pTop2 = new gp_Pnt( dDRadius - fillet, dFlatHeight + fillet, 0 );
+			BRepBuilderAPI_MakeEdge edgeTop = new BRepBuilderAPI_MakeEdge( pTop1, pTop2 );
+			if( edgeTop.IsDone() == false ) {
+				return null;
+			}
+
+			// make wire
+			BRepBuilderAPI_MakeWire wireMaker = new BRepBuilderAPI_MakeWire();
+			wireMaker.Add( edgeTop.Edge() );
+			if( fillet > 0 ) {
+				wireMaker.Add( edgeCircleR.Edge() );
+			}
+			wireMaker.Add( edgeRight.Edge() );
+			wireMaker.Add( edgeCircleD.Edge() );
+			wireMaker.Add( edgeLeft.Edge() );
+			if( fillet > 0 ) {
+				wireMaker.Add( edgeCircleL.Edge() );
+			}
 			if( wireMaker.IsDone() == false ) {
 				return null;
 			}

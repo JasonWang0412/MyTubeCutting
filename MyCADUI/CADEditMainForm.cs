@@ -121,7 +121,7 @@ namespace MyCADUI
 			}
 			else if( type == MainTubeType.DShape ) {
 				double dWidth = 50;
-				double dHeight = 60;
+				double dHeight = 50;
 				double dFillet = 5;
 				Geom2D_DShape shape = new Geom2D_DShape( dWidth, dHeight, dFillet );
 				crossSection = new CrossSection( shape, dThickness );
@@ -167,17 +167,17 @@ namespace MyCADUI
 			}
 			else if( type == BranchTubeType.Oval ) {
 				double dWidth = 20;
-				double dHeight = 10;
+				double dHeight = 15;
 				shape = new Geom2D_Oval( dWidth, dHeight );
 			}
 			else if( type == BranchTubeType.FlatOval ) {
 				double dWidth = 20;
-				double dRadius = 10;
+				double dRadius = 7.5;
 				shape = new Geom2D_FlatOval( dWidth, dRadius );
 			}
 			else if( type == BranchTubeType.DShape ) {
 				double dWidth = 20;
-				double dHeight = 25;
+				double dHeight = 20;
 				double dFillet = 2;
 				shape = new Geom2D_DShape( dWidth, dHeight, dFillet );
 			}

@@ -11,7 +11,7 @@ namespace MyCADCore
 		{
 			Width = width;
 			Height = height;
-			Filletadius = filletRadius;
+			FilletRadius = filletRadius;
 		}
 
 		[Browsable( false )]
@@ -35,8 +35,8 @@ namespace MyCADCore
 			get; set;
 		}
 
-		[MyDisplayName( "Geom2D_DShape", "Filletadius" )]
-		public double Filletadius
+		[MyDisplayName( "Geom2D_DShape", "FilletRadius" )]
+		public double FilletRadius
 		{
 			get; set;
 		}
@@ -44,12 +44,17 @@ namespace MyCADCore
 		public bool IsValid()
 		{
 			// width radius must be positive
-			if( Width <= 0 || Filletadius <= 0 ) {
+			if( Width <= 0 || FilletRadius <= 0 ) {
+				return false;
+			}
+
+			// fillet radius should be less than width/2
+			if( FilletRadius >= Width / 2 ) {
 				return false;
 			}
 
 			// height should be greater than fillet radius + width/2
-			if( Height <= Filletadius + Width / 2 ) {
+			if( Height <= FilletRadius + Width / 2 ) {
 				return false;
 			}
 

@@ -221,7 +221,7 @@ namespace MyCADCore
 
 			// Make outer wire and inner wire
 			gp_Pnt center = new gp_Pnt( 0, 0, 0 ); // origin
-			gp_Dir dir = new gp_Dir( 0, 1, 0 ); // y-axis
+			gp_Dir dir = new gp_Dir( 0, -1, 0 ); // -Y axis, to flip to predicted orientation
 
 			// TODO: extend tp no-center-tunnel tube
 			TopoDS_Wire outerWire = OCCTool.MakeGeom2DWire( mainTubeParam.CrossSection.Shape, 0, center, dir, 0 );
