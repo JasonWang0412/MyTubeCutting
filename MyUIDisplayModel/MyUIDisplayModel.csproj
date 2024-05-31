@@ -4,15 +4,14 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{04FCC0CE-27D3-4262-B609-D776490124EE}</ProjectGuid>
+    <ProjectGuid>{50C11367-5719-4246-A006-6998837AB54E}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MyLanguageManager</RootNamespace>
-    <AssemblyName>MyLanguageManager</AssemblyName>
+    <RootNamespace>MyUIDisplayModel</RootNamespace>
+    <AssemblyName>MyUIDisplayModel</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
-    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -42,8 +41,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="LanguageManager.cs" />
+    <Compile Include="MyDisplayNameAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MyLanguageManager\MyLanguageManager.csproj">
+      <Project>{04fcc0ce-27d3-4262-b609-d776490124ee}</Project>
+      <Name>MyLanguageManager</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

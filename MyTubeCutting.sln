@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Utility", "Utility\Utility.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyLanguageManager", "MyLanguageManager\MyLanguageManager.csproj", "{04FCC0CE-27D3-4262-B609-D776490124EE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyUIDisplayModel", "MyUIDisplayModel\MyUIDisplayModel.csproj", "{50C11367-5719-4246-A006-6998837AB54E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{04FCC0CE-27D3-4262-B609-D776490124EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{04FCC0CE-27D3-4262-B609-D776490124EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{04FCC0CE-27D3-4262-B609-D776490124EE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{50C11367-5719-4246-A006-6998837AB54E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{50C11367-5719-4246-A006-6998837AB54E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{50C11367-5719-4246-A006-6998837AB54E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{50C11367-5719-4246-A006-6998837AB54E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

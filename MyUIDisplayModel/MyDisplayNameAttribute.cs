@@ -1,7 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using MyLanguageManager;
+using System.Collections.Generic;
 using System.ComponentModel;
 
-namespace MyLanguageManager
+namespace MyUIDisplayModel
 {
 	public class MyDisplayNameAttribute : DisplayNameAttribute
 	{

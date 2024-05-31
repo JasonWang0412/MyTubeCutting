@@ -129,6 +129,10 @@
       <Project>{65f21621-44bf-4e0a-b3e2-ad3cf215418a}</Project>
       <Name>MyCADCore</Name>
     </ProjectReference>
+    <ProjectReference Include="..\MyUIDisplayModel\MyUIDisplayModel.csproj">
+      <Project>{50c11367-5719-4246-a006-6998837ab54e}</Project>
+      <Name>MyUIDisplayModel</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Utility\Utility.csproj">
       <Project>{e3e8855e-f88f-42b6-9f5f-bb02d8221353}</Project>
       <Name>Utility</Name>

@@ -1,4 +1,4 @@
-﻿using MyLanguageManager;
+﻿using MyUIDisplayModel;
 using System;
 
 namespace MyCADCore
