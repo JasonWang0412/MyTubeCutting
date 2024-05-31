@@ -33,7 +33,7 @@ namespace MyCADCore
 			}
 		}
 
-		[TypeConverter( typeof( ExpandableObjectConverter ) )]
+		[TypeConverter( typeof( MyObjectConverter ) )]
 		[MyDisplayName( "CrossSection", "Shape" )]
 		public IGeom2D Shape
 		{

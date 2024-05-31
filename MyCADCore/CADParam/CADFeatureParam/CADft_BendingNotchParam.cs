@@ -25,7 +25,7 @@ namespace MyCADCore
 			}
 		}
 
-		[TypeConverter( typeof( ExpandableObjectConverter ) )]
+		[TypeConverter( typeof( MyObjectConverter ) )]
 		[MyDisplayName( "CADft_BendingNotchParam", "Shape" )]
 		public IBendingNotchShape Shape
 		{
@@ -50,7 +50,7 @@ namespace MyCADCore
 			get; set;
 		}
 
-		[TypeConverter( typeof( ExpandableObjectConverter ) )]
+		[TypeConverter( typeof( MyObjectConverter ) )]
 		[MyDisplayName( "CADft_BendingNotchParam", "ArrayParam" )]
 		public ArrayParam ArrayParam
 		{

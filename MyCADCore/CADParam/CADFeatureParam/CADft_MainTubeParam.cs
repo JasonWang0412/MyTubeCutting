@@ -24,8 +24,7 @@ namespace MyCADCore
 			}
 		}
 
-		// TODO: dont know shit about this
-		[TypeConverter( typeof( ExpandableObjectConverter ) )]
+		[TypeConverter( typeof( MyObjectConverter ) )]
 		[MyDisplayName( "CADft_MainTubeParam", "CrossSection" )]
 		public CrossSection CrossSection
 		{

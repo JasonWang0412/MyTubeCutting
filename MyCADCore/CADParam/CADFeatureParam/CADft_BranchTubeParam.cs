@@ -82,7 +82,7 @@ namespace MyCADCore
 			set;
 		}
 
-		[TypeConverter( typeof( ExpandableObjectConverter ) )]
+		[TypeConverter( typeof( MyObjectConverter ) )]
 		[MyDisplayName( "CADft_BranchTubeParam", "Shape" )]
 		public IGeom2D Shape
 		{
@@ -110,7 +110,7 @@ namespace MyCADCore
 			set;
 		}
 
-		[TypeConverter( typeof( ExpandableObjectConverter ) )]
+		[TypeConverter( typeof( MyObjectConverter ) )]
 		[MyDisplayName( "CADft_BranchTubeParam", "ArrayParam" )]
 		public ArrayParam ArrayParam
 		{
