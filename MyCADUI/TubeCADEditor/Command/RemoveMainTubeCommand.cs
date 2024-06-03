@@ -16,6 +16,9 @@ namespace MyCADUI
 			if( m_CADFeatureParamMap == null ) {
 				return CommandErrorCode.InvalidMap;
 			}
+			if( string.IsNullOrEmpty( m_szMainTubeName ) ) {
+				return CommandErrorCode.InvalidID;
+			}
 
 			// can not remove when cad feature is not empty
 			if( m_CADFeatureParamMap.FeatureMap.Count != 0 ) {

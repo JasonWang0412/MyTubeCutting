@@ -5,6 +5,7 @@
 		OK = 0,
 		InvalidMap = 1,
 		InvalidParam = 2,
-		CanNotRemoveMainTube = 3,
+		InvalidID = 3,
+		CanNotRemoveMainTube = 4,
 	}
 }

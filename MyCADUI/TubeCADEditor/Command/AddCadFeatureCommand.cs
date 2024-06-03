@@ -17,6 +17,9 @@ namespace MyCADUI
 			if( m_CADFeatureParamMap == null || m_CADFeatureParamMap.FeatureMap == null ) {
 				return CommandErrorCode.InvalidMap;
 			}
+			if( string.IsNullOrEmpty( m_szFeatureName ) ) {
+				return CommandErrorCode.InvalidID;
+			}
 			if( m_CADFeatureParam == null || m_CADFeatureParam.IsValid() == false ) {
 				return CommandErrorCode.InvalidParam;
 			}

@@ -302,12 +302,15 @@ namespace MyCADUI
 		// tube editor action
 		void m_propgrdPropertyBar_PropertyValueChanged( object s, PropertyValueChangedEventArgs e )
 		{
-			m_TubeCADEditor.ModifyObjectProperty( s, e );
+			m_TubeCADEditor.ModifyObjectProperty( m_treeObjBrowser.SelectedNode.Text );
 		}
 
 		void m_treeObjBrowser_AfterSelect( object sender, TreeViewEventArgs e )
 		{
 			string szObjectName = e.Node.Text;
+			if( string.IsNullOrEmpty( szObjectName ) ) {
+				return;
+			}
 			m_TubeCADEditor.SetEditObject( szObjectName );
 		}
 
@@ -326,7 +329,7 @@ namespace MyCADUI
 		void m_treeObjBrowser_KeyDown( object sender, KeyEventArgs e )
 		{
 			if( e.KeyCode == Keys.Delete ) {
-				m_TubeCADEditor.RemoveCADFeature();
+				m_TubeCADEditor.RemoveCADFeature( m_treeObjBrowser.SelectedNode.Text );
 			}
 			else if( e.Modifiers == Keys.Control ) {
 				if( e.KeyCode == Keys.Z ) {
@@ -386,13 +389,13 @@ namespace MyCADUI
 
 		void m_tsmiDir_Pos_Click( object sender, System.EventArgs e )
 		{
-			gp_Dir dir = m_TubeCADEditor.GetEditObjectDir();
+			gp_Dir dir = m_TubeCADEditor.GetEditObjectDir( m_treeObjBrowser.SelectedNode.Text );
 			m_Viewer.SetViewDir( dir );
 		}
 
 		void m_tsmiDir_Neg_Click( object sender, System.EventArgs e )
 		{
-			gp_Dir dir = m_TubeCADEditor.GetEditObjectDir();
+			gp_Dir dir = m_TubeCADEditor.GetEditObjectDir( m_treeObjBrowser.SelectedNode.Text );
 			m_Viewer.SetViewDir( dir.Reversed() );
 		}
 

@@ -19,6 +19,9 @@ namespace MyCADUI
 			if( m_CADFeatureParamMap == null ) {
 				return CommandErrorCode.InvalidMap;
 			}
+			if( string.IsNullOrEmpty( m_szMainTubeName ) ) {
+				return CommandErrorCode.InvalidID;
+			}
 			if( m_NewMainTubeParam == null || m_NewMainTubeParam.IsValid() == false ) {
 				return CommandErrorCode.InvalidParam;
 			}

@@ -12,6 +12,8 @@ namespace MyCADUI
 {
 	internal class TubeCADEditor
 	{
+		// TODO: check necessary of global variable
+
 		// GUI
 		OCCViewer m_Viewer;
 		TreeView m_treeObjBrowser;
@@ -35,7 +37,6 @@ namespace MyCADUI
 		int m_nBranchTubeCount = 1;
 		int m_nBendingNotchCount = 1;
 		const string MAIN_TUBE_NAME = "MainTube";
-		string m_szEditObjName;
 		ICADFeatureParam m_EdiObjParam;
 
 		// command
@@ -91,67 +92,82 @@ namespace MyCADUI
 			AddCADFeature( szName, bendingNotchParam );
 		}
 
-		internal void RemoveCADFeature()
+		internal void RemoveCADFeature( string szObjectName )
 		{
+			// data protection
+			if( string.IsNullOrEmpty( szObjectName ) ) {
+				return;
+			}
+
 			// remove main tube
-			if( m_szEditObjName == MAIN_TUBE_NAME ) {
+			if( szObjectName == MAIN_TUBE_NAME ) {
 				RemoveMainTubeCommand command = new RemoveMainTubeCommand( MAIN_TUBE_NAME, m_CADFeatureParamMap );
 				DoCommand( command );
 			}
 
 			// remove cad feature
 			else {
-				RemoveCadFeatureCommand command = new RemoveCadFeatureCommand( m_szEditObjName, m_CADFeatureParamMap );
+				RemoveCadFeatureCommand command = new RemoveCadFeatureCommand( szObjectName, m_CADFeatureParamMap );
 				DoCommand( command );
 			}
 		}
 
-		internal void SetEditObject( string szObjName )
+		internal void SetEditObject( string szObjecName )
 		{
 			// data protection
-			if( string.IsNullOrEmpty( szObjName ) ) {
+			if( string.IsNullOrEmpty( szObjecName ) ) {
 				return;
 			}
 
-			m_szEditObjName = szObjName;
-			DisplayObjectShape();
-			ShowObjectProperty();
+			DisplayObjectShape( szObjecName );
+			ShowObjectProperty( szObjecName );
 		}
 
-		internal void ModifyObjectProperty( object s, PropertyValueChangedEventArgs e )
+		internal void ModifyObjectProperty( string szObjecName )
 		{
+			// data protection
+			if( string.IsNullOrEmpty( szObjecName ) ) {
+				return;
+			}
+
 			CommandErrorCode error;
+
 			// main tube
-			if( m_szEditObjName == MAIN_TUBE_NAME ) {
+			if( szObjecName == MAIN_TUBE_NAME ) {
 				ModifyMainTubeCommand command = new ModifyMainTubeCommand( MAIN_TUBE_NAME, CloneHelper.Clone( m_EdiObjParam ), m_CADFeatureParamMap );
 				error = DoCommand( command );
 			}
 
 			// cad feature
 			else {
-				ModifyCadFeatureCommand command = new ModifyCadFeatureCommand( m_szEditObjName, CloneHelper.Clone( m_EdiObjParam ), m_CADFeatureParamMap );
+				ModifyCadFeatureCommand command = new ModifyCadFeatureCommand( szObjecName, CloneHelper.Clone( m_EdiObjParam ), m_CADFeatureParamMap );
 				error = DoCommand( command );
 			}
 
 			if( error != CommandErrorCode.OK ) {
 
 				// show original property when modify failed
-				ShowObjectProperty();
+				ShowObjectProperty( szObjecName );
 			}
 		}
 
-		internal gp_Dir GetEditObjectDir()
+		internal gp_Dir GetEditObjectDir( string szObjectName )
 		{
+			// data protection
+			if( string.IsNullOrEmpty( szObjectName ) ) {
+				return new gp_Dir( 0, 1, 0 );
+			}
+
 			// main tube
-			if( m_szEditObjName == MAIN_TUBE_NAME
+			if( szObjectName == MAIN_TUBE_NAME
 				&& m_CADFeatureParamMap.MainTubeParam != null ) {
 				return new gp_Dir( 0, 1, 0 );
 			}
 
 			// cad feature
-			if( m_CADFeatureParamMap.FeatureMap.ContainsKey( m_szEditObjName )
-				&& m_CADFeatureParamMap.FeatureMap[ m_szEditObjName ] != null ) {
-				return CADFeatureMaker.GetCADFeatureDir( m_CADFeatureParamMap.FeatureMap[ m_szEditObjName ] );
+			if( m_CADFeatureParamMap.FeatureMap.ContainsKey( szObjectName )
+				&& m_CADFeatureParamMap.FeatureMap[ szObjectName ] != null ) {
+				return CADFeatureMaker.GetCADFeatureDir( m_CADFeatureParamMap.FeatureMap[ szObjectName ] );
 			}
 
 			// default dir
@@ -255,31 +271,31 @@ namespace MyCADUI
 			return "BendingNotch" + m_nBendingNotchCount++;
 		}
 
-		void DisplayObjectShape()
+		void DisplayObjectShape( string szObjectName )
 		{
 			HideAllShapeExceptMainTube();
 
 			// just hide all shape except main tube
-			if( m_szEditObjName == MAIN_TUBE_NAME ) {
+			if( szObjectName == MAIN_TUBE_NAME ) {
 				return;
 			}
 
 			// display selected object shape
 			else {
-				if( m_CADFeatureNameAISMap.ContainsKey( m_szEditObjName ) == false || m_CADFeatureNameAISMap[ m_szEditObjName ] == null ) {
+				if( m_CADFeatureNameAISMap.ContainsKey( szObjectName ) == false || m_CADFeatureNameAISMap[ szObjectName ] == null ) {
 					MessageBox.Show( "Error: CAD Feature AIS not found in map." );
 					return;
 				}
 			}
-			m_Viewer.GetAISContext().Display( m_CADFeatureNameAISMap[ m_szEditObjName ], false );
+			m_Viewer.GetAISContext().Display( m_CADFeatureNameAISMap[ szObjectName ], false );
 			m_Viewer.UpdateView();
 		}
 
-		void ShowObjectProperty()
+		void ShowObjectProperty( string szObjectName )
 		{
 			// here we need to use the pointer of the object, a null check is necessary
 			// main tube
-			if( m_szEditObjName == MAIN_TUBE_NAME ) {
+			if( szObjectName == MAIN_TUBE_NAME ) {
 				if( m_CADFeatureParamMap.MainTubeParam == null ) {
 					MessageBox.Show( "Error: Main tube param not found in map." );
 					return;
@@ -289,11 +305,11 @@ namespace MyCADUI
 
 			// cad feature
 			else {
-				if( m_CADFeatureParamMap.FeatureMap.ContainsKey( m_szEditObjName ) == false || m_CADFeatureParamMap.FeatureMap[ m_szEditObjName ] == null ) {
+				if( m_CADFeatureParamMap.FeatureMap.ContainsKey( szObjectName ) == false || m_CADFeatureParamMap.FeatureMap[ szObjectName ] == null ) {
 					MessageBox.Show( "Error: CAD Feature param not found in map." );
 					return;
 				}
-				m_EdiObjParam = CloneHelper.Clone( m_CADFeatureParamMap.FeatureMap[ m_szEditObjName ] );
+				m_EdiObjParam = CloneHelper.Clone( m_CADFeatureParamMap.FeatureMap[ szObjectName ] );
 			}
 			m_propgrdPropertyBar.SelectedObject = m_EdiObjParam;
 			m_propgrdPropertyBar.ExpandAllGridItems();
@@ -336,6 +352,11 @@ namespace MyCADUI
 
 		void UpdateEditorAfterCommand( EditType type, string szObjectName )
 		{
+			// data protection
+			if( string.IsNullOrEmpty( szObjectName ) ) {
+				return;
+			}
+
 			if( type == EditType.AddMainTube ) {
 
 				// remove old node from object browser if exist, should not happen
@@ -416,7 +437,7 @@ namespace MyCADUI
 				}
 
 				// make new ais
-				ICADFeatureParam cadFeatureParam = m_CADFeatureParamMap.FeatureMap[ m_szEditObjName ];
+				ICADFeatureParam cadFeatureParam = m_CADFeatureParamMap.FeatureMap[ szObjectName ];
 				AIS_Shape newCADFeatureAIS = CADFeatureMaker.MakeCADFeatureAIS( cadFeatureParam, m_CADFeatureParamMap.MainTubeParam );
 				if( newCADFeatureAIS == null ) {
 					MessageBox.Show( "Error: CAD Feature AIS generated failed." );
@@ -431,7 +452,7 @@ namespace MyCADUI
 
 				// display new ais and update ais map
 				m_Viewer.GetAISContext().Display( newCADFeatureAIS, false );
-				m_CADFeatureNameAISMap[ m_szEditObjName ] = newCADFeatureAIS;
+				m_CADFeatureNameAISMap[ szObjectName ] = newCADFeatureAIS;
 			}
 
 			// update display
