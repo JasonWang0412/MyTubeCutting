@@ -41,6 +41,8 @@ namespace MyCADUI
 		// command
 		List<ICADEditCommand> m_CADEditUndoCommandQueue = new List<ICADEditCommand>();
 		List<ICADEditCommand> m_CADEditRedoCommandQueue = new List<ICADEditCommand>();
+		internal delegate void CommandStatusChangedEventHandler( bool bUndo, bool bRedo );
+		internal event CommandStatusChangedEventHandler CommandStatusChanged;
 
 		// main tube status changed event
 		internal delegate void MainTubeStatusChangedEventHandler( bool bExistMainTube );
@@ -171,6 +173,9 @@ namespace MyCADUI
 
 			// remove command from undo queue
 			m_CADEditUndoCommandQueue.RemoveAt( m_CADEditUndoCommandQueue.Count - 1 );
+
+			// invoke the command status changed event
+			CommandStatusChanged?.Invoke( m_CADEditUndoCommandQueue.Count != 0, true );
 		}
 
 		internal void Redo()
@@ -188,6 +193,9 @@ namespace MyCADUI
 
 			// remove command from redo queue
 			m_CADEditRedoCommandQueue.RemoveAt( m_CADEditRedoCommandQueue.Count - 1 );
+
+			// invoke the command status changed event
+			CommandStatusChanged?.Invoke( true, m_CADEditRedoCommandQueue.Count != 0 );
 		}
 
 		internal void ExportStep()
@@ -442,6 +450,7 @@ namespace MyCADUI
 			}
 			m_CADEditUndoCommandQueue.Add( command );
 			m_CADEditRedoCommandQueue.Clear();
+			CommandStatusChanged?.Invoke( true, false );
 			return error;
 		}
 	}

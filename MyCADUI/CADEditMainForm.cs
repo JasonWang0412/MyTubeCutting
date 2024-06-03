@@ -26,7 +26,8 @@ namespace MyCADUI
 			m_tsmiEndCutter.Enabled = false;
 			m_tsmiBranchTube.Enabled = false;
 			m_tsmiBendingNotch.Enabled = false;
-			m_tsmiEdit.Enabled = false;
+			m_tsmiUndo.Enabled = false;
+			m_tsmiRedo.Enabled = false;
 
 			// initialize viewer
 			m_Viewer = new OCCViewer();
@@ -40,6 +41,11 @@ namespace MyCADUI
 			// initialize tube editor
 			m_TubeCADEditor = new TubeCADEditor( m_Viewer, m_treeObjBrowser, m_propgrdPropertyBar );
 			m_TubeCADEditor.MainTubeStatusChanged += MainTubeStatusChanged;
+			m_TubeCADEditor.CommandStatusChanged += ( bUndo, bRedo ) =>
+			{
+				m_tsmiUndo.Enabled = bUndo;
+				m_tsmiRedo.Enabled = bRedo;
+			};
 
 			// key event
 			m_panViewer.KeyDown += m_panViewer_KeyDown;
