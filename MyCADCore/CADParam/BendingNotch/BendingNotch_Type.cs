@@ -3,7 +3,7 @@
 	public enum BendingNotch_Type
 	{
 		VShape = 0,
-		BothSideFillet = 1,
-		OneSideFillet = 2,
+		BothSide = 1,
+		OneSide = 2,
 	}
 }

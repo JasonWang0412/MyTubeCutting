@@ -21,7 +21,7 @@
 	internal enum BendingNotchType
 	{
 		VShape,
-		BothSideFillet,
-		OneSideFillet,
+		BothSide,
+		OneSide,
 	}
 }

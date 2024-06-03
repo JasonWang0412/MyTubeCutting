@@ -11,9 +11,9 @@ namespace MyCADCore
 	}
 
 	[Serializable]
-	public class BN_OneSideFillet : IBendingNotchShape
+	public class BN_OneSide : IBendingNotchShape
 	{
-		public BN_OneSideFillet( bool isOverCut, NotchSide side )
+		public BN_OneSide( bool isOverCut, NotchSide side )
 		{
 			IsOverCut = isOverCut;
 			Side = side;
@@ -24,17 +24,17 @@ namespace MyCADCore
 		{
 			get
 			{
-				return BendingNotch_Type.OneSideFillet;
+				return BendingNotch_Type.OneSide;
 			}
 		}
 
-		[MyDisplayName( "BN_OneSideFillet", "IsOverCut" )]
+		[MyDisplayName( "BN_OneSide", "IsOverCut" )]
 		public bool IsOverCut
 		{
 			get; set;
 		}
 
-		[MyDisplayName( "BN_OneSideFillet", "Side" )]
+		[MyDisplayName( "BN_OneSide", "Side" )]
 		public NotchSide Side
 		{
 			get; set;

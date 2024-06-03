@@ -244,12 +244,12 @@ namespace MyCADUI
 
 		void m_tsmiBendingNotch_BothSide_Click( object sender, System.EventArgs e )
 		{
-			BendingNotchTypeSelected( BendingNotchType.BothSideFillet );
+			BendingNotchTypeSelected( BendingNotchType.BothSide );
 		}
 
 		void m_tsmiBendingNotch_OneSide_Click( object sender, System.EventArgs e )
 		{
-			BendingNotchTypeSelected( BendingNotchType.OneSideFillet );
+			BendingNotchTypeSelected( BendingNotchType.OneSide );
 		}
 
 		void BendingNotchTypeSelected( BendingNotchType type )
@@ -261,17 +261,17 @@ namespace MyCADUI
 				double jointGapLength = 0;
 				shape = new BN_VShape( bendingAngle_deg, jointGapLength );
 			}
-			else if( type == BendingNotchType.BothSideFillet ) {
+			else if( type == BendingNotchType.BothSide ) {
 				double filletRadius = 25;
 				double bendingAngle_deg = 90;
 				bool isOverCut = false;
 				double jointGapLength = 0;
-				shape = new BN_BothSideFillet( filletRadius, bendingAngle_deg, isOverCut, jointGapLength );
+				shape = new BN_BothSide( filletRadius, bendingAngle_deg, isOverCut, jointGapLength );
 			}
-			else if( type == BendingNotchType.OneSideFillet ) {
+			else if( type == BendingNotchType.OneSide ) {
 				bool isOverCut = false;
 				NotchSide side = NotchSide.Left;
-				shape = new BN_OneSideFillet( isOverCut, side );
+				shape = new BN_OneSide( isOverCut, side );
 			}
 			else {
 				MessageBox.Show( "The type is currenttly not supported." );

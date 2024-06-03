@@ -66,11 +66,11 @@ namespace MyCADCore
 			if( shape.Type == BendingNotch_Type.VShape ) {
 				baseWire = MakeYOZVShapeBNWire( (BN_VShape)shape, y, z, maxZ );
 			}
-			else if( shape.Type == BendingNotch_Type.BothSideFillet ) {
-				baseWire = MakeYOZBothSideBNWire( (BN_BothSideFillet)shape, y, z, minZ, maxZ, dThickness );
+			else if( shape.Type == BendingNotch_Type.BothSide ) {
+				baseWire = MakeYOZBothSideBNWire( (BN_BothSide)shape, y, z, minZ, maxZ, dThickness );
 			}
-			else if( shape.Type == BendingNotch_Type.OneSideFillet ) {
-				baseWire = MakeYOZOneSideBNWire( (BN_OneSideFillet)shape, y, z, minZ, maxZ, dThickness );
+			else if( shape.Type == BendingNotch_Type.OneSide ) {
+				baseWire = MakeYOZOneSideBNWire( (BN_OneSide)shape, y, z, minZ, maxZ, dThickness );
 			}
 			else {
 				return null;
@@ -571,7 +571,7 @@ namespace MyCADCore
 			return wireMaker.Wire();
 		}
 
-		static TopoDS_Wire MakeYOZBothSideBNWire( BN_BothSideFillet shape, double y, double z, double minZ, double maxZ, double dThickness )
+		static TopoDS_Wire MakeYOZBothSideBNWire( BN_BothSide shape, double y, double z, double minZ, double maxZ, double dThickness )
 		{
 			// calculate points
 			double dHalfAngle_Rad = shape.BendingAngle_deg * Math.PI / 180 / 2;
@@ -694,7 +694,7 @@ namespace MyCADCore
 			return wireMaker.Wire();
 		}
 
-		static TopoDS_Wire MakeYOZOneSideBNWire( BN_OneSideFillet shape, double y, double z, double minZ, double maxZ, double dThickness )
+		static TopoDS_Wire MakeYOZOneSideBNWire( BN_OneSide shape, double y, double z, double minZ, double maxZ, double dThickness )
 		{
 			// calculate points
 			double dArcRadius = maxZ - z;
