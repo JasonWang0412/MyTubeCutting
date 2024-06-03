@@ -575,7 +575,7 @@ namespace MyCADCore
 		{
 			// calculate points
 			double dHalfAngle_Rad = shape.BendingAngle_deg * Math.PI / 180 / 2;
-			double dHalfArcLength = shape.FilletRadius * dHalfAngle_Rad;
+			double dHalfArcLength = shape.BendingRadius * dHalfAngle_Rad;
 			double dOverCut = 0;
 			if( shape.IsOverCut && z - minZ > dThickness ) {
 				dOverCut = z - minZ - dThickness;
@@ -592,8 +592,8 @@ namespace MyCADCore
 			double y11 = y12;
 			double z11 = z12 + dOverCut; // equal to z
 
-			Geom_Circle circleL = new Geom_Circle( new gp_Ax2( new gp_Pnt( 0, y2, z2 + shape.FilletRadius ), new gp_Dir( 1, 0, 0 ) ), shape.FilletRadius );
-			Geom_Circle circleR = new Geom_Circle( new gp_Ax2( new gp_Pnt( 0, y11, z11 + shape.FilletRadius ), new gp_Dir( 1, 0, 0 ) ), shape.FilletRadius );
+			Geom_Circle circleL = new Geom_Circle( new gp_Ax2( new gp_Pnt( 0, y2, z2 + shape.BendingRadius ), new gp_Dir( 1, 0, 0 ) ), shape.BendingRadius );
+			Geom_Circle circleR = new Geom_Circle( new gp_Ax2( new gp_Pnt( 0, y11, z11 + shape.BendingRadius ), new gp_Dir( 1, 0, 0 ) ), shape.BendingRadius );
 			Geom_TrimmedCurve trimL = new Geom_TrimmedCurve( circleL, Math.PI, Math.PI + dHalfAngle_Rad, true );
 			Geom_TrimmedCurve trimR = new Geom_TrimmedCurve( circleR, Math.PI - dHalfAngle_Rad, Math.PI, true );
 			BRepBuilderAPI_MakeEdge edgeCircleL = new BRepBuilderAPI_MakeEdge( trimL );

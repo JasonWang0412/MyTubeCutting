@@ -9,7 +9,7 @@ namespace MyCADCore
 	{
 		public BN_BothSideFillet( double filletRadius, double bendingAngle_deg, bool isOverCut, double jointGapLength )
 		{
-			FilletRadius = filletRadius;
+			BendingRadius = filletRadius;
 			BendingAngle_deg = bendingAngle_deg;
 			IsOverCut = isOverCut;
 			JointGapLength = jointGapLength;
@@ -24,8 +24,8 @@ namespace MyCADCore
 			}
 		}
 
-		[MyDisplayName( "BN_BothSideFillet", "FilletRadius" )]
-		public double FilletRadius
+		[MyDisplayName( "BN_BothSideFillet", "BendingRadius" )]
+		public double BendingRadius
 		{
 			get; set;
 		}
@@ -51,7 +51,7 @@ namespace MyCADCore
 		public bool IsValid()
 		{
 			// fillet radius should be greater than 0
-			if( FilletRadius <= 0 ) {
+			if( BendingRadius <= 0 ) {
 				return false;
 			}
 
