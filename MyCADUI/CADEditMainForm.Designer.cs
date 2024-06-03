@@ -156,6 +156,7 @@
 			this.m_tsmiExport.Name = "m_tsmiExport";
 			this.m_tsmiExport.Size = new System.Drawing.Size(180, 22);
 			this.m_tsmiExport.Text = "Export";
+			this.m_tsmiExport.Click += new System.EventHandler(this.m_tsmiExport_Click);
 			// 
 			// m_tsmiView
 			// 
@@ -178,54 +179,63 @@
 			this.m_tsmiX_Pos.Name = "m_tsmiX_Pos";
 			this.m_tsmiX_Pos.Size = new System.Drawing.Size(180, 22);
 			this.m_tsmiX_Pos.Text = "X+";
+			this.m_tsmiX_Pos.Click += new System.EventHandler(this.m_tsmiX_Pos_Click);
 			// 
 			// m_tsmiX_Neg
 			// 
 			this.m_tsmiX_Neg.Name = "m_tsmiX_Neg";
 			this.m_tsmiX_Neg.Size = new System.Drawing.Size(180, 22);
 			this.m_tsmiX_Neg.Text = "X-";
+			this.m_tsmiX_Neg.Click += new System.EventHandler(this.m_tsmiX_Neg_Click);
 			// 
 			// m_tsmiY_Pos
 			// 
 			this.m_tsmiY_Pos.Name = "m_tsmiY_Pos";
 			this.m_tsmiY_Pos.Size = new System.Drawing.Size(180, 22);
 			this.m_tsmiY_Pos.Text = "Y+";
+			this.m_tsmiY_Pos.Click += new System.EventHandler(this.m_tsmiY_Pos_Click);
 			// 
 			// m_tsmiY_Neg
 			// 
 			this.m_tsmiY_Neg.Name = "m_tsmiY_Neg";
 			this.m_tsmiY_Neg.Size = new System.Drawing.Size(180, 22);
 			this.m_tsmiY_Neg.Text = "Y-";
+			this.m_tsmiY_Neg.Click += new System.EventHandler(this.m_tsmiY_Neg_Click);
 			// 
 			// m_tsmiZ_Pos
 			// 
 			this.m_tsmiZ_Pos.Name = "m_tsmiZ_Pos";
 			this.m_tsmiZ_Pos.Size = new System.Drawing.Size(180, 22);
 			this.m_tsmiZ_Pos.Text = "Z+";
+			this.m_tsmiZ_Pos.Click += new System.EventHandler(this.m_tsmiZ_Pos_Click);
 			// 
 			// m_tsmiZ_Neg
 			// 
 			this.m_tsmiZ_Neg.Name = "m_tsmiZ_Neg";
 			this.m_tsmiZ_Neg.Size = new System.Drawing.Size(180, 22);
 			this.m_tsmiZ_Neg.Text = "Z-";
+			this.m_tsmiZ_Neg.Click += new System.EventHandler(this.m_tsmiZ_Neg_Click);
 			// 
 			// m_tsmiDir_Pos
 			// 
 			this.m_tsmiDir_Pos.Name = "m_tsmiDir_Pos";
 			this.m_tsmiDir_Pos.Size = new System.Drawing.Size(180, 22);
 			this.m_tsmiDir_Pos.Text = "Dir+";
+			this.m_tsmiDir_Pos.Click += new System.EventHandler(this.m_tsmiDir_Pos_Click);
 			// 
 			// m_tsmiDir_Neg
 			// 
 			this.m_tsmiDir_Neg.Name = "m_tsmiDir_Neg";
 			this.m_tsmiDir_Neg.Size = new System.Drawing.Size(180, 22);
 			this.m_tsmiDir_Neg.Text = "Dir-";
+			this.m_tsmiDir_Neg.Click += new System.EventHandler(this.m_tsmiDir_Neg_Click);
 			// 
 			// m_tsmiISO
 			// 
 			this.m_tsmiISO.Name = "m_tsmiISO";
 			this.m_tsmiISO.Size = new System.Drawing.Size(180, 22);
 			this.m_tsmiISO.Text = "ISO";
+			this.m_tsmiISO.Click += new System.EventHandler(this.m_tsmiISO_Click);
 			// 
 			// m_tsmiEdit
 			// 
@@ -241,12 +251,14 @@
 			this.m_tsmiUndo.Name = "m_tsmiUndo";
 			this.m_tsmiUndo.Size = new System.Drawing.Size(180, 22);
 			this.m_tsmiUndo.Text = "Undo";
+			this.m_tsmiUndo.Click += new System.EventHandler(this.m_tsmiUndo_Click);
 			// 
 			// m_tsmiRedo
 			// 
 			this.m_tsmiRedo.Name = "m_tsmiRedo";
 			this.m_tsmiRedo.Size = new System.Drawing.Size(180, 22);
 			this.m_tsmiRedo.Text = "Redo";
+			this.m_tsmiRedo.Click += new System.EventHandler(this.m_tsmiRedo_Click);
 			// 
 			// m_tsmiMainTube
 			// 
@@ -265,30 +277,35 @@
 			this.m_tsmiMainTube_Circle.Name = "m_tsmiMainTube_Circle";
 			this.m_tsmiMainTube_Circle.Size = new System.Drawing.Size(180, 22);
 			this.m_tsmiMainTube_Circle.Text = "Circle";
+			this.m_tsmiMainTube_Circle.Click += new System.EventHandler(this.m_tsmiMainTube_Circle_Click);
 			// 
 			// m_tsmiMainTube_Rectangle
 			// 
 			this.m_tsmiMainTube_Rectangle.Name = "m_tsmiMainTube_Rectangle";
 			this.m_tsmiMainTube_Rectangle.Size = new System.Drawing.Size(180, 22);
 			this.m_tsmiMainTube_Rectangle.Text = "Rectangle";
+			this.m_tsmiMainTube_Rectangle.Click += new System.EventHandler(this.m_tsmiMainTube_Rectangle_Click);
 			// 
 			// m_tsmiMainTube_Oval
 			// 
 			this.m_tsmiMainTube_Oval.Name = "m_tsmiMainTube_Oval";
 			this.m_tsmiMainTube_Oval.Size = new System.Drawing.Size(180, 22);
 			this.m_tsmiMainTube_Oval.Text = "Oval";
+			this.m_tsmiMainTube_Oval.Click += new System.EventHandler(this.m_tsmiMainTube_Oval_Click);
 			// 
 			// m_tsmiMainTube_FlatOval
 			// 
 			this.m_tsmiMainTube_FlatOval.Name = "m_tsmiMainTube_FlatOval";
 			this.m_tsmiMainTube_FlatOval.Size = new System.Drawing.Size(180, 22);
 			this.m_tsmiMainTube_FlatOval.Text = "Fla tOval";
+			this.m_tsmiMainTube_FlatOval.Click += new System.EventHandler(this.m_tsmiMainTube_FlatOval_Click);
 			// 
 			// m_tsmiMainTube_DShape
 			// 
 			this.m_tsmiMainTube_DShape.Name = "m_tsmiMainTube_DShape";
 			this.m_tsmiMainTube_DShape.Size = new System.Drawing.Size(180, 22);
 			this.m_tsmiMainTube_DShape.Text = "DShape";
+			this.m_tsmiMainTube_DShape.Click += new System.EventHandler(this.m_tsmiMainTube_DShape_Click);
 			// 
 			// m_tsmiCADFeature
 			// 
@@ -305,6 +322,7 @@
 			this.m_tsmiEndCutter.Name = "m_tsmiEndCutter";
 			this.m_tsmiEndCutter.Size = new System.Drawing.Size(180, 22);
 			this.m_tsmiEndCutter.Text = "End Cutter";
+			this.m_tsmiEndCutter.Click += new System.EventHandler(this.m_tsmiEndCutter_Click);
 			// 
 			// m_tsmiBranchTube
 			// 
@@ -323,30 +341,35 @@
 			this.m_tsmiBranchTube_Circle.Name = "m_tsmiBranchTube_Circle";
 			this.m_tsmiBranchTube_Circle.Size = new System.Drawing.Size(180, 22);
 			this.m_tsmiBranchTube_Circle.Text = "Circle";
+			this.m_tsmiBranchTube_Circle.Click += new System.EventHandler(this.m_tsmiBranchTube_Circle_Click);
 			// 
 			// m_tsmiBranchTube_Rectangle
 			// 
 			this.m_tsmiBranchTube_Rectangle.Name = "m_tsmiBranchTube_Rectangle";
 			this.m_tsmiBranchTube_Rectangle.Size = new System.Drawing.Size(180, 22);
 			this.m_tsmiBranchTube_Rectangle.Text = "Rectangle";
+			this.m_tsmiBranchTube_Rectangle.Click += new System.EventHandler(this.m_tsmiBranchTube_Rectangle_Click);
 			// 
 			// m_tsmiBranchTube_Oval
 			// 
 			this.m_tsmiBranchTube_Oval.Name = "m_tsmiBranchTube_Oval";
 			this.m_tsmiBranchTube_Oval.Size = new System.Drawing.Size(180, 22);
 			this.m_tsmiBranchTube_Oval.Text = "Oval";
+			this.m_tsmiBranchTube_Oval.Click += new System.EventHandler(this.m_tsmiBranchTube_Oval_Click);
 			// 
 			// m_tsmiBranchTube_FlatOval
 			// 
 			this.m_tsmiBranchTube_FlatOval.Name = "m_tsmiBranchTube_FlatOval";
 			this.m_tsmiBranchTube_FlatOval.Size = new System.Drawing.Size(180, 22);
 			this.m_tsmiBranchTube_FlatOval.Text = "Flat Oval";
+			this.m_tsmiBranchTube_FlatOval.Click += new System.EventHandler(this.m_tsmiBranchTube_FlatOval_Click);
 			// 
 			// m_tsmiBranchTube_DShape
 			// 
 			this.m_tsmiBranchTube_DShape.Name = "m_tsmiBranchTube_DShape";
 			this.m_tsmiBranchTube_DShape.Size = new System.Drawing.Size(180, 22);
 			this.m_tsmiBranchTube_DShape.Text = "DShape";
+			this.m_tsmiBranchTube_DShape.Click += new System.EventHandler(this.m_tsmiBranchTube_DShape_Click);
 			// 
 			// m_tsmiBendingNotch
 			// 
@@ -363,18 +386,21 @@
 			this.m_tsmiBendingNotch_VShape.Name = "m_tsmiBendingNotch_VShape";
 			this.m_tsmiBendingNotch_VShape.Size = new System.Drawing.Size(180, 22);
 			this.m_tsmiBendingNotch_VShape.Text = "VShape";
+			this.m_tsmiBendingNotch_VShape.Click += new System.EventHandler(this.m_tsmiBendingNotch_VShape_Click);
 			// 
 			// m_tsmiBendingNotch_BothSide
 			// 
 			this.m_tsmiBendingNotch_BothSide.Name = "m_tsmiBendingNotch_BothSide";
 			this.m_tsmiBendingNotch_BothSide.Size = new System.Drawing.Size(180, 22);
 			this.m_tsmiBendingNotch_BothSide.Text = "Both Side";
+			this.m_tsmiBendingNotch_BothSide.Click += new System.EventHandler(this.m_tsmiBendingNotch_BothSide_Click);
 			// 
 			// m_tsmiBendingNotch_OneSide
 			// 
 			this.m_tsmiBendingNotch_OneSide.Name = "m_tsmiBendingNotch_OneSide";
 			this.m_tsmiBendingNotch_OneSide.Size = new System.Drawing.Size(180, 22);
 			this.m_tsmiBendingNotch_OneSide.Text = "One Side";
+			this.m_tsmiBendingNotch_OneSide.Click += new System.EventHandler(this.m_tsmiBendingNotch_OneSide_Click);
 			// 
 			// CADEditMainForm
 			// 

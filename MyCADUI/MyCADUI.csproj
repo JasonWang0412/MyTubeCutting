@@ -51,29 +51,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Dialog\BendingNotchTypeForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Dialog\BendingNotchTypeForm.Designer.cs">
-      <DependentUpon>BendingNotchTypeForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Dialog\BranchTubeTypeForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Dialog\BranchTubeTypeForm.Designer.cs">
-      <DependentUpon>BranchTubeTypeForm.cs</DependentUpon>
-    </Compile>
     <Compile Include="CADEditMainForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="CADEditMainForm.Designer.cs">
       <DependentUpon>CADEditMainForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Dialog\MainTubeTypeForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Dialog\MainTubeTypeForm.Designer.cs">
-      <DependentUpon>MainTubeTypeForm.cs</DependentUpon>
     </Compile>
     <Compile Include="OCCViewer\OCCViewer.cs" />
     <Compile Include="Program.cs" />
@@ -89,17 +71,8 @@
     <Compile Include="TubeCADEditor\TubeCADEditor.cs" />
     <Compile Include="OCCViewer\ViewerMouseAction.cs" />
     <Compile Include="TypeDefine\TypeDefine.cs" />
-    <EmbeddedResource Include="Dialog\BendingNotchTypeForm.resx">
-      <DependentUpon>BendingNotchTypeForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Dialog\BranchTubeTypeForm.resx">
-      <DependentUpon>BranchTubeTypeForm.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="CADEditMainForm.resx">
       <DependentUpon>CADEditMainForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Dialog\MainTubeTypeForm.resx">
-      <DependentUpon>MainTubeTypeForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

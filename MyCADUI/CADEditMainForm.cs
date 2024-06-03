@@ -18,9 +18,10 @@ namespace MyCADUI
 		{
 			// initalize component
 			InitializeComponent();
-			m_btnEndCutter.Enabled = false;
-			m_btnBranchTube.Enabled = false;
-			m_btnBendingNotch.Enabled = false;
+			m_tsmiEndCutter.Enabled = false;
+			m_tsmiBranchTube.Enabled = false;
+			m_tsmiBendingNotch.Enabled = false;
+			m_tsmiEdit.Enabled = false;
 
 			// initialize viewer
 			m_Viewer = new OCCViewer();
@@ -61,31 +62,47 @@ namespace MyCADUI
 			m_Viewer.UpdateView();
 		}
 
-		// cad feature action
+		// main tube
 		void MainTubeStatusChanged( bool bExistMainTube )
 		{
 			// set button status
 			if( bExistMainTube == true ) {
-				m_btnEndCutter.Enabled = true;
-				m_btnBranchTube.Enabled = true;
-				m_btnBendingNotch.Enabled = true;
-				m_btnMainTube.Enabled = false;
+				m_tsmiEndCutter.Enabled = true;
+				m_tsmiBranchTube.Enabled = true;
+				m_tsmiBendingNotch.Enabled = true;
+				m_tsmiMainTube.Enabled = false;
 			}
 			else {
-				m_btnEndCutter.Enabled = false;
-				m_btnBranchTube.Enabled = false;
-				m_btnBendingNotch.Enabled = false;
-				m_btnMainTube.Enabled = true;
+				m_tsmiEndCutter.Enabled = false;
+				m_tsmiBranchTube.Enabled = false;
+				m_tsmiBendingNotch.Enabled = false;
+				m_tsmiMainTube.Enabled = true;
 			}
 		}
 
-		void m_btnMainTube_Click( object sender, System.EventArgs e )
+		void m_tsmiMainTube_Circle_Click( object sender, System.EventArgs e )
 		{
-			MainTubeTypeForm mainTubeShapeForm = new MainTubeTypeForm();
-			mainTubeShapeForm.MainTubeTypeSelected += MainTubeTypeSelected;
+			MainTubeTypeSelected( MainTubeType.Circle );
+		}
 
-			// TODO: make it show from center of main form
-			mainTubeShapeForm.ShowDialog();
+		void m_tsmiMainTube_Rectangle_Click( object sender, System.EventArgs e )
+		{
+			MainTubeTypeSelected( MainTubeType.Rectangle );
+		}
+
+		void m_tsmiMainTube_Oval_Click( object sender, System.EventArgs e )
+		{
+			MainTubeTypeSelected( MainTubeType.Oval );
+		}
+
+		void m_tsmiMainTube_FlatOval_Click( object sender, System.EventArgs e )
+		{
+			MainTubeTypeSelected( MainTubeType.FlatOval );
+		}
+
+		void m_tsmiMainTube_DShape_Click( object sender, System.EventArgs e )
+		{
+			MainTubeTypeSelected( MainTubeType.DShape );
 		}
 
 		void MainTubeTypeSelected( MainTubeType type )
@@ -136,18 +153,38 @@ namespace MyCADUI
 			m_TubeCADEditor.AddMainTube( mainTubeParam );
 		}
 
-		void m_btnEndCutter_Click( object sender, System.EventArgs e )
+		// end cutter
+		void m_tsmiEndCutter_Click( object sender, System.EventArgs e )
 		{
 			// set end cutter parameter
 			CADft_EndCutterParam endCutterParam = new CADft_EndCutterParam( 0, 0, 0, EEndSide.Left );
 			m_TubeCADEditor.AddEndCutter( endCutterParam );
 		}
 
-		void m_btnBranchTube_Click( object sender, System.EventArgs e )
+		// branch tube
+		void m_tsmiBranchTube_Circle_Click( object sender, System.EventArgs e )
 		{
-			BranchTubeTypeForm branchTubeTypeForm = new BranchTubeTypeForm();
-			branchTubeTypeForm.BranchTubeTypeSelected += BranchTubeTypeSelected;
-			branchTubeTypeForm.ShowDialog();
+			BranchTubeTypeSelected( BranchTubeType.Circle );
+		}
+
+		void m_tsmiBranchTube_Rectangle_Click( object sender, System.EventArgs e )
+		{
+			BranchTubeTypeSelected( BranchTubeType.Rectangle );
+		}
+
+		void m_tsmiBranchTube_Oval_Click( object sender, System.EventArgs e )
+		{
+			BranchTubeTypeSelected( BranchTubeType.Oval );
+		}
+
+		void m_tsmiBranchTube_FlatOval_Click( object sender, System.EventArgs e )
+		{
+			BranchTubeTypeSelected( BranchTubeType.FlatOval );
+		}
+
+		void m_tsmiBranchTube_DShape_Click( object sender, System.EventArgs e )
+		{
+			BranchTubeTypeSelected( BranchTubeType.DShape );
 		}
 
 		void BranchTubeTypeSelected( BranchTubeType type )
@@ -199,11 +236,20 @@ namespace MyCADUI
 			m_TubeCADEditor.AddBranchTube( branchTubeParam );
 		}
 
-		void m_btnBendingNotch_Click( object sender, System.EventArgs e )
+		// bending notch
+		void m_tsmiBendingNotch_VShape_Click( object sender, System.EventArgs e )
 		{
-			BendingNotchTypeForm bendingNotchTypeForm = new BendingNotchTypeForm();
-			bendingNotchTypeForm.BendingNotchTypeSelected += BendingNotchTypeSelected;
-			bendingNotchTypeForm.ShowDialog();
+			BendingNotchTypeSelected( BendingNotchType.VShape );
+		}
+
+		void m_tsmiBendingNotch_BothSide_Click( object sender, System.EventArgs e )
+		{
+			BendingNotchTypeSelected( BendingNotchType.BothSideFillet );
+		}
+
+		void m_tsmiBendingNotch_OneSide_Click( object sender, System.EventArgs e )
+		{
+			BendingNotchTypeSelected( BendingNotchType.OneSideFillet );
 		}
 
 		void BendingNotchTypeSelected( BendingNotchType type )
@@ -278,55 +324,65 @@ namespace MyCADUI
 			}
 		}
 
-		void m_btnExport_Click( object sender, System.EventArgs e )
+		void m_tsmiExport_Click( object sender, System.EventArgs e )
 		{
 			m_TubeCADEditor.ExportStep();
 		}
 
+		void m_tsmiUndo_Click( object sender, System.EventArgs e )
+		{
+			m_TubeCADEditor.Undo();
+		}
+
+		void m_tsmiRedo_Click( object sender, System.EventArgs e )
+		{
+			m_TubeCADEditor.Redo();
+		}
+
 		// view action
-		void m_btnX_Pos_Click( object sender, System.EventArgs e )
+		void m_tsmiX_Pos_Click( object sender, System.EventArgs e )
 		{
 			m_Viewer.RightView();
 		}
 
-		void m_btnX_Neg_Click( object sender, System.EventArgs e )
+		void m_tsmiX_Neg_Click( object sender, System.EventArgs e )
 		{
 			m_Viewer.LeftView();
 		}
 
-		void m_btnY_Pos_Click( object sender, System.EventArgs e )
+		void m_tsmiY_Pos_Click( object sender, System.EventArgs e )
 		{
 			m_Viewer.FrontView();
 		}
 
-		void m_btnY_Neg_Click( object sender, System.EventArgs e )
+		void m_tsmiY_Neg_Click( object sender, System.EventArgs e )
 		{
 			m_Viewer.BackView();
 		}
 
-		void m_btnZ_Pos_Click( object sender, System.EventArgs e )
+		void m_tsmiZ_Pos_Click( object sender, System.EventArgs e )
 		{
 			m_Viewer.TopView();
 		}
 
-		void m_btnZ_Neg_Click( object sender, System.EventArgs e )
+		void m_tsmiZ_Neg_Click( object sender, System.EventArgs e )
 		{
 			m_Viewer.BottomView();
 		}
 
-		void m_btnDir_Pos_Click( object sender, System.EventArgs e )
+		void m_tsmiDir_Pos_Click( object sender, System.EventArgs e )
 		{
 			gp_Dir dir = m_TubeCADEditor.GetEditObjectDir();
 			m_Viewer.SetViewDir( dir );
 		}
 
-		void m_btnDir_Neg_Click( object sender, System.EventArgs e )
+		void m_tsmiDir_Neg_Click( object sender, System.EventArgs e )
 		{
 			gp_Dir dir = m_TubeCADEditor.GetEditObjectDir();
 			m_Viewer.SetViewDir( dir.Reversed() );
 		}
 
-		void m_btnISO_Click( object sender, System.EventArgs e )
+		void m_tsmiISO_Click( object sender, System.EventArgs e )
 		{
 			m_Viewer.IsometricView();
 		}
