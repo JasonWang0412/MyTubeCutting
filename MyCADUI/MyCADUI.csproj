@@ -102,6 +102,10 @@
       <Project>{65f21621-44bf-4e0a-b3e2-ad3cf215418a}</Project>
       <Name>MyCADCore</Name>
     </ProjectReference>
+    <ProjectReference Include="..\MyLanguageManager\MyLanguageManager.csproj">
+      <Project>{04fcc0ce-27d3-4262-b609-d776490124ee}</Project>
+      <Name>MyLanguageManager</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MyUIDisplayModel\MyUIDisplayModel.csproj">
       <Project>{50c11367-5719-4246-a006-6998837ab54e}</Project>
       <Name>MyUIDisplayModel</Name>

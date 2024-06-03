@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ResMap>
+  <Message ID="m_tsmiFile" Content="File" />
+  <Message ID="m_tsmiExport" Content="Export" />
+  <Message ID="m_tsmiView" Content="View" />
+  <Message ID="m_tsmiX_Pos" Content="X+" />
+  <Message ID="m_tsmiX_Neg" Content="X-" />
+  <Message ID="m_tsmiY_Pos" Content="Y+" />
+  <Message ID="m_tsmiY_Neg" Content="Y-" />
+  <Message ID="m_tsmiZ_Pos" Content="Z+" />
+  <Message ID="m_tsmiZ_Neg" Content="Z-" />
+  <Message ID="m_tsmiDir_Pos" Content="Dir+" />
+  <Message ID="m_tsmiDir_Neg" Content="Dir-" />
+  <Message ID="m_tsmiISO" Content="ISO" />
+  <Message ID="m_tsmiEdit" Content="Edit" />
+  <Message ID="m_tsmiUndo" Content="Undo" />
+  <Message ID="m_tsmiRedo" Content="Redo" />
+  <Message ID="m_tsmiMainTube" Content="Main Tube" />
+  <Message ID="m_tsmiMainTube_Circle" Content="Circle" />
+  <Message ID="m_tsmiMainTube_Rectangle" Content="Rectangle" />
+  <Message ID="m_tsmiMainTube_Oval" Content="Oval" />
+  <Message ID="m_tsmiMainTube_FlatOval" Content="Flat Oval" />
+  <Message ID="m_tsmiMainTube_DShape" Content="DShape" />
+  <Message ID="m_tsmiCADFeature" Content="CAD Feature" />
+  <Message ID="m_tsmiEndCutter" Content="End Cutter" />
+  <Message ID="m_tsmiBranchTube" Content="Branch Tube" />
+  <Message ID="m_tsmiBranchTube_Circle" Content="Circle" />
+  <Message ID="m_tsmiBranchTube_Rectangle" Content="Rectangle" />
+  <Message ID="m_tsmiBranchTube_Oval" Content="Oval" />
+  <Message ID="m_tsmiBranchTube_FlatOval" Content="Flat Oval" />
+  <Message ID="m_tsmiBranchTube_DShape" Content="DShape" />
+  <Message ID="m_tsmiBendingNotch" Content="Bending Notch" />
+  <Message ID="m_tsmiBendingNotch_VShape" Content="VShape" />
+  <Message ID="m_tsmiBendingNotch_BothSide" Content="Both Side" />
+  <Message ID="m_tsmiBendingNotch_OneSide" Content="One Side" />
+</ResMap>

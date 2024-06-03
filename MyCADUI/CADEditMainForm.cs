@@ -1,5 +1,7 @@
 ﻿using MyCADCore;
+using MyLanguageManager;
 using OCC.gp;
+using System.Collections.Generic;
 using System.Windows.Forms;
 
 namespace MyCADUI
@@ -13,6 +15,9 @@ namespace MyCADUI
 
 		// tube editor property
 		TubeCADEditor m_TubeCADEditor;
+
+		// language manager
+		LanguageManager m_LanguageManager = new LanguageManager( "CADEditMainForm" );
 
 		public CADEditMainForm()
 		{
@@ -39,6 +44,9 @@ namespace MyCADUI
 			// key event
 			m_panViewer.KeyDown += m_panViewer_KeyDown;
 			m_treeObjBrowser.KeyDown += m_treeObjBrowser_KeyDown;
+
+			// set language zh-TW
+			SetLanguage();
 		}
 
 		// viewer action
@@ -385,6 +393,36 @@ namespace MyCADUI
 		void m_tsmiISO_Click( object sender, System.EventArgs e )
 		{
 			m_Viewer.IsometricView();
+		}
+
+		// this is temporary function
+		void SetLanguage()
+		{
+			LanguageManager.CurrentUILanguage = "zh-TW";
+			ApplyComponentResource();
+		}
+
+		void ApplyComponentResource()
+		{
+			List<ToolStripMenuItem> menuItems = FindAllToolStripItems( m_msMainMenu.Items );
+			foreach( ToolStripMenuItem item in menuItems ) {
+				string szText = m_LanguageManager.GetString( item.Name );
+				if( string.IsNullOrEmpty( szText ) == false ) {
+					item.Text = szText;
+				}
+			}
+		}
+
+		List<ToolStripMenuItem> FindAllToolStripItems( ToolStripItemCollection items )
+		{
+			List<ToolStripMenuItem> list = new List<ToolStripMenuItem>();
+			foreach( ToolStripItem item in items ) {
+				if( item is ToolStripMenuItem ) {
+					list.Add( item as ToolStripMenuItem );
+					list.AddRange( FindAllToolStripItems( ( item as ToolStripMenuItem ).DropDownItems ) );
+				}
+			}
+			return list;
 		}
 	}
 }

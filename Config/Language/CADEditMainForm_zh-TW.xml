@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ResMap>
+  <Message ID="m_tsmiFile" Content="檔案" />
+  <Message ID="m_tsmiExport" Content="匯出" />
+  <Message ID="m_tsmiView" Content="視角" />
+  <Message ID="m_tsmiX_Pos" Content="X+" />
+  <Message ID="m_tsmiX_Neg" Content="X-" />
+  <Message ID="m_tsmiY_Pos" Content="Y+" />
+  <Message ID="m_tsmiY_Neg" Content="Y-" />
+  <Message ID="m_tsmiZ_Pos" Content="Z+" />
+  <Message ID="m_tsmiZ_Neg" Content="Z-" />
+  <Message ID="m_tsmiDir_Pos" Content="特徵方向+" />
+  <Message ID="m_tsmiDir_Neg" Content="特徵方向-" />
+  <Message ID="m_tsmiISO" Content="等角投影" />
+  <Message ID="m_tsmiEdit" Content="編輯" />
+  <Message ID="m_tsmiUndo" Content="復原" />
+  <Message ID="m_tsmiRedo" Content="重作" />
+  <Message ID="m_tsmiMainTube" Content="主管" />
+  <Message ID="m_tsmiMainTube_Circle" Content="圓" />
+  <Message ID="m_tsmiMainTube_Rectangle" Content="矩形" />
+  <Message ID="m_tsmiMainTube_Oval" Content="橢圓" />
+  <Message ID="m_tsmiMainTube_FlatOval" Content="跑道" />
+  <Message ID="m_tsmiMainTube_DShape" Content="D型" />
+  <Message ID="m_tsmiCADFeature" Content="CAD 特徵" />
+  <Message ID="m_tsmiEndCutter" Content="切斷" />
+  <Message ID="m_tsmiBranchTube" Content="支管" />
+  <Message ID="m_tsmiBranchTube_Circle" Content="圓" />
+  <Message ID="m_tsmiBranchTube_Rectangle" Content="矩形" />
+  <Message ID="m_tsmiBranchTube_Oval" Content="橢圓" />
+  <Message ID="m_tsmiBranchTube_FlatOval" Content="跑道" />
+  <Message ID="m_tsmiBranchTube_DShape" Content="D型" />
+  <Message ID="m_tsmiBendingNotch" Content="V槽" />
+  <Message ID="m_tsmiBendingNotch_VShape" Content="尖角V槽" />
+  <Message ID="m_tsmiBendingNotch_BothSide" Content="圓角V槽" />
+  <Message ID="m_tsmiBendingNotch_OneSide" Content="單側圓角V槽" />
+</ResMap>
