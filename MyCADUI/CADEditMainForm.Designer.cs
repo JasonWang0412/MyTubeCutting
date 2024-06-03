@@ -28,45 +28,53 @@
 		private void InitializeComponent()
 		{
 			this.m_panViewer = new System.Windows.Forms.Panel();
-			this.m_btnBendingNotch = new System.Windows.Forms.Button();
-			this.m_btnISO = new System.Windows.Forms.Button();
-			this.m_btnDir_Neg = new System.Windows.Forms.Button();
-			this.m_btnDir_Pos = new System.Windows.Forms.Button();
-			this.m_btnZ_Neg = new System.Windows.Forms.Button();
-			this.m_btnZ_Pos = new System.Windows.Forms.Button();
-			this.m_btnY_Neg = new System.Windows.Forms.Button();
-			this.m_btnY_Pos = new System.Windows.Forms.Button();
-			this.m_btnX_Neg = new System.Windows.Forms.Button();
-			this.m_btnX_Pos = new System.Windows.Forms.Button();
-			this.m_btnBranchTube = new System.Windows.Forms.Button();
-			this.m_btnEndCutter = new System.Windows.Forms.Button();
-			this.m_btnMainTube = new System.Windows.Forms.Button();
 			this.m_panObjBrowser = new System.Windows.Forms.Panel();
 			this.m_treeObjBrowser = new System.Windows.Forms.TreeView();
 			this.m_panPropertyBar = new System.Windows.Forms.Panel();
 			this.m_propgrdPropertyBar = new System.Windows.Forms.PropertyGrid();
-			this.m_btnExport = new System.Windows.Forms.Button();
-			this.m_panViewer.SuspendLayout();
+			this.m_panBackGnd = new System.Windows.Forms.Panel();
+			this.m_msMainMenu = new System.Windows.Forms.MenuStrip();
+			this.m_tsmiFile = new System.Windows.Forms.ToolStripMenuItem();
+			this.m_tsmiExport = new System.Windows.Forms.ToolStripMenuItem();
+			this.m_tsmiView = new System.Windows.Forms.ToolStripMenuItem();
+			this.m_tsmiX_Pos = new System.Windows.Forms.ToolStripMenuItem();
+			this.m_tsmiX_Neg = new System.Windows.Forms.ToolStripMenuItem();
+			this.m_tsmiY_Pos = new System.Windows.Forms.ToolStripMenuItem();
+			this.m_tsmiY_Neg = new System.Windows.Forms.ToolStripMenuItem();
+			this.m_tsmiZ_Pos = new System.Windows.Forms.ToolStripMenuItem();
+			this.m_tsmiZ_Neg = new System.Windows.Forms.ToolStripMenuItem();
+			this.m_tsmiDir_Pos = new System.Windows.Forms.ToolStripMenuItem();
+			this.m_tsmiDir_Neg = new System.Windows.Forms.ToolStripMenuItem();
+			this.m_tsmiISO = new System.Windows.Forms.ToolStripMenuItem();
+			this.m_tsmiEdit = new System.Windows.Forms.ToolStripMenuItem();
+			this.m_tsmiUndo = new System.Windows.Forms.ToolStripMenuItem();
+			this.m_tsmiRedo = new System.Windows.Forms.ToolStripMenuItem();
+			this.m_tsmiMainTube = new System.Windows.Forms.ToolStripMenuItem();
+			this.m_tsmiMainTube_Circle = new System.Windows.Forms.ToolStripMenuItem();
+			this.m_tsmiMainTube_Rectangle = new System.Windows.Forms.ToolStripMenuItem();
+			this.m_tsmiMainTube_Oval = new System.Windows.Forms.ToolStripMenuItem();
+			this.m_tsmiMainTube_FlatOval = new System.Windows.Forms.ToolStripMenuItem();
+			this.m_tsmiMainTube_DShape = new System.Windows.Forms.ToolStripMenuItem();
+			this.m_tsmiCADFeature = new System.Windows.Forms.ToolStripMenuItem();
+			this.m_tsmiEndCutter = new System.Windows.Forms.ToolStripMenuItem();
+			this.m_tsmiBranchTube = new System.Windows.Forms.ToolStripMenuItem();
+			this.m_tsmiBranchTube_Circle = new System.Windows.Forms.ToolStripMenuItem();
+			this.m_tsmiBranchTube_Rectangle = new System.Windows.Forms.ToolStripMenuItem();
+			this.m_tsmiBranchTube_Oval = new System.Windows.Forms.ToolStripMenuItem();
+			this.m_tsmiBranchTube_FlatOval = new System.Windows.Forms.ToolStripMenuItem();
+			this.m_tsmiBranchTube_DShape = new System.Windows.Forms.ToolStripMenuItem();
+			this.m_tsmiBendingNotch = new System.Windows.Forms.ToolStripMenuItem();
+			this.m_tsmiBendingNotch_VShape = new System.Windows.Forms.ToolStripMenuItem();
+			this.m_tsmiBendingNotch_BothSide = new System.Windows.Forms.ToolStripMenuItem();
+			this.m_tsmiBendingNotch_OneSide = new System.Windows.Forms.ToolStripMenuItem();
 			this.m_panObjBrowser.SuspendLayout();
 			this.m_panPropertyBar.SuspendLayout();
+			this.m_panBackGnd.SuspendLayout();
+			this.m_msMainMenu.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// m_panViewer
 			// 
-			this.m_panViewer.Controls.Add(this.m_btnExport);
-			this.m_panViewer.Controls.Add(this.m_btnBendingNotch);
-			this.m_panViewer.Controls.Add(this.m_btnISO);
-			this.m_panViewer.Controls.Add(this.m_btnDir_Neg);
-			this.m_panViewer.Controls.Add(this.m_btnDir_Pos);
-			this.m_panViewer.Controls.Add(this.m_btnZ_Neg);
-			this.m_panViewer.Controls.Add(this.m_btnZ_Pos);
-			this.m_panViewer.Controls.Add(this.m_btnY_Neg);
-			this.m_panViewer.Controls.Add(this.m_btnY_Pos);
-			this.m_panViewer.Controls.Add(this.m_btnX_Neg);
-			this.m_panViewer.Controls.Add(this.m_btnX_Pos);
-			this.m_panViewer.Controls.Add(this.m_btnBranchTube);
-			this.m_panViewer.Controls.Add(this.m_btnEndCutter);
-			this.m_panViewer.Controls.Add(this.m_btnMainTube);
 			this.m_panViewer.Location = new System.Drawing.Point(0, 0);
 			this.m_panViewer.Name = "m_panViewer";
 			this.m_panViewer.Size = new System.Drawing.Size(500, 600);
@@ -75,136 +83,6 @@
 			this.m_panViewer.MouseDown += new System.Windows.Forms.MouseEventHandler(this.m_panViewer_MouseDown);
 			this.m_panViewer.MouseMove += new System.Windows.Forms.MouseEventHandler(this.m_panViewer_MouseMove);
 			this.m_panViewer.MouseWheel += new System.Windows.Forms.MouseEventHandler(this.m_panViewer_MouseWheel);
-			// 
-			// m_btnBendingNotch
-			// 
-			this.m_btnBendingNotch.Location = new System.Drawing.Point(394, 105);
-			this.m_btnBendingNotch.Name = "m_btnBendingNotch";
-			this.m_btnBendingNotch.Size = new System.Drawing.Size(100, 25);
-			this.m_btnBendingNotch.TabIndex = 12;
-			this.m_btnBendingNotch.Text = "BendingNotch";
-			this.m_btnBendingNotch.UseVisualStyleBackColor = true;
-			this.m_btnBendingNotch.Click += new System.EventHandler(this.m_btnBendingNotch_Click);
-			// 
-			// m_btnISO
-			// 
-			this.m_btnISO.Location = new System.Drawing.Point(13, 133);
-			this.m_btnISO.Name = "m_btnISO";
-			this.m_btnISO.Size = new System.Drawing.Size(40, 23);
-			this.m_btnISO.TabIndex = 11;
-			this.m_btnISO.Text = "ISO";
-			this.m_btnISO.UseVisualStyleBackColor = true;
-			this.m_btnISO.Click += new System.EventHandler(this.m_btnISO_Click);
-			// 
-			// m_btnDir_Neg
-			// 
-			this.m_btnDir_Neg.Location = new System.Drawing.Point(60, 103);
-			this.m_btnDir_Neg.Name = "m_btnDir_Neg";
-			this.m_btnDir_Neg.Size = new System.Drawing.Size(39, 23);
-			this.m_btnDir_Neg.TabIndex = 10;
-			this.m_btnDir_Neg.Text = "Dir-";
-			this.m_btnDir_Neg.UseVisualStyleBackColor = true;
-			this.m_btnDir_Neg.Click += new System.EventHandler(this.m_btnDir_Neg_Click);
-			// 
-			// m_btnDir_Pos
-			// 
-			this.m_btnDir_Pos.Location = new System.Drawing.Point(13, 103);
-			this.m_btnDir_Pos.Name = "m_btnDir_Pos";
-			this.m_btnDir_Pos.Size = new System.Drawing.Size(40, 23);
-			this.m_btnDir_Pos.TabIndex = 9;
-			this.m_btnDir_Pos.Text = "Dir+";
-			this.m_btnDir_Pos.UseVisualStyleBackColor = true;
-			this.m_btnDir_Pos.Click += new System.EventHandler(this.m_btnDir_Pos_Click);
-			// 
-			// m_btnZ_Neg
-			// 
-			this.m_btnZ_Neg.Location = new System.Drawing.Point(60, 73);
-			this.m_btnZ_Neg.Name = "m_btnZ_Neg";
-			this.m_btnZ_Neg.Size = new System.Drawing.Size(39, 23);
-			this.m_btnZ_Neg.TabIndex = 8;
-			this.m_btnZ_Neg.Text = "Z-";
-			this.m_btnZ_Neg.UseVisualStyleBackColor = true;
-			this.m_btnZ_Neg.Click += new System.EventHandler(this.m_btnZ_Neg_Click);
-			// 
-			// m_btnZ_Pos
-			// 
-			this.m_btnZ_Pos.Location = new System.Drawing.Point(13, 73);
-			this.m_btnZ_Pos.Name = "m_btnZ_Pos";
-			this.m_btnZ_Pos.Size = new System.Drawing.Size(40, 23);
-			this.m_btnZ_Pos.TabIndex = 7;
-			this.m_btnZ_Pos.Text = "Z+";
-			this.m_btnZ_Pos.UseVisualStyleBackColor = true;
-			this.m_btnZ_Pos.Click += new System.EventHandler(this.m_btnZ_Pos_Click);
-			// 
-			// m_btnY_Neg
-			// 
-			this.m_btnY_Neg.Location = new System.Drawing.Point(60, 43);
-			this.m_btnY_Neg.Name = "m_btnY_Neg";
-			this.m_btnY_Neg.Size = new System.Drawing.Size(39, 23);
-			this.m_btnY_Neg.TabIndex = 6;
-			this.m_btnY_Neg.Text = "Y-";
-			this.m_btnY_Neg.UseVisualStyleBackColor = true;
-			this.m_btnY_Neg.Click += new System.EventHandler(this.m_btnY_Neg_Click);
-			// 
-			// m_btnY_Pos
-			// 
-			this.m_btnY_Pos.Location = new System.Drawing.Point(13, 43);
-			this.m_btnY_Pos.Name = "m_btnY_Pos";
-			this.m_btnY_Pos.Size = new System.Drawing.Size(40, 23);
-			this.m_btnY_Pos.TabIndex = 5;
-			this.m_btnY_Pos.Text = "Y+";
-			this.m_btnY_Pos.UseVisualStyleBackColor = true;
-			this.m_btnY_Pos.Click += new System.EventHandler(this.m_btnY_Pos_Click);
-			// 
-			// m_btnX_Neg
-			// 
-			this.m_btnX_Neg.Location = new System.Drawing.Point(59, 13);
-			this.m_btnX_Neg.Name = "m_btnX_Neg";
-			this.m_btnX_Neg.Size = new System.Drawing.Size(40, 23);
-			this.m_btnX_Neg.TabIndex = 4;
-			this.m_btnX_Neg.Text = "X-";
-			this.m_btnX_Neg.UseVisualStyleBackColor = true;
-			this.m_btnX_Neg.Click += new System.EventHandler(this.m_btnX_Neg_Click);
-			// 
-			// m_btnX_Pos
-			// 
-			this.m_btnX_Pos.Location = new System.Drawing.Point(13, 13);
-			this.m_btnX_Pos.Name = "m_btnX_Pos";
-			this.m_btnX_Pos.Size = new System.Drawing.Size(40, 23);
-			this.m_btnX_Pos.TabIndex = 3;
-			this.m_btnX_Pos.Text = "X+";
-			this.m_btnX_Pos.UseVisualStyleBackColor = true;
-			this.m_btnX_Pos.Click += new System.EventHandler(this.m_btnX_Pos_Click);
-			// 
-			// m_btnBranchTube
-			// 
-			this.m_btnBranchTube.Location = new System.Drawing.Point(394, 74);
-			this.m_btnBranchTube.Name = "m_btnBranchTube";
-			this.m_btnBranchTube.Size = new System.Drawing.Size(100, 25);
-			this.m_btnBranchTube.TabIndex = 2;
-			this.m_btnBranchTube.Text = "BranchTube";
-			this.m_btnBranchTube.UseVisualStyleBackColor = true;
-			this.m_btnBranchTube.Click += new System.EventHandler(this.m_btnBranchTube_Click);
-			// 
-			// m_btnEndCutter
-			// 
-			this.m_btnEndCutter.Location = new System.Drawing.Point(394, 43);
-			this.m_btnEndCutter.Name = "m_btnEndCutter";
-			this.m_btnEndCutter.Size = new System.Drawing.Size(100, 25);
-			this.m_btnEndCutter.TabIndex = 1;
-			this.m_btnEndCutter.Text = "EndCutter";
-			this.m_btnEndCutter.UseVisualStyleBackColor = true;
-			this.m_btnEndCutter.Click += new System.EventHandler(this.m_btnEndCutter_Click);
-			// 
-			// m_btnMainTube
-			// 
-			this.m_btnMainTube.Location = new System.Drawing.Point(394, 12);
-			this.m_btnMainTube.Name = "m_btnMainTube";
-			this.m_btnMainTube.Size = new System.Drawing.Size(100, 25);
-			this.m_btnMainTube.TabIndex = 0;
-			this.m_btnMainTube.Text = "MainTube";
-			this.m_btnMainTube.UseVisualStyleBackColor = true;
-			this.m_btnMainTube.Click += new System.EventHandler(this.m_btnMainTube_Click);
 			// 
 			// m_panObjBrowser
 			// 
@@ -240,31 +118,282 @@
 			this.m_propgrdPropertyBar.TabIndex = 0;
 			this.m_propgrdPropertyBar.PropertyValueChanged += new System.Windows.Forms.PropertyValueChangedEventHandler(this.m_propgrdPropertyBar_PropertyValueChanged);
 			// 
-			// m_btnExport
+			// m_panBackGnd
 			// 
-			this.m_btnExport.Location = new System.Drawing.Point(13, 163);
-			this.m_btnExport.Name = "m_btnExport";
-			this.m_btnExport.Size = new System.Drawing.Size(86, 23);
-			this.m_btnExport.TabIndex = 13;
-			this.m_btnExport.Text = "Export";
-			this.m_btnExport.UseVisualStyleBackColor = true;
-			this.m_btnExport.Click += new System.EventHandler(this.m_btnExport_Click);
+			this.m_panBackGnd.Controls.Add(this.m_panViewer);
+			this.m_panBackGnd.Controls.Add(this.m_panObjBrowser);
+			this.m_panBackGnd.Controls.Add(this.m_panPropertyBar);
+			this.m_panBackGnd.Dock = System.Windows.Forms.DockStyle.Top;
+			this.m_panBackGnd.Location = new System.Drawing.Point(0, 24);
+			this.m_panBackGnd.Name = "m_panBackGnd";
+			this.m_panBackGnd.Size = new System.Drawing.Size(801, 600);
+			this.m_panBackGnd.TabIndex = 14;
 			// 
-			// MainForm
+			// m_msMainMenu
+			// 
+			this.m_msMainMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.m_tsmiFile,
+            this.m_tsmiView,
+            this.m_tsmiEdit,
+            this.m_tsmiMainTube,
+            this.m_tsmiCADFeature});
+			this.m_msMainMenu.Location = new System.Drawing.Point(0, 0);
+			this.m_msMainMenu.Name = "m_msMainMenu";
+			this.m_msMainMenu.Size = new System.Drawing.Size(801, 24);
+			this.m_msMainMenu.TabIndex = 0;
+			this.m_msMainMenu.Text = "menuStrip1";
+			// 
+			// m_tsmiFile
+			// 
+			this.m_tsmiFile.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.m_tsmiExport});
+			this.m_tsmiFile.Name = "m_tsmiFile";
+			this.m_tsmiFile.Size = new System.Drawing.Size(38, 20);
+			this.m_tsmiFile.Text = "File";
+			// 
+			// m_tsmiExport
+			// 
+			this.m_tsmiExport.Name = "m_tsmiExport";
+			this.m_tsmiExport.Size = new System.Drawing.Size(180, 22);
+			this.m_tsmiExport.Text = "Export";
+			// 
+			// m_tsmiView
+			// 
+			this.m_tsmiView.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.m_tsmiX_Pos,
+            this.m_tsmiX_Neg,
+            this.m_tsmiY_Pos,
+            this.m_tsmiY_Neg,
+            this.m_tsmiZ_Pos,
+            this.m_tsmiZ_Neg,
+            this.m_tsmiDir_Pos,
+            this.m_tsmiDir_Neg,
+            this.m_tsmiISO});
+			this.m_tsmiView.Name = "m_tsmiView";
+			this.m_tsmiView.Size = new System.Drawing.Size(46, 20);
+			this.m_tsmiView.Text = "View";
+			// 
+			// m_tsmiX_Pos
+			// 
+			this.m_tsmiX_Pos.Name = "m_tsmiX_Pos";
+			this.m_tsmiX_Pos.Size = new System.Drawing.Size(180, 22);
+			this.m_tsmiX_Pos.Text = "X+";
+			// 
+			// m_tsmiX_Neg
+			// 
+			this.m_tsmiX_Neg.Name = "m_tsmiX_Neg";
+			this.m_tsmiX_Neg.Size = new System.Drawing.Size(180, 22);
+			this.m_tsmiX_Neg.Text = "X-";
+			// 
+			// m_tsmiY_Pos
+			// 
+			this.m_tsmiY_Pos.Name = "m_tsmiY_Pos";
+			this.m_tsmiY_Pos.Size = new System.Drawing.Size(180, 22);
+			this.m_tsmiY_Pos.Text = "Y+";
+			// 
+			// m_tsmiY_Neg
+			// 
+			this.m_tsmiY_Neg.Name = "m_tsmiY_Neg";
+			this.m_tsmiY_Neg.Size = new System.Drawing.Size(180, 22);
+			this.m_tsmiY_Neg.Text = "Y-";
+			// 
+			// m_tsmiZ_Pos
+			// 
+			this.m_tsmiZ_Pos.Name = "m_tsmiZ_Pos";
+			this.m_tsmiZ_Pos.Size = new System.Drawing.Size(180, 22);
+			this.m_tsmiZ_Pos.Text = "Z+";
+			// 
+			// m_tsmiZ_Neg
+			// 
+			this.m_tsmiZ_Neg.Name = "m_tsmiZ_Neg";
+			this.m_tsmiZ_Neg.Size = new System.Drawing.Size(180, 22);
+			this.m_tsmiZ_Neg.Text = "Z-";
+			// 
+			// m_tsmiDir_Pos
+			// 
+			this.m_tsmiDir_Pos.Name = "m_tsmiDir_Pos";
+			this.m_tsmiDir_Pos.Size = new System.Drawing.Size(180, 22);
+			this.m_tsmiDir_Pos.Text = "Dir+";
+			// 
+			// m_tsmiDir_Neg
+			// 
+			this.m_tsmiDir_Neg.Name = "m_tsmiDir_Neg";
+			this.m_tsmiDir_Neg.Size = new System.Drawing.Size(180, 22);
+			this.m_tsmiDir_Neg.Text = "Dir-";
+			// 
+			// m_tsmiISO
+			// 
+			this.m_tsmiISO.Name = "m_tsmiISO";
+			this.m_tsmiISO.Size = new System.Drawing.Size(180, 22);
+			this.m_tsmiISO.Text = "ISO";
+			// 
+			// m_tsmiEdit
+			// 
+			this.m_tsmiEdit.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.m_tsmiUndo,
+            this.m_tsmiRedo});
+			this.m_tsmiEdit.Name = "m_tsmiEdit";
+			this.m_tsmiEdit.Size = new System.Drawing.Size(41, 20);
+			this.m_tsmiEdit.Text = "Edit";
+			// 
+			// m_tsmiUndo
+			// 
+			this.m_tsmiUndo.Name = "m_tsmiUndo";
+			this.m_tsmiUndo.Size = new System.Drawing.Size(180, 22);
+			this.m_tsmiUndo.Text = "Undo";
+			// 
+			// m_tsmiRedo
+			// 
+			this.m_tsmiRedo.Name = "m_tsmiRedo";
+			this.m_tsmiRedo.Size = new System.Drawing.Size(180, 22);
+			this.m_tsmiRedo.Text = "Redo";
+			// 
+			// m_tsmiMainTube
+			// 
+			this.m_tsmiMainTube.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.m_tsmiMainTube_Circle,
+            this.m_tsmiMainTube_Rectangle,
+            this.m_tsmiMainTube_Oval,
+            this.m_tsmiMainTube_FlatOval,
+            this.m_tsmiMainTube_DShape});
+			this.m_tsmiMainTube.Name = "m_tsmiMainTube";
+			this.m_tsmiMainTube.Size = new System.Drawing.Size(80, 20);
+			this.m_tsmiMainTube.Text = "Main Tube";
+			// 
+			// m_tsmiMainTube_Circle
+			// 
+			this.m_tsmiMainTube_Circle.Name = "m_tsmiMainTube_Circle";
+			this.m_tsmiMainTube_Circle.Size = new System.Drawing.Size(180, 22);
+			this.m_tsmiMainTube_Circle.Text = "Circle";
+			// 
+			// m_tsmiMainTube_Rectangle
+			// 
+			this.m_tsmiMainTube_Rectangle.Name = "m_tsmiMainTube_Rectangle";
+			this.m_tsmiMainTube_Rectangle.Size = new System.Drawing.Size(180, 22);
+			this.m_tsmiMainTube_Rectangle.Text = "Rectangle";
+			// 
+			// m_tsmiMainTube_Oval
+			// 
+			this.m_tsmiMainTube_Oval.Name = "m_tsmiMainTube_Oval";
+			this.m_tsmiMainTube_Oval.Size = new System.Drawing.Size(180, 22);
+			this.m_tsmiMainTube_Oval.Text = "Oval";
+			// 
+			// m_tsmiMainTube_FlatOval
+			// 
+			this.m_tsmiMainTube_FlatOval.Name = "m_tsmiMainTube_FlatOval";
+			this.m_tsmiMainTube_FlatOval.Size = new System.Drawing.Size(180, 22);
+			this.m_tsmiMainTube_FlatOval.Text = "Fla tOval";
+			// 
+			// m_tsmiMainTube_DShape
+			// 
+			this.m_tsmiMainTube_DShape.Name = "m_tsmiMainTube_DShape";
+			this.m_tsmiMainTube_DShape.Size = new System.Drawing.Size(180, 22);
+			this.m_tsmiMainTube_DShape.Text = "DShape";
+			// 
+			// m_tsmiCADFeature
+			// 
+			this.m_tsmiCADFeature.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.m_tsmiEndCutter,
+            this.m_tsmiBranchTube,
+            this.m_tsmiBendingNotch});
+			this.m_tsmiCADFeature.Name = "m_tsmiCADFeature";
+			this.m_tsmiCADFeature.Size = new System.Drawing.Size(89, 20);
+			this.m_tsmiCADFeature.Text = "CAD Feature";
+			// 
+			// m_tsmiEndCutter
+			// 
+			this.m_tsmiEndCutter.Name = "m_tsmiEndCutter";
+			this.m_tsmiEndCutter.Size = new System.Drawing.Size(180, 22);
+			this.m_tsmiEndCutter.Text = "End Cutter";
+			// 
+			// m_tsmiBranchTube
+			// 
+			this.m_tsmiBranchTube.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.m_tsmiBranchTube_Circle,
+            this.m_tsmiBranchTube_Rectangle,
+            this.m_tsmiBranchTube_Oval,
+            this.m_tsmiBranchTube_FlatOval,
+            this.m_tsmiBranchTube_DShape});
+			this.m_tsmiBranchTube.Name = "m_tsmiBranchTube";
+			this.m_tsmiBranchTube.Size = new System.Drawing.Size(180, 22);
+			this.m_tsmiBranchTube.Text = "Branch Tube";
+			// 
+			// m_tsmiBranchTube_Circle
+			// 
+			this.m_tsmiBranchTube_Circle.Name = "m_tsmiBranchTube_Circle";
+			this.m_tsmiBranchTube_Circle.Size = new System.Drawing.Size(180, 22);
+			this.m_tsmiBranchTube_Circle.Text = "Circle";
+			// 
+			// m_tsmiBranchTube_Rectangle
+			// 
+			this.m_tsmiBranchTube_Rectangle.Name = "m_tsmiBranchTube_Rectangle";
+			this.m_tsmiBranchTube_Rectangle.Size = new System.Drawing.Size(180, 22);
+			this.m_tsmiBranchTube_Rectangle.Text = "Rectangle";
+			// 
+			// m_tsmiBranchTube_Oval
+			// 
+			this.m_tsmiBranchTube_Oval.Name = "m_tsmiBranchTube_Oval";
+			this.m_tsmiBranchTube_Oval.Size = new System.Drawing.Size(180, 22);
+			this.m_tsmiBranchTube_Oval.Text = "Oval";
+			// 
+			// m_tsmiBranchTube_FlatOval
+			// 
+			this.m_tsmiBranchTube_FlatOval.Name = "m_tsmiBranchTube_FlatOval";
+			this.m_tsmiBranchTube_FlatOval.Size = new System.Drawing.Size(180, 22);
+			this.m_tsmiBranchTube_FlatOval.Text = "Flat Oval";
+			// 
+			// m_tsmiBranchTube_DShape
+			// 
+			this.m_tsmiBranchTube_DShape.Name = "m_tsmiBranchTube_DShape";
+			this.m_tsmiBranchTube_DShape.Size = new System.Drawing.Size(180, 22);
+			this.m_tsmiBranchTube_DShape.Text = "DShape";
+			// 
+			// m_tsmiBendingNotch
+			// 
+			this.m_tsmiBendingNotch.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.m_tsmiBendingNotch_VShape,
+            this.m_tsmiBendingNotch_BothSide,
+            this.m_tsmiBendingNotch_OneSide});
+			this.m_tsmiBendingNotch.Name = "m_tsmiBendingNotch";
+			this.m_tsmiBendingNotch.Size = new System.Drawing.Size(180, 22);
+			this.m_tsmiBendingNotch.Text = "Bending Notch";
+			// 
+			// m_tsmiBendingNotch_VShape
+			// 
+			this.m_tsmiBendingNotch_VShape.Name = "m_tsmiBendingNotch_VShape";
+			this.m_tsmiBendingNotch_VShape.Size = new System.Drawing.Size(180, 22);
+			this.m_tsmiBendingNotch_VShape.Text = "VShape";
+			// 
+			// m_tsmiBendingNotch_BothSide
+			// 
+			this.m_tsmiBendingNotch_BothSide.Name = "m_tsmiBendingNotch_BothSide";
+			this.m_tsmiBendingNotch_BothSide.Size = new System.Drawing.Size(180, 22);
+			this.m_tsmiBendingNotch_BothSide.Text = "Both Side";
+			// 
+			// m_tsmiBendingNotch_OneSide
+			// 
+			this.m_tsmiBendingNotch_OneSide.Name = "m_tsmiBendingNotch_OneSide";
+			this.m_tsmiBendingNotch_OneSide.Size = new System.Drawing.Size(180, 22);
+			this.m_tsmiBendingNotch_OneSide.Text = "One Side";
+			// 
+			// CADEditMainForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.AutoSize = true;
-			this.ClientSize = new System.Drawing.Size(801, 601);
-			this.Controls.Add(this.m_panPropertyBar);
-			this.Controls.Add(this.m_panObjBrowser);
-			this.Controls.Add(this.m_panViewer);
-			this.Name = "MainForm";
+			this.ClientSize = new System.Drawing.Size(801, 624);
+			this.Controls.Add(this.m_panBackGnd);
+			this.Controls.Add(this.m_msMainMenu);
+			this.MainMenuStrip = this.m_msMainMenu;
+			this.Name = "CADEditMainForm";
 			this.Text = "Form1";
-			this.m_panViewer.ResumeLayout(false);
 			this.m_panObjBrowser.ResumeLayout(false);
 			this.m_panPropertyBar.ResumeLayout(false);
+			this.m_panBackGnd.ResumeLayout(false);
+			this.m_msMainMenu.ResumeLayout(false);
+			this.m_msMainMenu.PerformLayout();
 			this.ResumeLayout(false);
+			this.PerformLayout();
 
 		}
 
@@ -273,22 +402,43 @@
 		private System.Windows.Forms.Panel m_panViewer;
 		private System.Windows.Forms.Panel m_panObjBrowser;
 		private System.Windows.Forms.Panel m_panPropertyBar;
-		private System.Windows.Forms.Button m_btnMainTube;
 		private System.Windows.Forms.TreeView m_treeObjBrowser;
 		private System.Windows.Forms.PropertyGrid m_propgrdPropertyBar;
-		private System.Windows.Forms.Button m_btnBranchTube;
-		private System.Windows.Forms.Button m_btnEndCutter;
-		private System.Windows.Forms.Button m_btnISO;
-		private System.Windows.Forms.Button m_btnDir_Neg;
-		private System.Windows.Forms.Button m_btnDir_Pos;
-		private System.Windows.Forms.Button m_btnZ_Neg;
-		private System.Windows.Forms.Button m_btnZ_Pos;
-		private System.Windows.Forms.Button m_btnY_Neg;
-		private System.Windows.Forms.Button m_btnY_Pos;
-		private System.Windows.Forms.Button m_btnX_Neg;
-		private System.Windows.Forms.Button m_btnX_Pos;
-		private System.Windows.Forms.Button m_btnBendingNotch;
-		private System.Windows.Forms.Button m_btnExport;
+		private System.Windows.Forms.Panel m_panBackGnd;
+		private System.Windows.Forms.MenuStrip m_msMainMenu;
+		private System.Windows.Forms.ToolStripMenuItem m_tsmiFile;
+		private System.Windows.Forms.ToolStripMenuItem m_tsmiExport;
+		private System.Windows.Forms.ToolStripMenuItem m_tsmiView;
+		private System.Windows.Forms.ToolStripMenuItem m_tsmiX_Pos;
+		private System.Windows.Forms.ToolStripMenuItem m_tsmiX_Neg;
+		private System.Windows.Forms.ToolStripMenuItem m_tsmiY_Pos;
+		private System.Windows.Forms.ToolStripMenuItem m_tsmiY_Neg;
+		private System.Windows.Forms.ToolStripMenuItem m_tsmiZ_Pos;
+		private System.Windows.Forms.ToolStripMenuItem m_tsmiZ_Neg;
+		private System.Windows.Forms.ToolStripMenuItem m_tsmiDir_Pos;
+		private System.Windows.Forms.ToolStripMenuItem m_tsmiDir_Neg;
+		private System.Windows.Forms.ToolStripMenuItem m_tsmiISO;
+		private System.Windows.Forms.ToolStripMenuItem m_tsmiMainTube;
+		private System.Windows.Forms.ToolStripMenuItem m_tsmiCADFeature;
+		private System.Windows.Forms.ToolStripMenuItem m_tsmiEndCutter;
+		private System.Windows.Forms.ToolStripMenuItem m_tsmiBranchTube;
+		private System.Windows.Forms.ToolStripMenuItem m_tsmiBranchTube_Circle;
+		private System.Windows.Forms.ToolStripMenuItem m_tsmiBranchTube_Rectangle;
+		private System.Windows.Forms.ToolStripMenuItem m_tsmiBranchTube_Oval;
+		private System.Windows.Forms.ToolStripMenuItem m_tsmiBranchTube_FlatOval;
+		private System.Windows.Forms.ToolStripMenuItem m_tsmiBranchTube_DShape;
+		private System.Windows.Forms.ToolStripMenuItem m_tsmiBendingNotch;
+		private System.Windows.Forms.ToolStripMenuItem m_tsmiBendingNotch_VShape;
+		private System.Windows.Forms.ToolStripMenuItem m_tsmiMainTube_Circle;
+		private System.Windows.Forms.ToolStripMenuItem m_tsmiMainTube_Rectangle;
+		private System.Windows.Forms.ToolStripMenuItem m_tsmiMainTube_Oval;
+		private System.Windows.Forms.ToolStripMenuItem m_tsmiMainTube_FlatOval;
+		private System.Windows.Forms.ToolStripMenuItem m_tsmiMainTube_DShape;
+		private System.Windows.Forms.ToolStripMenuItem m_tsmiBendingNotch_BothSide;
+		private System.Windows.Forms.ToolStripMenuItem m_tsmiBendingNotch_OneSide;
+		private System.Windows.Forms.ToolStripMenuItem m_tsmiEdit;
+		private System.Windows.Forms.ToolStripMenuItem m_tsmiUndo;
+		private System.Windows.Forms.ToolStripMenuItem m_tsmiRedo;
 	}
 }
 
