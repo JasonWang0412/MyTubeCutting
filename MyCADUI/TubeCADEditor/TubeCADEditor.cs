@@ -26,9 +26,6 @@ namespace MyCADUI
 		AIS_Shape m_ResultTubeAIS;
 		Dictionary<string, AIS_Shape> m_CADFeatureNameAISMap = new Dictionary<string, AIS_Shape>();
 
-		// the result shape
-		TopoDS_Shape m_ResultTubeTopo;
-
 		// object browser map
 		TreeNode m_MainTubeNode;
 
@@ -37,7 +34,6 @@ namespace MyCADUI
 		int m_nBranchTubeCount = 1;
 		int m_nBendingNotchCount = 1;
 		const string MAIN_TUBE_NAME = "MainTube";
-		ICADFeatureParam m_EdiObjParam;
 
 		// command
 		List<ICADEditCommand> m_CADEditUndoCommandQueue = new List<ICADEditCommand>();
@@ -131,16 +127,21 @@ namespace MyCADUI
 			}
 
 			CommandErrorCode error;
+			ICADFeatureParam editingParam = m_propgrdPropertyBar.SelectedObject as ICADFeatureParam;
+			if( editingParam == null ) {
+				MessageBox.Show( "Error: Editing param not found." );
+				return;
+			}
 
 			// main tube
 			if( szObjecName == MAIN_TUBE_NAME ) {
-				ModifyMainTubeCommand command = new ModifyMainTubeCommand( MAIN_TUBE_NAME, CloneHelper.Clone( m_EdiObjParam ), m_CADFeatureParamMap );
+				ModifyMainTubeCommand command = new ModifyMainTubeCommand( MAIN_TUBE_NAME, CloneHelper.Clone( editingParam ), m_CADFeatureParamMap );
 				error = DoCommand( command );
 			}
 
 			// cad feature
 			else {
-				ModifyCadFeatureCommand command = new ModifyCadFeatureCommand( szObjecName, CloneHelper.Clone( m_EdiObjParam ), m_CADFeatureParamMap );
+				ModifyCadFeatureCommand command = new ModifyCadFeatureCommand( szObjecName, CloneHelper.Clone( editingParam ), m_CADFeatureParamMap );
 				error = DoCommand( command );
 			}
 
@@ -216,7 +217,12 @@ namespace MyCADUI
 
 		internal void ExportStep()
 		{
-			ExportHelper.ExportStep( m_ResultTubeTopo, "ResultTube" );
+			TopoDS_Shape resultTube = CADFeatureMaker.MakeResultTube( m_CADFeatureParamMap );
+			if( resultTube == null ) {
+				MessageBox.Show( "Error: Result tube shape generated failed." );
+				return;
+			}
+			ExportHelper.ExportStep( resultTube, "ResultTube" );
 		}
 
 		void UpdateAndRedrawResultTube()
@@ -240,7 +246,6 @@ namespace MyCADUI
 			}
 
 			// display new tube
-			m_ResultTubeTopo = tubeShape;
 			m_ResultTubeAIS = new AIS_Shape( tubeShape );
 			Graphic3d_MaterialAspect aspect = new Graphic3d_MaterialAspect( Graphic3d_NameOfMaterial.Graphic3d_NOM_STEEL );
 			m_ResultTubeAIS.SetMaterial( aspect );
@@ -294,13 +299,15 @@ namespace MyCADUI
 		void ShowObjectProperty( string szObjectName )
 		{
 			// here we need to use the pointer of the object, a null check is necessary
+			ICADFeatureParam editingObjParam;
+
 			// main tube
 			if( szObjectName == MAIN_TUBE_NAME ) {
 				if( m_CADFeatureParamMap.MainTubeParam == null ) {
 					MessageBox.Show( "Error: Main tube param not found in map." );
 					return;
 				}
-				m_EdiObjParam = CloneHelper.Clone( m_CADFeatureParamMap.MainTubeParam );
+				editingObjParam = CloneHelper.Clone( m_CADFeatureParamMap.MainTubeParam );
 			}
 
 			// cad feature
@@ -309,9 +316,9 @@ namespace MyCADUI
 					MessageBox.Show( "Error: CAD Feature param not found in map." );
 					return;
 				}
-				m_EdiObjParam = CloneHelper.Clone( m_CADFeatureParamMap.FeatureMap[ szObjectName ] );
+				editingObjParam = CloneHelper.Clone( m_CADFeatureParamMap.FeatureMap[ szObjectName ] );
 			}
-			m_propgrdPropertyBar.SelectedObject = m_EdiObjParam;
+			m_propgrdPropertyBar.SelectedObject = editingObjParam;
 			m_propgrdPropertyBar.ExpandAllGridItems();
 		}
 
