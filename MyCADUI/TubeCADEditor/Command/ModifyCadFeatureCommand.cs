@@ -12,17 +12,13 @@ namespace MyCADUI
 			m_CADFeatureParamMap = paramMap;
 		}
 
-		public CommandErrorCode Do()
+		public void Do()
 		{
 			// data protection
-			if( m_CADFeatureParamMap == null || m_CADFeatureParamMap.FeatureMap == null ) {
-				return CommandErrorCode.InvalidMap;
-			}
-			if( string.IsNullOrEmpty( m_szFeatureName ) ) {
-				return CommandErrorCode.InvalidID;
-			}
-			if( m_NewCADFeatureParam == null || m_NewCADFeatureParam.IsValid() == false ) {
-				return CommandErrorCode.InvalidParam;
+			if( string.IsNullOrEmpty( m_szFeatureName )
+				|| m_NewCADFeatureParam == null
+				|| m_CADFeatureParamMap == null || m_CADFeatureParamMap.FeatureMap == null ) {
+				return;
 			}
 
 			ICADFeatureParam cloneNewParam = CloneHelper.Clone( m_NewCADFeatureParam );
@@ -42,8 +38,7 @@ namespace MyCADUI
 			m_CADFeatureParamMap.FeatureMap[ m_szFeatureName ] = cloneNewParam;
 
 			// invoke the event
-			EditFinished?.Invoke( EditType.ModifyCADFeature, m_szFeatureName );
-			return CommandErrorCode.OK;
+			CommandFinished?.Invoke( EditType.ModifyCADFeature, m_szFeatureName );
 		}
 
 		public void Undo()
@@ -52,10 +47,10 @@ namespace MyCADUI
 			m_CADFeatureParamMap.FeatureMap[ m_szFeatureName ] = m_oldCADFeatureParam;
 
 			// invoke the event
-			EditFinished?.Invoke( EditType.ModifyCADFeature, m_szFeatureName );
+			CommandFinished?.Invoke( EditType.ModifyCADFeature, m_szFeatureName );
 		}
 
-		public event CADEditFinishEventHandler EditFinished;
+		public event CADEditFinishEventHandler CommandFinished;
 
 		string m_szFeatureName;
 		ICADFeatureParam m_NewCADFeatureParam;

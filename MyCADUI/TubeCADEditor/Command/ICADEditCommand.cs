@@ -14,10 +14,10 @@
 
 	internal interface ICADEditCommand
 	{
-		CommandErrorCode Do();
+		void Do();
 
 		void Undo();
 
-		event CADEditFinishEventHandler EditFinished;
+		event CADEditFinishEventHandler CommandFinished;
 	}
 }

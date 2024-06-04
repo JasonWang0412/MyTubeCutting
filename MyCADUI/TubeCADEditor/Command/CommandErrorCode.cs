@@ -1,5 +1,6 @@
 ﻿namespace MyCADUI
 {
+	// TODO: remove this
 	internal enum CommandErrorCode
 	{
 		OK = 0,

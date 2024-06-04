@@ -52,6 +52,7 @@ namespace MyCADUI
 			m_propgrdPropertyBar = propertyGrid;
 		}
 
+		// TODO: check validility here and error handling
 		internal void AddMainTube( CADft_MainTubeParam mainTubeParam )
 		{
 			AddMainTubeCommand command = new AddMainTubeCommand( MAIN_TUBE_NAME, mainTubeParam, m_CADFeatureParamMap );
@@ -97,6 +98,8 @@ namespace MyCADUI
 
 			// remove main tube
 			if( szObjectName == MAIN_TUBE_NAME ) {
+
+				// TODO: check cad feature map
 				RemoveMainTubeCommand command = new RemoveMainTubeCommand( MAIN_TUBE_NAME, m_CADFeatureParamMap );
 				DoCommand( command );
 			}
@@ -126,30 +129,27 @@ namespace MyCADUI
 				return;
 			}
 
-			CommandErrorCode error;
 			ICADFeatureParam editingParam = m_propgrdPropertyBar.SelectedObject as ICADFeatureParam;
 			if( editingParam == null ) {
 				MessageBox.Show( "Error: Editing param not found." );
+				ShowObjectProperty( szObjecName );
 				return;
 			}
 
 			// main tube
 			if( szObjecName == MAIN_TUBE_NAME ) {
 				ModifyMainTubeCommand command = new ModifyMainTubeCommand( MAIN_TUBE_NAME, CloneHelper.Clone( editingParam ), m_CADFeatureParamMap );
-				error = DoCommand( command );
+				DoCommand( command );
 			}
 
 			// cad feature
 			else {
 				ModifyCadFeatureCommand command = new ModifyCadFeatureCommand( szObjecName, CloneHelper.Clone( editingParam ), m_CADFeatureParamMap );
-				error = DoCommand( command );
+				DoCommand( command );
 			}
 
-			if( error != CommandErrorCode.OK ) {
-
-				// show original property when modify failed
-				ShowObjectProperty( szObjecName );
-			}
+			// show original property when modify failed
+			ShowObjectProperty( szObjecName );
 		}
 
 		internal gp_Dir GetEditObjectDir( string szObjectName )
@@ -466,20 +466,13 @@ namespace MyCADUI
 			UpdateAndRedrawResultTube();
 		}
 
-		CommandErrorCode DoCommand( ICADEditCommand command )
+		void DoCommand( ICADEditCommand command )
 		{
-			command.EditFinished += UpdateEditorAfterCommand;
-			CommandErrorCode error = command.Do();
-			if( error != CommandErrorCode.OK ) {
-
-				// TODO: show error message
-				MessageBox.Show( "Error: Command failed." );
-				return error;
-			}
+			command.CommandFinished += UpdateEditorAfterCommand;
+			command.Do();
 			m_CADEditUndoCommandQueue.Add( command );
 			m_CADEditRedoCommandQueue.Clear();
 			CommandStatusChanged?.Invoke( true, false );
-			return error;
 		}
 	}
 }
