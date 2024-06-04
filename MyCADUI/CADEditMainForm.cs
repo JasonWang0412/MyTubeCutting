@@ -9,7 +9,7 @@ namespace MyCADUI
 	public partial class CADEditMainForm : Form
 	{
 		// viewer property
-		OCCViewer m_Viewer;
+		OCCViewer m_Viewer = new OCCViewer();
 		int m_nXMousePosition = 0;
 		int m_nYMousePosition = 0;
 
@@ -30,7 +30,6 @@ namespace MyCADUI
 			m_tsmiRedo.Enabled = false;
 
 			// initialize viewer
-			m_Viewer = new OCCViewer();
 			bool isSuccess = m_Viewer.InitViewer( m_panViewer.Handle );
 			if( isSuccess == false ) {
 				MessageBox.Show( "init failed" );
@@ -302,12 +301,22 @@ namespace MyCADUI
 		// tube editor action
 		void m_propgrdPropertyBar_PropertyValueChanged( object s, PropertyValueChangedEventArgs e )
 		{
+			// data protection
+			if( m_treeObjBrowser.SelectedNode == null ) {
+				return;
+			}
 			m_TubeCADEditor.ModifyObjectProperty( m_treeObjBrowser.SelectedNode.Text );
 		}
 
 		void m_treeObjBrowser_AfterSelect( object sender, TreeViewEventArgs e )
 		{
+			// data protection
+			if( e.Node == null ) {
+				return;
+			}
 			string szObjectName = e.Node.Text;
+
+			// data protection
 			if( string.IsNullOrEmpty( szObjectName ) ) {
 				return;
 			}
@@ -329,6 +338,11 @@ namespace MyCADUI
 		void m_treeObjBrowser_KeyDown( object sender, KeyEventArgs e )
 		{
 			if( e.KeyCode == Keys.Delete ) {
+
+				// data protection
+				if( m_treeObjBrowser.SelectedNode == null ) {
+					return;
+				}
 				m_TubeCADEditor.RemoveCADFeature( m_treeObjBrowser.SelectedNode.Text );
 			}
 			else if( e.Modifiers == Keys.Control ) {
@@ -389,12 +403,20 @@ namespace MyCADUI
 
 		void m_tsmiDir_Pos_Click( object sender, System.EventArgs e )
 		{
+			// data protection
+			if( m_treeObjBrowser.SelectedNode == null ) {
+				return;
+			}
 			gp_Dir dir = m_TubeCADEditor.GetEditObjectDir( m_treeObjBrowser.SelectedNode.Text );
 			m_Viewer.SetViewDir( dir );
 		}
 
 		void m_tsmiDir_Neg_Click( object sender, System.EventArgs e )
 		{
+			// data protection
+			if( m_treeObjBrowser.SelectedNode == null ) {
+				return;
+			}
 			gp_Dir dir = m_TubeCADEditor.GetEditObjectDir( m_treeObjBrowser.SelectedNode.Text );
 			m_Viewer.SetViewDir( dir.Reversed() );
 		}
