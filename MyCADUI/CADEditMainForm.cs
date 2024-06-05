@@ -41,6 +41,7 @@ namespace MyCADUI
 			m_TubeCADEditor = new TubeCADEditor( m_Viewer, m_treeObjBrowser, m_propgrdPropertyBar );
 			m_TubeCADEditor.MainTubeStatusChanged += MainTubeStatusChanged;
 			m_TubeCADEditor.CADEditErrorEvent += CADEditError;
+			m_TubeCADEditor.CADEditSuccessEvent += () => m_lblWarnning.Text = string.Empty;
 			m_TubeCADEditor.CommandStatusChanged += ( bUndo, bRedo ) =>
 			{
 				m_tsmiUndo.Enabled = bUndo;
@@ -314,7 +315,13 @@ namespace MyCADUI
 
 		void CADEditError( CADEditErrorCode errorCode )
 		{
-			MessageBox.Show( errorCode.ToString() );
+			// TODO: magic number
+			if( (int)errorCode < 100 ) {
+				MessageBox.Show( errorCode.ToString() );
+			}
+			else {
+				m_lblWarnning.Text = errorCode.ToString();
+			}
 		}
 
 		// view action

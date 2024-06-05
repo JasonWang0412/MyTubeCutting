@@ -48,6 +48,10 @@ namespace MyCADUI
 		internal delegate void CADEditErrorEventHandler( CADEditErrorCode errorCode );
 		internal event CADEditErrorEventHandler CADEditErrorEvent;
 
+		// cad edit sucess event
+		internal delegate void CADEditSuccessEventHandler();
+		internal event CADEditSuccessEventHandler CADEditSuccessEvent;
+
 		internal TubeCADEditor( OCCViewer viewer, TreeView treeObjBrowser, PropertyGrid propertyGrid )
 		{
 			m_Viewer = viewer;
@@ -92,7 +96,8 @@ namespace MyCADUI
 				return;
 			}
 
-			// TODO: check bending notch special case
+			// check special case if feature type is bending notch
+			CheckFeatureSpecialCase( cadFeatureParam );
 
 			string szName = GetNewCADFeatureName( cadFeatureParam.Type );
 			AddCadFeatureCommand command = new AddCadFeatureCommand( szName, cadFeatureParam, m_CADFeatureParamMap );
@@ -137,7 +142,8 @@ namespace MyCADUI
 			// cad feature
 			else {
 
-				// TODO: check bending notch special case
+				// check special case if feature type is bending notch
+				CheckFeatureSpecialCase( editingParam );
 				ModifyCadFeatureCommand command = new ModifyCadFeatureCommand( szObjecName, CloneHelper.Clone( editingParam ), m_CADFeatureParamMap );
 				DoCommand( command );
 			}
@@ -245,10 +251,23 @@ namespace MyCADUI
 		{
 			TopoDS_Shape resultTube = CADFeatureMaker.MakeResultTube( m_CADFeatureParamMap );
 			if( resultTube == null ) {
-				CADEditErrorEvent?.Invoke( CADEditErrorCode.ExportFailed );
+				CADEditErrorEvent?.Invoke( CADEditErrorCode.MakeShapeFailed );
 				return;
 			}
 			ExportHelper.ExportStep( resultTube, "ResultTube" );
+		}
+
+		bool CheckFeatureSpecialCase( ICADFeatureParam cadFeatureParam )
+		{
+			if( cadFeatureParam.Type == CADFeatureType.BendingNotch ) {
+				CADft_BendingNotchParam bendingNotchParam = cadFeatureParam as CADft_BendingNotchParam;
+				double zPos = bendingNotchParam.GapFromButtom;
+				double mainTubeThickness = m_CADFeatureParamMap.MainTubeParam.CrossSection.Thickness;
+				if( zPos < mainTubeThickness ) {
+					bendingNotchParam.GapFromButtom = mainTubeThickness;
+				}
+			}
+			return true;
 		}
 
 		void UpdateEditorAfterCommand( EditType type, string szObjectName )
@@ -395,6 +414,7 @@ namespace MyCADUI
 			m_ResultTubeAIS.SetDisplayMode( 1 );
 			m_Viewer.GetAISContext().Display( m_ResultTubeAIS, false );
 			m_Viewer.UpdateView();
+			CADEditSuccessEvent?.Invoke();
 		}
 
 		void RefreshAIS()
@@ -475,7 +495,7 @@ namespace MyCADUI
 			// main tube
 			if( szObjectName == MAIN_TUBE_NAME ) {
 				if( m_CADFeatureParamMap.MainTubeParam == null ) {
-					CADEditErrorEvent?.Invoke( CADEditErrorCode.NoMainTube );
+					CADEditErrorEvent?.Invoke( CADEditErrorCode.NoSelectedObject );
 					return;
 				}
 				editingObjParam = CloneHelper.Clone( m_CADFeatureParamMap.MainTubeParam );
