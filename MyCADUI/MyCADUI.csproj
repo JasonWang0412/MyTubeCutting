@@ -63,7 +63,6 @@
     <Compile Include="TubeCADEditor\CADEditErrorCode.cs" />
     <Compile Include="TubeCADEditor\Command\AddCadFeatureCommand.cs" />
     <Compile Include="TubeCADEditor\Command\AddMainTubeCommand.cs" />
-    <Compile Include="TubeCADEditor\Command\CommandErrorCode.cs" />
     <Compile Include="TubeCADEditor\Command\ICADEditCommand.cs" />
     <Compile Include="TubeCADEditor\Command\ModifyCadFeatureCommand.cs" />
     <Compile Include="TubeCADEditor\Command\ModifyMainTubeCommand.cs" />
