@@ -40,15 +40,12 @@ namespace MyCADUI
 			// initialize tube editor
 			m_TubeCADEditor = new TubeCADEditor( m_Viewer, m_treeObjBrowser, m_propgrdPropertyBar );
 			m_TubeCADEditor.MainTubeStatusChanged += MainTubeStatusChanged;
+			m_TubeCADEditor.CADEditErrorEvent += CADEditError;
 			m_TubeCADEditor.CommandStatusChanged += ( bUndo, bRedo ) =>
 			{
 				m_tsmiUndo.Enabled = bUndo;
 				m_tsmiRedo.Enabled = bRedo;
 			};
-
-			// key event
-			m_panViewer.KeyDown += m_panViewer_KeyDown;
-			m_treeObjBrowser.KeyDown += m_treeObjBrowser_KeyDown;
 
 			// set language zh-TW
 			SetLanguage();
@@ -299,52 +296,6 @@ namespace MyCADUI
 		}
 
 		// tube editor action
-		void m_propgrdPropertyBar_PropertyValueChanged( object s, PropertyValueChangedEventArgs e )
-		{
-			m_TubeCADEditor.ModifyCADFeature();
-		}
-
-		void m_treeObjBrowser_AfterSelect( object sender, TreeViewEventArgs e )
-		{
-			// data protection
-			if( e.Node == null ) {
-				return;
-			}
-			string szObjectName = e.Node.Text;
-
-			// data protection
-			if( string.IsNullOrEmpty( szObjectName ) ) {
-				return;
-			}
-			m_TubeCADEditor.SetEditObject( szObjectName );
-		}
-
-		void m_panViewer_KeyDown( object sender, KeyEventArgs e )
-		{
-			if( e.Modifiers == Keys.Control ) {
-				if( e.KeyCode == Keys.Z ) {
-					m_TubeCADEditor.Undo();
-				}
-				else if( e.KeyCode == Keys.Y ) {
-					m_TubeCADEditor.Redo();
-				}
-			}
-		}
-
-		void m_treeObjBrowser_KeyDown( object sender, KeyEventArgs e )
-		{
-			if( e.KeyCode == Keys.Delete ) {
-				m_TubeCADEditor.RemoveCADFeature();
-			}
-			else if( e.Modifiers == Keys.Control ) {
-				if( e.KeyCode == Keys.Z ) {
-					m_TubeCADEditor.Undo();
-				}
-				else if( e.KeyCode == Keys.Y ) {
-					m_TubeCADEditor.Redo();
-				}
-			}
-		}
 
 		void m_tsmiExport_Click( object sender, System.EventArgs e )
 		{
@@ -359,6 +310,11 @@ namespace MyCADUI
 		void m_tsmiRedo_Click( object sender, System.EventArgs e )
 		{
 			m_TubeCADEditor.Redo();
+		}
+
+		void CADEditError( CADEditErrorCode errorCode )
+		{
+			MessageBox.Show( errorCode.ToString() );
 		}
 
 		// view action
@@ -394,21 +350,13 @@ namespace MyCADUI
 
 		void m_tsmiDir_Pos_Click( object sender, System.EventArgs e )
 		{
-			// data protection
-			if( m_treeObjBrowser.SelectedNode == null ) {
-				return;
-			}
-			gp_Dir dir = m_TubeCADEditor.GetEditObjectDir( m_treeObjBrowser.SelectedNode.Text );
+			gp_Dir dir = m_TubeCADEditor.GetEditObjectDir();
 			m_Viewer.SetViewDir( dir );
 		}
 
 		void m_tsmiDir_Neg_Click( object sender, System.EventArgs e )
 		{
-			// data protection
-			if( m_treeObjBrowser.SelectedNode == null ) {
-				return;
-			}
-			gp_Dir dir = m_TubeCADEditor.GetEditObjectDir( m_treeObjBrowser.SelectedNode.Text );
+			gp_Dir dir = m_TubeCADEditor.GetEditObjectDir();
 			m_Viewer.SetViewDir( dir.Reversed() );
 		}
 

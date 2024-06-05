@@ -99,7 +99,6 @@
 			this.m_treeObjBrowser.Name = "m_treeObjBrowser";
 			this.m_treeObjBrowser.Size = new System.Drawing.Size(300, 300);
 			this.m_treeObjBrowser.TabIndex = 0;
-			this.m_treeObjBrowser.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.m_treeObjBrowser_AfterSelect);
 			// 
 			// m_panPropertyBar
 			// 
@@ -116,7 +115,6 @@
 			this.m_propgrdPropertyBar.Name = "m_propgrdPropertyBar";
 			this.m_propgrdPropertyBar.Size = new System.Drawing.Size(300, 300);
 			this.m_propgrdPropertyBar.TabIndex = 0;
-			this.m_propgrdPropertyBar.PropertyValueChanged += new System.Windows.Forms.PropertyValueChangedEventHandler(this.m_propgrdPropertyBar_PropertyValueChanged);
 			// 
 			// m_panBackGnd
 			// 

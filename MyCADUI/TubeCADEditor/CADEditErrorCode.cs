@@ -6,5 +6,8 @@
 		InvalidParam,
 		NoMainTube,
 		NoSelectedObject,
+		ExportFailed,
+		MakeShapeFailed,
+		CanNotRemoveMainTube,
 	}
 }
