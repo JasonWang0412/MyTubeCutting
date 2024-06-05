@@ -60,6 +60,7 @@
     <Compile Include="OCCViewer\OCCViewer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TubeCADEditor\CADEditErrorCode.cs" />
     <Compile Include="TubeCADEditor\Command\AddCadFeatureCommand.cs" />
     <Compile Include="TubeCADEditor\Command\AddMainTubeCommand.cs" />
     <Compile Include="TubeCADEditor\Command\CommandErrorCode.cs" />

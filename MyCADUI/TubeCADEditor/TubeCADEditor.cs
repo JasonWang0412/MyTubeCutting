@@ -45,6 +45,10 @@ namespace MyCADUI
 		internal delegate void MainTubeStatusChangedEventHandler( bool bExistMainTube );
 		internal event MainTubeStatusChangedEventHandler MainTubeStatusChanged;
 
+		// cad edit error event
+		internal delegate void CADEditErrorEventHandler( CADEditErrorCode errorCode );
+		internal event CADEditErrorEventHandler CADEditErrorEvent;
+
 		internal TubeCADEditor( OCCViewer viewer, TreeView treeObjBrowser, PropertyGrid propertyGrid )
 		{
 			m_Viewer = viewer;
@@ -52,47 +56,101 @@ namespace MyCADUI
 			m_propgrdPropertyBar = propertyGrid;
 		}
 
-		// TODO: check validility here and error handling
 		internal void AddMainTube( CADft_MainTubeParam mainTubeParam )
 		{
+			// data protection
+			if( mainTubeParam == null ) {
+				CADEditErrorEvent?.Invoke( CADEditErrorCode.NullParam );
+				return;
+			}
+			if( mainTubeParam.IsValid() == false ) {
+				CADEditErrorEvent?.Invoke( CADEditErrorCode.InvalidParam );
+				return;
+			}
+
 			AddMainTubeCommand command = new AddMainTubeCommand( MAIN_TUBE_NAME, mainTubeParam, m_CADFeatureParamMap );
 			DoCommand( command );
 		}
 
-		internal void AddEndCutter( CADft_EndCutterParam endCutterParam )
-		{
-			if( m_CADFeatureParamMap.MainTubeParam == null ) {
-				MessageBox.Show( "Please add main tube first." );
-				return;
-			}
-			string szName = GetNewEndCutterName();
-			AddCADFeature( szName, endCutterParam );
-		}
-
-		internal void AddBranchTube( CADft_BranchTubeParam branchTubeParam )
-		{
-			if( m_CADFeatureParamMap.MainTubeParam == null ) {
-				MessageBox.Show( "Please add main tube first." );
-				return;
-			}
-			string szName = GetNewBranchTubeName();
-			AddCADFeature( szName, branchTubeParam );
-		}
-
-		internal void AddBendingNotch( CADft_BendingNotchParam bendingNotchParam )
-		{
-			if( m_CADFeatureParamMap.MainTubeParam == null ) {
-				MessageBox.Show( "Please add main tube first." );
-				return;
-			}
-			string szName = GetNewBendingNotchName();
-			AddCADFeature( szName, bendingNotchParam );
-		}
-
-		internal void RemoveCADFeature( string szObjectName )
+		internal void AddCADFeature( ICADFeatureParam cadFeatureParam )
 		{
 			// data protection
+			if( m_CADFeatureParamMap.MainTubeParam == null ) {
+				CADEditErrorEvent?.Invoke( CADEditErrorCode.NoMainTube );
+				return;
+			}
+			if( cadFeatureParam == null ) {
+				CADEditErrorEvent?.Invoke( CADEditErrorCode.NullParam );
+				return;
+			}
+			if( cadFeatureParam.IsValid() == false ) {
+				CADEditErrorEvent?.Invoke( CADEditErrorCode.InvalidParam );
+				return;
+			}
+
+			// TODO: check bending notch special case
+
+			string szName = GetNewCADFeatureName( cadFeatureParam.Type );
+			AddCadFeatureCommand command = new AddCadFeatureCommand( szName, cadFeatureParam, m_CADFeatureParamMap );
+			DoCommand( command );
+		}
+
+		internal void ModifyCADFeature()
+		{
+			// data protection
+			if( m_treeObjBrowser.SelectedNode == null ) {
+				CADEditErrorEvent?.Invoke( CADEditErrorCode.NoSelectedObject );
+				return;
+			}
+
+			string szObjecName = m_treeObjBrowser.SelectedNode.Text;
+			if( string.IsNullOrEmpty( szObjecName ) ) {
+				CADEditErrorEvent?.Invoke( CADEditErrorCode.NoSelectedObject );
+				return;
+			}
+
+			ICADFeatureParam editingParam = m_propgrdPropertyBar.SelectedObject as ICADFeatureParam;
+			if( editingParam == null ) {
+				CADEditErrorEvent?.Invoke( CADEditErrorCode.NoSelectedObject );
+
+				// show original property when modify failed
+				ShowObjectProperty( szObjecName );
+				return;
+			}
+			if( editingParam.IsValid() == false ) {
+				CADEditErrorEvent?.Invoke( CADEditErrorCode.InvalidParam );
+
+				// show original property when modify failed
+				ShowObjectProperty( szObjecName );
+				return;
+			}
+
+			// main tube
+			if( szObjecName == MAIN_TUBE_NAME ) {
+				ModifyMainTubeCommand command = new ModifyMainTubeCommand( MAIN_TUBE_NAME, CloneHelper.Clone( editingParam ), m_CADFeatureParamMap );
+				DoCommand( command );
+			}
+
+			// cad feature
+			else {
+
+				// TODO: check bending notch special case
+				ModifyCadFeatureCommand command = new ModifyCadFeatureCommand( szObjecName, CloneHelper.Clone( editingParam ), m_CADFeatureParamMap );
+				DoCommand( command );
+			}
+		}
+
+		internal void RemoveCADFeature()
+		{
+			// data protection
+			if( m_treeObjBrowser.SelectedNode == null ) {
+				CADEditErrorEvent?.Invoke( CADEditErrorCode.NoSelectedObject );
+				return;
+			}
+
+			string szObjectName = m_treeObjBrowser.SelectedNode.Text;
 			if( string.IsNullOrEmpty( szObjectName ) ) {
+				CADEditErrorEvent?.Invoke( CADEditErrorCode.NoSelectedObject );
 				return;
 			}
 
@@ -119,36 +177,6 @@ namespace MyCADUI
 			}
 
 			DisplayObjectShape( szObjecName );
-			ShowObjectProperty( szObjecName );
-		}
-
-		internal void ModifyObjectProperty( string szObjecName )
-		{
-			// data protection
-			if( string.IsNullOrEmpty( szObjecName ) ) {
-				return;
-			}
-
-			ICADFeatureParam editingParam = m_propgrdPropertyBar.SelectedObject as ICADFeatureParam;
-			if( editingParam == null ) {
-				MessageBox.Show( "Error: Editing param not found." );
-				ShowObjectProperty( szObjecName );
-				return;
-			}
-
-			// main tube
-			if( szObjecName == MAIN_TUBE_NAME ) {
-				ModifyMainTubeCommand command = new ModifyMainTubeCommand( MAIN_TUBE_NAME, CloneHelper.Clone( editingParam ), m_CADFeatureParamMap );
-				DoCommand( command );
-			}
-
-			// cad feature
-			else {
-				ModifyCadFeatureCommand command = new ModifyCadFeatureCommand( szObjecName, CloneHelper.Clone( editingParam ), m_CADFeatureParamMap );
-				DoCommand( command );
-			}
-
-			// show original property when modify failed
 			ShowObjectProperty( szObjecName );
 		}
 
@@ -254,26 +282,18 @@ namespace MyCADUI
 			m_Viewer.UpdateView();
 		}
 
-		void AddCADFeature( string szName, ICADFeatureParam cadFeatureParam )
+		string GetNewCADFeatureName( CADFeatureType type )
 		{
-			// TODO: let command check validility
-			AddCadFeatureCommand command = new AddCadFeatureCommand( szName, cadFeatureParam, m_CADFeatureParamMap );
-			DoCommand( command );
-		}
-
-		string GetNewEndCutterName()
-		{
-			return "EndCutter" + m_nEndCutterCount++;
-		}
-
-		string GetNewBranchTubeName()
-		{
-			return "BranchTube" + m_nBranchTubeCount++;
-		}
-
-		string GetNewBendingNotchName()
-		{
-			return "BendingNotch" + m_nBendingNotchCount++;
+			switch( type ) {
+				case CADFeatureType.EndCutter:
+					return "EndCutter" + m_nEndCutterCount++;
+				case CADFeatureType.BranchTube:
+					return "BranchTube" + m_nBranchTubeCount++;
+				case CADFeatureType.BendingNotch:
+					return "BendingNotch" + m_nBendingNotchCount++;
+				default:
+					return "NewFeature";
+			}
 		}
 
 		void DisplayObjectShape( string szObjectName )

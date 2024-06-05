@@ -171,7 +171,7 @@ namespace MyCADUI
 		{
 			// set end cutter parameter
 			CADft_EndCutterParam endCutterParam = new CADft_EndCutterParam( 0, 0, 0, EEndSide.Left );
-			m_TubeCADEditor.AddEndCutter( endCutterParam );
+			m_TubeCADEditor.AddCADFeature( endCutterParam );
 		}
 
 		// branch tube
@@ -246,7 +246,7 @@ namespace MyCADUI
 			CADft_BranchTubeParam branchTubeParam = new CADft_BranchTubeParam( x, y, z, selfRotateAngle_deg, angleA_deg, angleB_deg, shape, intersectDir, false, length );
 
 			// set branch tube to tube editor
-			m_TubeCADEditor.AddBranchTube( branchTubeParam );
+			m_TubeCADEditor.AddCADFeature( branchTubeParam );
 		}
 
 		// bending notch
@@ -295,17 +295,13 @@ namespace MyCADUI
 			double gap = 0.5;
 			double angleB_deg = 0;
 			CADft_BendingNotchParam bendingNotchParam = new CADft_BendingNotchParam( shape, y, gap, angleB_deg );
-			m_TubeCADEditor.AddBendingNotch( bendingNotchParam );
+			m_TubeCADEditor.AddCADFeature( bendingNotchParam );
 		}
 
 		// tube editor action
 		void m_propgrdPropertyBar_PropertyValueChanged( object s, PropertyValueChangedEventArgs e )
 		{
-			// data protection
-			if( m_treeObjBrowser.SelectedNode == null ) {
-				return;
-			}
-			m_TubeCADEditor.ModifyObjectProperty( m_treeObjBrowser.SelectedNode.Text );
+			m_TubeCADEditor.ModifyCADFeature();
 		}
 
 		void m_treeObjBrowser_AfterSelect( object sender, TreeViewEventArgs e )
@@ -338,12 +334,7 @@ namespace MyCADUI
 		void m_treeObjBrowser_KeyDown( object sender, KeyEventArgs e )
 		{
 			if( e.KeyCode == Keys.Delete ) {
-
-				// data protection
-				if( m_treeObjBrowser.SelectedNode == null ) {
-					return;
-				}
-				m_TubeCADEditor.RemoveCADFeature( m_treeObjBrowser.SelectedNode.Text );
+				m_TubeCADEditor.RemoveCADFeature();
 			}
 			else if( e.Modifiers == Keys.Control ) {
 				if( e.KeyCode == Keys.Z ) {
