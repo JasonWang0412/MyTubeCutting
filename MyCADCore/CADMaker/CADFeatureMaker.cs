@@ -412,8 +412,8 @@ namespace MyCADCore
 
 		static void GetBranchTubeDir( double dA_deg, double dB_deg, out gp_Dir dir )
 		{
-			// the initail direction is (1, 0, 0)
-			gp_Dir dirInit = new gp_Dir( 1, 0, 0 );
+			// the initail direction is (0, 0, 1)
+			gp_Dir dirInit = new gp_Dir( 0, 0, 1 );
 
 			// rotate around X axis by A angle in radian
 			gp_Trsf transformA = new gp_Trsf();
@@ -423,7 +423,7 @@ namespace MyCADCore
 			gp_Trsf transformB = new gp_Trsf();
 			transformB.SetRotation( new gp_Ax1( new gp_Pnt( 0, 0, 0 ), new gp_Dir( 0, -1, 0 ) ), dB_deg * Math.PI / 180 );
 
-			gp_Trsf trsfFinal = transformA.Multiplied( transformB );
+			gp_Trsf trsfFinal = transformB.Multiplied( transformA );
 			dir = dirInit.Transformed( trsfFinal );
 		}
 
