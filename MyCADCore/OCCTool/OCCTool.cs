@@ -557,7 +557,7 @@ namespace MyCADCore
 			double dVHalfWidth = dVHeight * Math.Tan( shape.BendingAngle_deg / 2 * Math.PI / 180 );
 
 			// this is ensure the size is big enough to cut the main tube
-			double safeHeight = 1;
+			const double SAFE_HEIGHT = 1;
 
 			double y0 = y;
 			double z0 = z;
@@ -566,13 +566,13 @@ namespace MyCADCore
 			double y2 = y1 - Math.Abs( Math.Min( shape.JointGapLength, 0 ) );
 			double z2 = z1;
 			double y3 = y2;
-			double z3 = z2 + Math.Abs( shape.JointGapLength ) + safeHeight;
+			double z3 = z2 + Math.Abs( shape.JointGapLength ) + SAFE_HEIGHT;
 			double y6 = y0 + dVHalfWidth;
 			double z6 = z0 + dVHeight;
 			double y5 = y6 + Math.Abs( Math.Max( shape.JointGapLength, 0 ) );
 			double z5 = z6;
 			double y4 = y5;
-			double z4 = z5 + Math.Abs( shape.JointGapLength ) + safeHeight;
+			double z4 = z5 + Math.Abs( shape.JointGapLength ) + SAFE_HEIGHT;
 
 			// make points
 			gp_Pnt p0 = new gp_Pnt( 0, y0, z0 );
@@ -639,22 +639,22 @@ namespace MyCADCore
 			double y10 = pR.Y();
 			double z10 = pR.Z();
 
-			double centerZ = z3; // should be equal to z9
+			double centerZ = z3; // should be equal to z10
 			double dVHeight = maxZ - Math.Abs( shape.JointGapLength ) - centerZ;
 			double dVHalfWidth = dVHeight * Math.Tan( dHalfAngle_Rad );
-			double safeHeight = 1;
+			const double SAFE_HEIGHT = 1;
 			double y4 = y3 - dVHalfWidth;
 			double z4 = z3 + dVHeight;
 			double y5 = y4 - Math.Abs( Math.Min( shape.JointGapLength, 0 ) );
 			double z5 = z4;
 			double y6 = y5;
-			double z6 = z5 + Math.Abs( shape.JointGapLength ) + safeHeight;
+			double z6 = z5 + Math.Abs( shape.JointGapLength ) + SAFE_HEIGHT;
 			double y9 = y10 + dVHalfWidth;
 			double z9 = z10 + dVHeight;
 			double y8 = y9 + Math.Abs( Math.Max( shape.JointGapLength, 0 ) );
 			double z8 = z9;
 			double y7 = y8;
-			double z7 = z8 + Math.Abs( shape.JointGapLength ) + safeHeight;
+			double z7 = z8 + Math.Abs( shape.JointGapLength ) + SAFE_HEIGHT;
 
 			// make points
 			gp_Pnt p0 = new gp_Pnt( 0, y0, z0 );
@@ -681,7 +681,7 @@ namespace MyCADCore
 			if( edge12.IsDone() ) {
 				wireMaker.Add( edge12.Edge() );
 			}
-			wireMaker.Add( edgeCircleL.Edge() );
+			wireMaker.Add( edgeCircleL.Edge() ); // the arc 23
 			BRepBuilderAPI_MakeEdge edge34 = new BRepBuilderAPI_MakeEdge( p3, p4 );
 			if( edge34.IsDone() ) {
 				wireMaker.Add( edge34.Edge() );
@@ -710,7 +710,7 @@ namespace MyCADCore
 			if( edge910.IsDone() ) {
 				wireMaker.Add( edge910.Edge() );
 			}
-			wireMaker.Add( edgeCircleR.Edge() );
+			wireMaker.Add( edgeCircleR.Edge() ); // the arc 1011
 			BRepBuilderAPI_MakeEdge edge1112 = new BRepBuilderAPI_MakeEdge( p11, p12 );
 			if( edge1112.IsDone() ) {
 				wireMaker.Add( edge1112.Edge() );
@@ -734,16 +734,22 @@ namespace MyCADCore
 			if( shape.IsOverCut && z - minZ > dThickness ) {
 				dOverCut = z - minZ - dThickness;
 			}
+
+			const double SAFE_HEGHT = 1;
 			double y0 = y;
 			double z0 = z - dOverCut;
 			double y1 = y0;
 			double z1 = z0 + dOverCut; // equal to z
 			double y2 = y1;
 			double z2 = z1 + dArcRadius; // equal to maxZ
+			double y3 = y2;
+			double z3 = z2 + SAFE_HEGHT;
 
 			double dTopLength = dArcLength - dArcRadius;
-			double y3 = y2 + dTopLength;
-			double z3 = z2;
+			double y5 = y2 + dTopLength;
+			double z5 = z2;
+			double y4 = y5;
+			double z4 = z5 + SAFE_HEGHT;
 
 			Geom_Circle circle = new Geom_Circle( new gp_Ax2( new gp_Pnt( 0, y + dArcLength, z + dArcRadius ), new gp_Dir( 1, 0, 0 ) ), dArcRadius );
 			Geom_TrimmedCurve trim = new Geom_TrimmedCurve( circle, Math.PI / 2, Math.PI, true );
@@ -752,10 +758,10 @@ namespace MyCADCore
 				return null;
 			}
 
-			double y5 = y0 + dArcLength;
-			double z5 = z0;
-			double y4 = y5;
-			double z4 = z5 + dOverCut; // equal to z
+			double y7 = y0 + dArcLength;
+			double z7 = z0;
+			double y6 = y7;
+			double z6 = z7 + dOverCut; // equal to z
 
 			// make points
 			gp_Pnt p0 = new gp_Pnt( 0, y0, z0 );
@@ -764,6 +770,8 @@ namespace MyCADCore
 			gp_Pnt p3 = new gp_Pnt( 0, y3, z3 );
 			gp_Pnt p4 = new gp_Pnt( 0, y4, z4 );
 			gp_Pnt p5 = new gp_Pnt( 0, y5, z5 );
+			gp_Pnt p6 = new gp_Pnt( 0, y6, z6 );
+			gp_Pnt p7 = new gp_Pnt( 0, y7, z7 );
 
 			// make wire
 			BRepBuilderAPI_MakeWire wireMaker = new BRepBuilderAPI_MakeWire();
@@ -779,14 +787,22 @@ namespace MyCADCore
 			if( edge23.IsDone() ) {
 				wireMaker.Add( edge23.Edge() );
 			}
-			wireMaker.Add( edgeCircle.Edge() );
+			BRepBuilderAPI_MakeEdge edge34 = new BRepBuilderAPI_MakeEdge( p3, p4 );
+			if( edge34.IsDone() ) {
+				wireMaker.Add( edge34.Edge() );
+			}
 			BRepBuilderAPI_MakeEdge edge45 = new BRepBuilderAPI_MakeEdge( p4, p5 );
 			if( edge45.IsDone() ) {
 				wireMaker.Add( edge45.Edge() );
 			}
-			BRepBuilderAPI_MakeEdge edge50 = new BRepBuilderAPI_MakeEdge( p5, p0 );
-			if( edge50.IsDone() ) {
-				wireMaker.Add( edge50.Edge() );
+			wireMaker.Add( edgeCircle.Edge() ); // the arc 56
+			BRepBuilderAPI_MakeEdge edge67 = new BRepBuilderAPI_MakeEdge( p6, p7 );
+			if( edge67.IsDone() ) {
+				wireMaker.Add( edge67.Edge() );
+			}
+			BRepBuilderAPI_MakeEdge edge70 = new BRepBuilderAPI_MakeEdge( p7, p0 );
+			if( edge70.IsDone() ) {
+				wireMaker.Add( edge70.Edge() );
 			}
 			if( wireMaker.IsDone() == false ) {
 				return null;
