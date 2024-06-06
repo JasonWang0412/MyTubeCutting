@@ -14,13 +14,40 @@ namespace MyCADCore
 	internal class OCCTool
 	{
 		// make wire
-		internal static TopoDS_Wire MakeGeom2DWire( IGeom2D basicGeom, double dNeckin, gp_Pnt center, gp_Dir dir, double dRotation_deg )
+		internal static TopoDS_Wire MakeGeom2DWire( IGeom2D basicGeom, double dNeckin, double dRotation_deg, gp_Pnt center, gp_Dir dir )
 		{
 			// data protection
 			if( basicGeom == null || center == null || dir == null ) {
 				return null;
 			}
+			if( basicGeom.IsValid() == false ) {
+				return null;
+			}
 
+			// make wire on XOY plane
+			TopoDS_Wire wireXOY = MakeXOYGeom2DWire( basicGeom, dNeckin, dRotation_deg );
+			if( wireXOY == null ) {
+				return null;
+			}
+
+			// transform wire
+			TopoDS_Shape transformedShape = TransformXOYBaseShape( wireXOY, center, dir );
+			if( transformedShape == null ) {
+				return null;
+			}
+
+			TopoDS_Wire resultWire = TopoDS.ToWire( transformedShape );
+			return resultWire;
+		}
+
+		internal static TopoDS_Wire MakeXOYGeom2DWire( IGeom2D basicGeom, double dNeckin, double dRotation_deg )
+		{
+			// data protection
+			if( basicGeom == null || basicGeom.IsValid() == false ) {
+				return null;
+			}
+
+			// make wire on XOY plane
 			TopoDS_Wire wireXOY;
 			if( basicGeom.Type == Geom2D_Type.Circle ) {
 				wireXOY = MakeXOYCircleWire( (Geom2D_Circle)basicGeom, dNeckin );
@@ -38,20 +65,23 @@ namespace MyCADCore
 				wireXOY = MakeXOYDShapeWire( (Geom2D_DShape)basicGeom, dNeckin );
 			}
 			else {
-				return null;
+				wireXOY = null;
 			}
 			if( wireXOY == null ) {
 				return null;
 			}
-
-			// transform wire
-			TopoDS_Shape transformedShape = TransformXOYBaseShape( wireXOY, center, dir, dRotation_deg );
-			if( transformedShape == null ) {
-				return null;
+			if( dRotation_deg == 0 ) {
+				return wireXOY;
 			}
 
-			TopoDS_Wire resultWire = TopoDS.ToWire( transformedShape );
-			return resultWire;
+			// rotate shape aroud Z axis by dRotation
+			gp_Trsf transformR = new gp_Trsf();
+			transformR.SetRotation( new gp_Ax1( new gp_Pnt( 0, 0, 0 ), new gp_Dir( 0, 0, 1 ) ), dRotation_deg * Math.PI / 180 );
+			BRepBuilderAPI_Transform wireTrsf = new BRepBuilderAPI_Transform( wireXOY, transformR );
+			if( wireTrsf.IsDone() == false ) {
+				return null;
+			}
+			return TopoDS.ToWire( wireTrsf.Shape() );
 		}
 
 		internal static TopoDS_Wire MakeBendingNotchWire( IBendingNotchShape shape,
@@ -111,11 +141,12 @@ namespace MyCADCore
 		}
 
 		// transform XOY base shape
-		internal static TopoDS_Shape TransformXOYBaseShape( TopoDS_Shape shapeToTransform, gp_Pnt targetCenter, gp_Dir targetDir, double dRotation_deg )
+		internal static TopoDS_Shape TransformXOYBaseShape( TopoDS_Shape shapeToTransform, gp_Pnt targetCenter, gp_Dir targetDir )
 		{
-			// rotate shape aroud Z axis by dRotation
-			gp_Trsf transformR = new gp_Trsf();
-			transformR.SetRotation( new gp_Ax1( new gp_Pnt( 0, 0, 0 ), new gp_Dir( 0, 0, 1 ) ), dRotation_deg * Math.PI / 180 );
+			// data protection
+			if( shapeToTransform == null || targetCenter == null || targetDir == null ) {
+				return null;
+			}
 
 			// rotate shape from Z to dir
 			gp_Quaternion quaternion = new gp_Quaternion( new gp_Vec( new gp_Dir( 0, 0, 1 ) ), new gp_Vec( targetDir ) );
@@ -127,7 +158,7 @@ namespace MyCADCore
 			transformC.SetTranslation( new gp_Vec( targetCenter.XYZ() ) );
 
 			// combine all transformations
-			gp_Trsf trsfFinal = transformC.Multiplied( transformD ).Multiplied( transformR );
+			gp_Trsf trsfFinal = transformC.Multiplied( transformD );
 			BRepBuilderAPI_Transform shapeTrsfFinal = new BRepBuilderAPI_Transform( shapeToTransform, trsfFinal );
 			if( shapeTrsfFinal.IsDone() == false ) {
 				return null;

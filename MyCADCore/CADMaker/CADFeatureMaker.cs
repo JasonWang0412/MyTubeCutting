@@ -21,7 +21,7 @@ namespace MyCADCore
 		public static TopoDS_Shape MakeResultTube( CADFeatureParamMap map )
 		{
 			// data protection
-			if( map == null ) {
+			if( map == null || map.FeatureMap == null ) {
 				return null;
 			}
 
@@ -224,8 +224,8 @@ namespace MyCADCore
 			gp_Dir dir = new gp_Dir( 0, -1, 0 ); // -Y axis, to flip to predicted orientation
 
 			// TODO: extend tp no-center-tunnel tube
-			TopoDS_Wire outerWire = OCCTool.MakeGeom2DWire( mainTubeParam.CrossSection.Shape, 0, center, dir, 0 );
-			TopoDS_Wire innerWire = OCCTool.MakeGeom2DWire( mainTubeParam.CrossSection.Shape, mainTubeParam.CrossSection.Thickness, center, dir, 0 );
+			TopoDS_Wire outerWire = OCCTool.MakeGeom2DWire( mainTubeParam.CrossSection.Shape, 0, 0, center, dir );
+			TopoDS_Wire innerWire = OCCTool.MakeGeom2DWire( mainTubeParam.CrossSection.Shape, mainTubeParam.CrossSection.Thickness, 0, center, dir );
 			if( outerWire == null || innerWire == null ) {
 				return null;
 			}
@@ -403,7 +403,7 @@ namespace MyCADCore
 			}
 
 			// make branch tube
-			TopoDS_Wire outerWire = OCCTool.MakeGeom2DWire( branchTubeParam.Shape, 0, center, dir, branchTubeParam.SelfRotateAngle_deg );
+			TopoDS_Wire outerWire = OCCTool.MakeGeom2DWire( branchTubeParam.Shape, 0, branchTubeParam.SelfRotateAngle_deg, center, dir );
 			if( outerWire == null ) {
 				return null;
 			}
@@ -432,21 +432,13 @@ namespace MyCADCore
 		{
 			// get the main tube size after rotation (ON XY PLANE)
 			// 1. make the wire
-			TopoDS_Wire mainTubeWire = OCCTool.MakeGeom2DWire( mainTubeParam.CrossSection.Shape, 0, new gp_Pnt( 0, 0, 0 ), new gp_Dir( 0, 0, 1 ), 0 );
+			TopoDS_Wire mainTubeWire = OCCTool.MakeXOYGeom2DWire( mainTubeParam.CrossSection.Shape, 0, bendingNotchParam.BAngle_deg );
 			if( mainTubeWire == null ) {
 				return null;
 			}
 
-			// 2. rotate the wire (ON XY PLANE ALONG +Z)
-			gp_Trsf trsfR = new gp_Trsf();
-			trsfR.SetRotation( new gp_Ax1( new gp_Pnt( 0, 0, 0 ), new gp_Dir( 0, 0, 1 ) ), bendingNotchParam.BAngle_deg * Math.PI / 180 );
-			BRepBuilderAPI_Transform transformR = new BRepBuilderAPI_Transform( mainTubeWire, trsfR );
-			if( transformR.IsDone() == false ) {
-				return null;
-			}
-
-			// 3. get the extrema, there might meet some bug, ref: AUTO-12540
-			BoundingBox boundingBox = OCCTool.GetBoundingBox( transformR.Shape() );
+			// 2. get the extrema, there might meet some bug, ref: AUTO-12540
+			BoundingBox boundingBox = OCCTool.GetBoundingBox( mainTubeWire );
 			if( boundingBox == null ) {
 				return null;
 			}
