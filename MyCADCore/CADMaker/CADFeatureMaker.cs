@@ -523,12 +523,13 @@ namespace MyCADCore
 			double minZ = boundingBox.MinY; // taking Y here
 			double centerX = 0;
 			double centerY = bendingNotchParam.YPos;
-			double centerZ = minZ + bendingNotchParam.GapFromButtom + reliefHole.Width / 2;
+			double centerZ = minZ + bendingNotchParam.GapFromButtom + reliefHole.Height / 2;
 			gp_Pnt center = new gp_Pnt( centerX, centerY, centerZ );
 			GetBendingNotchDir( bendingNotchParam.BAngle_deg, out gp_Dir dir );
 
 			// make the relief hole wire
-			TopoDS_Wire reliefHoleWire = OCCTool.MakeGeom2DWire( new Geom2D_Rectangle( reliefHole.Width, reliefHole.Height, reliefHole.Fillet ), 0, 0, center, dir );
+			// the width and wire should be switched here
+			TopoDS_Wire reliefHoleWire = OCCTool.MakeGeom2DWire( new Geom2D_Rectangle( reliefHole.Height, reliefHole.Width, reliefHole.Fillet ), 0, 0, center, dir );
 			if( reliefHoleWire == null ) {
 				return null;
 			}
@@ -564,7 +565,7 @@ namespace MyCADCore
 			GetBendingNotchDir( bendingNotchParam.BAngle_deg + 90, out gp_Dir dir );
 
 			// make the relief hole wire
-			// the width and wire should be exchange here, and the hole width should be doubled
+			// the width and wire should be switched here, and the hole width should be doubled
 			TopoDS_Wire reliefHoleWire1 = OCCTool.MakeGeom2DWire( new Geom2D_Rectangle( reliefHole.Height * 2, reliefHole.Width, reliefHole.Fillet ), 0, 0, center1, dir );
 			TopoDS_Wire reliefHoleWire2 = OCCTool.MakeGeom2DWire( new Geom2D_Rectangle( reliefHole.Height * 2, reliefHole.Width, reliefHole.Fillet ), 0, 0, center2, dir );
 			if( reliefHoleWire1 == null || reliefHoleWire2 == null ) {

@@ -441,14 +441,15 @@ namespace MyCADCore
 		static TopoDS_Wire MakeXOYOvalWire( Geom2D_Oval param, double dNeckin )
 		{
 			// get width and height
-			double width = param.Width - 2 * dNeckin;
-			double height = param.Height - 2 * dNeckin;
-			if( width <= 0 || height <= 0 ) {
+			double dMajor = Math.Max( param.Width, param.Height ) - 2 * dNeckin;
+			double dMinor = Math.Min( param.Width, param.Height ) - 2 * dNeckin;
+			bool isVertical = param.Width < param.Height;
+			if( dMajor <= 0 || dMinor <= 0 ) {
 				return null;
 			}
 
 			// make oval edge on XY plane
-			gp_Elips gpOval = new gp_Elips( new gp_Ax2( new gp_Pnt( 0, 0, 0 ), new gp_Dir( 0, 0, 1 ) ), width / 2, height / 2 );
+			gp_Elips gpOval = new gp_Elips( new gp_Ax2( new gp_Pnt( 0, 0, 0 ), new gp_Dir( 0, 0, 1 ) ), dMajor / 2, dMinor / 2 );
 			BRepBuilderAPI_MakeEdge edgeMaker = new BRepBuilderAPI_MakeEdge( gpOval, 0, Math.PI * 2 );
 			if( edgeMaker.IsDone() == false ) {
 				return null;
@@ -459,7 +460,18 @@ namespace MyCADCore
 			if( wireMaker.IsDone() == false ) {
 				return null;
 			}
-			return wireMaker.Wire();
+			if( isVertical == false ) {
+				return wireMaker.Wire();
+			}
+
+			// rotate shape around Z axis by 90 degree
+			gp_Trsf transformR = new gp_Trsf();
+			transformR.SetRotation( new gp_Ax1( new gp_Pnt( 0, 0, 0 ), new gp_Dir( 0, 0, 1 ) ), Math.PI / 2 );
+			BRepBuilderAPI_Transform wireTrsf = new BRepBuilderAPI_Transform( wireMaker.Wire(), transformR );
+			if( wireTrsf.IsDone() == false ) {
+				return null;
+			}
+			return TopoDS.ToWire( wireTrsf.Shape() );
 		}
 
 		static TopoDS_Wire MakeXOYFlatOvalWire( Geom2D_FlatOval param, double dNeckin )
