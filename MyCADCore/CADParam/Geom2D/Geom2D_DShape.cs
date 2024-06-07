@@ -7,11 +7,11 @@ namespace MyCADCore
 	[Serializable]
 	public class Geom2D_DShape : IGeom2D
 	{
-		public Geom2D_DShape( double width, double height, double filletRadius )
+		public Geom2D_DShape( double width, double height, double fillet )
 		{
 			Width = width;
 			Height = height;
-			FilletRadius = filletRadius;
+			Fillet = fillet;
 		}
 
 		[Browsable( false )]
@@ -35,8 +35,8 @@ namespace MyCADCore
 			get; set;
 		}
 
-		[MyDisplayName( "Geom2D_DShape", "FilletRadius" )]
-		public double FilletRadius
+		[MyDisplayName( "Geom2D_DShape", "Fillet" )]
+		public double Fillet
 		{
 			get; set;
 		}
@@ -44,17 +44,17 @@ namespace MyCADCore
 		public bool IsValid()
 		{
 			// width radius must be positive
-			if( Width <= 0 || FilletRadius <= 0 ) {
+			if( Width <= 0 || Fillet <= 0 ) {
 				return false;
 			}
 
 			// fillet radius should be less than width/2
-			if( FilletRadius >= Width / 2 ) {
+			if( Fillet >= Width / 2 ) {
 				return false;
 			}
 
 			// height should be greater than fillet radius + width/2
-			if( Height <= FilletRadius + Width / 2 ) {
+			if( Height <= Fillet + Width / 2 ) {
 				return false;
 			}
 

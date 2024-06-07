@@ -530,7 +530,7 @@ namespace MyCADCore
 		static TopoDS_Wire MakeXOYDShapeWire( Geom2D_DShape param, double dNeckin )
 		{
 			// get fillet, D radius and flat height
-			double fillet = param.FilletRadius - dNeckin;
+			double fillet = param.Fillet - dNeckin;
 			if( fillet < 0 ) {
 				fillet = 0;
 			}
