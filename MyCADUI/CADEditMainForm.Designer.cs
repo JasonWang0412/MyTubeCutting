@@ -37,6 +37,7 @@
 			this.m_msMainMenu = new System.Windows.Forms.MenuStrip();
 			this.m_tsmiFile = new System.Windows.Forms.ToolStripMenuItem();
 			this.m_tsmiExport = new System.Windows.Forms.ToolStripMenuItem();
+			this.openbetaToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.m_tsmiView = new System.Windows.Forms.ToolStripMenuItem();
 			this.m_tsmiX_Pos = new System.Windows.Forms.ToolStripMenuItem();
 			this.m_tsmiX_Neg = new System.Windows.Forms.ToolStripMenuItem();
@@ -68,8 +69,6 @@
 			this.m_tsmiBendingNotch_VShape = new System.Windows.Forms.ToolStripMenuItem();
 			this.m_tsmiBendingNotch_BothSide = new System.Windows.Forms.ToolStripMenuItem();
 			this.m_tsmiBendingNotch_OneSide = new System.Windows.Forms.ToolStripMenuItem();
-			this.openbetaToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.m_panViewer.SuspendLayout();
 			this.m_panObjBrowser.SuspendLayout();
 			this.m_panPropertyBar.SuspendLayout();
 			this.m_panBackGnd.SuspendLayout();
@@ -78,7 +77,6 @@
 			// 
 			// m_panViewer
 			// 
-			this.m_panViewer.Controls.Add(this.m_lblWarnning);
 			this.m_panViewer.Location = new System.Drawing.Point(0, 0);
 			this.m_panViewer.Name = "m_panViewer";
 			this.m_panViewer.Size = new System.Drawing.Size(500, 600);
@@ -91,10 +89,10 @@
 			// m_lblWarnning
 			// 
 			this.m_lblWarnning.AutoSize = true;
-			this.m_lblWarnning.BackColor = System.Drawing.Color.Black;
+			this.m_lblWarnning.BackColor = System.Drawing.SystemColors.Control;
 			this.m_lblWarnning.Font = new System.Drawing.Font("PMingLiU", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
 			this.m_lblWarnning.ForeColor = System.Drawing.Color.Red;
-			this.m_lblWarnning.Location = new System.Drawing.Point(12, 19);
+			this.m_lblWarnning.Location = new System.Drawing.Point(0, 240);
 			this.m_lblWarnning.Name = "m_lblWarnning";
 			this.m_lblWarnning.Size = new System.Drawing.Size(0, 16);
 			this.m_lblWarnning.TabIndex = 0;
@@ -117,6 +115,7 @@
 			// 
 			// m_panPropertyBar
 			// 
+			this.m_panPropertyBar.Controls.Add(this.m_lblWarnning);
 			this.m_panPropertyBar.Controls.Add(this.m_propgrdPropertyBar);
 			this.m_panPropertyBar.Location = new System.Drawing.Point(500, 300);
 			this.m_panPropertyBar.Name = "m_panPropertyBar";
@@ -168,9 +167,16 @@
 			// m_tsmiExport
 			// 
 			this.m_tsmiExport.Name = "m_tsmiExport";
-			this.m_tsmiExport.Size = new System.Drawing.Size(180, 22);
+			this.m_tsmiExport.Size = new System.Drawing.Size(143, 22);
 			this.m_tsmiExport.Text = "Export";
 			this.m_tsmiExport.Click += new System.EventHandler(this.m_tsmiExport_Click);
+			// 
+			// openbetaToolStripMenuItem
+			// 
+			this.openbetaToolStripMenuItem.Name = "openbetaToolStripMenuItem";
+			this.openbetaToolStripMenuItem.Size = new System.Drawing.Size(143, 22);
+			this.openbetaToolStripMenuItem.Text = "Open (beta)";
+			this.openbetaToolStripMenuItem.Click += new System.EventHandler(this.openbetaToolStripMenuItem_Click);
 			// 
 			// m_tsmiView
 			// 
@@ -416,13 +422,6 @@
 			this.m_tsmiBendingNotch_OneSide.Text = "One Side";
 			this.m_tsmiBendingNotch_OneSide.Click += new System.EventHandler(this.m_tsmiBendingNotch_OneSide_Click);
 			// 
-			// openbetaToolStripMenuItem
-			// 
-			this.openbetaToolStripMenuItem.Name = "openbetaToolStripMenuItem";
-			this.openbetaToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-			this.openbetaToolStripMenuItem.Text = "Open (beta)";
-			this.openbetaToolStripMenuItem.Click += new System.EventHandler(this.openbetaToolStripMenuItem_Click);
-			// 
 			// CADEditMainForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -434,10 +433,9 @@
 			this.MainMenuStrip = this.m_msMainMenu;
 			this.Name = "CADEditMainForm";
 			this.Text = "Form1";
-			this.m_panViewer.ResumeLayout(false);
-			this.m_panViewer.PerformLayout();
 			this.m_panObjBrowser.ResumeLayout(false);
 			this.m_panPropertyBar.ResumeLayout(false);
+			this.m_panPropertyBar.PerformLayout();
 			this.m_panBackGnd.ResumeLayout(false);
 			this.m_msMainMenu.ResumeLayout(false);
 			this.m_msMainMenu.PerformLayout();
