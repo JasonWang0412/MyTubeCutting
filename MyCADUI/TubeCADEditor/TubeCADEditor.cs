@@ -359,7 +359,12 @@ namespace MyCADUI
 			}
 			else if( type == EditType.ModifyCADFeature ) {
 
-				// no need to update object browser, property bar
+				// no need to update object browser
+
+				// update property bar
+				// this is to ensure the dynamic property reloaded
+				ShowObjectProperty( szObjectName );
+
 				// update cad feature display
 				if( m_CADFeatureParamMap.FeatureMap.ContainsKey( szObjectName ) == false || m_CADFeatureParamMap.FeatureMap[ szObjectName ] == null ) {
 					CADEditErrorEvent?.Invoke( CADEditErrorCode.NoSelectedObject );

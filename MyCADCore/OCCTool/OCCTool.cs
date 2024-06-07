@@ -11,6 +11,13 @@ using System.Collections.Generic;
 
 namespace MyCADCore
 {
+	internal enum PrismDir
+	{
+		Positive,
+		Negative,
+		Both,
+	}
+
 	internal class OCCTool
 	{
 		// make wire
@@ -167,11 +174,11 @@ namespace MyCADCore
 		}
 
 		// make prism
-		// a lot of bug happens when using Inf, not recommended, ref: AUTO-12540
-		internal static TopoDS_Shape MakeConcretePrismByWire( TopoDS_Wire baseWire, gp_Vec vec, bool isInf )
+		// a lot of bug happens when using Inf prism, not recommended, ref: AUTO-12540
+		internal static TopoDS_Shape MakeConcretePrismByWire( TopoDS_Wire baseWire, gp_Dir dir, double dSize, PrismDir prismDir )
 		{
 			// data protection
-			if( baseWire == null ) {
+			if( baseWire == null || dir == null || dSize <= 0 ) {
 				return null;
 			}
 
@@ -180,20 +187,68 @@ namespace MyCADCore
 			if( branchFaceMaker.IsDone() == false ) {
 				return null;
 			}
+			TopoDS_Face branchFace = branchFaceMaker.Face();
 
-			// make prism
-			BRepPrimAPI_MakePrism branchTubeMaker;
-			if( isInf ) {
-				gp_Dir dir = new gp_Dir( vec );
-				branchTubeMaker = new BRepPrimAPI_MakePrism( branchFaceMaker.Shape(), dir, true );
+			// translate and scale direction
+			gp_Vec prismVec = new gp_Vec( dir );
+			if( prismDir == PrismDir.Both ) {
+
+				// translate center
+				gp_Trsf trsf = new gp_Trsf();
+				gp_Vec transVec = new gp_Vec( dir );
+				transVec.Multiply( -dSize );
+				trsf.SetTranslation( transVec );
+				BRepBuilderAPI_Transform transform = new BRepBuilderAPI_Transform( branchFace, trsf );
+				if( transform.IsDone() == false ) {
+					return null;
+				}
+				branchFace = TopoDS.ToFace( transform.Shape() );
+				prismVec.Multiply( dSize * 2 );
+			}
+			else if( prismDir == PrismDir.Negative ) {
+				prismVec.Multiply( -dSize );
 			}
 			else {
-				branchTubeMaker = new BRepPrimAPI_MakePrism( branchFaceMaker.Shape(), vec );
+				prismVec.Multiply( dSize );
 			}
+
+			// make prism
+			BRepPrimAPI_MakePrism branchTubeMaker = new BRepPrimAPI_MakePrism( branchFace, prismVec );
 			if( branchTubeMaker.IsDone() == false ) {
 				return null;
 			}
 			return branchTubeMaker.Shape();
+		}
+
+		internal static TopoDS_Shape MakeCompound( List<TopoDS_Shape> shapeList )
+		{
+			// data protection
+			if( shapeList == null || shapeList.Count == 0 ) {
+				return null;
+			}
+
+			try {
+				// create compound
+				TopoDS_Compound compound = new TopoDS_Compound();
+				TopoDS_Shape compoundShape = compound;
+				BRep_Builder builder = new BRep_Builder();
+				builder.MakeCompound( ref compound );
+
+				// add all shapes to compound
+				foreach( TopoDS_Shape oneShape in shapeList ) {
+					if( oneShape == null ) {
+						continue;
+					}
+					builder.Add( ref compoundShape, oneShape );
+				}
+				if( compound.elementsAsList.Count == 0 ) {
+					return null;
+				}
+				return compound;
+			}
+			catch( Exception e ) {
+				return null;
+			}
 		}
 
 		// make array
@@ -207,63 +262,54 @@ namespace MyCADCore
 				return oneFeature;
 			}
 
-			try {
-				// create compound
-				TopoDS_Compound compound = new TopoDS_Compound();
-				TopoDS_Shape compoundShape = compound;
-				BRep_Builder builder = new BRep_Builder();
-				builder.MakeCompound( ref compound );
+			// make linear array
+			List<TopoDS_Shape> linearArrayShapeList = new List<TopoDS_Shape>();
+			linearArrayShapeList.Add( oneFeature );
+			for( int i = 1; i < arrayParam.LinearCount; i++ ) {
 
-				// make linear array
-				List<TopoDS_Shape> linearArrayShapeList = new List<TopoDS_Shape>();
-				linearArrayShapeList.Add( oneFeature );
-				for( int i = 1; i < arrayParam.LinearCount; i++ ) {
+				// caluculate the linear offset distance
+				double dOffset = arrayParam.LinearDistance * i * ( arrayParam.LinearDirection == ArrayDirection.Positive ? 1 : -1 );
 
-					// caluculate the linear offset distance
-					double dOffset = arrayParam.LinearDistance * i * ( arrayParam.LinearDirection == ArrayDirection.Positive ? 1 : -1 );
+				// get the transformation along Y axis
+				gp_Trsf trsf = new gp_Trsf();
+				trsf.SetTranslation( new gp_Vec( 0, dOffset, 0 ) );
+				TopoDS_Shape oneLinearCopy = oneFeature.Moved( new TopLoc_Location( trsf ) );
 
-					// get the transformation along Y axis
-					gp_Trsf trsf = new gp_Trsf();
-					trsf.SetTranslation( new gp_Vec( 0, dOffset, 0 ) );
-					TopoDS_Shape oneLinearCopy = oneFeature.Moved( new TopLoc_Location( trsf ) );
-
-					linearArrayShapeList.Add( oneLinearCopy );
-				}
-
-				// make angular array
-				List<List<TopoDS_Shape>> angularArrayShapeList = new List<List<TopoDS_Shape>>();
-				angularArrayShapeList.Add( linearArrayShapeList );
-				for( int i = 1; i < arrayParam.AngularCount; i++ ) {
-
-					// calculate the angular offset distance
-					double dAngle_Deg = arrayParam.AngularDistance_Deg * i * ( arrayParam.AngularDirection == ArrayDirection.Positive ? 1 : -1 );
-
-					// get the transformation around Y axis
-					gp_Trsf trsf = new gp_Trsf();
-					trsf.SetRotation( new gp_Ax1( new gp_Pnt( 0, 0, 0 ), new gp_Dir( 0, -1, 0 ) ), dAngle_Deg * Math.PI / 180 );
-
-					List<TopoDS_Shape> oneAngularArray = new List<TopoDS_Shape>();
-					foreach( TopoDS_Shape oneLinearCopy in linearArrayShapeList ) {
-						TopoDS_Shape oneAngularCopy = oneLinearCopy.Moved( new TopLoc_Location( trsf ) );
-						oneAngularArray.Add( oneAngularCopy );
-					}
-					angularArrayShapeList.Add( oneAngularArray );
-				}
-
-				// add all shapes to compound
-				foreach( List<TopoDS_Shape> oneAngularArray in angularArrayShapeList ) {
-					foreach( TopoDS_Shape oneLinearCopy in oneAngularArray ) {
-						builder.Add( ref compoundShape, oneLinearCopy );
-					}
-				}
-
-				return compound;
+				linearArrayShapeList.Add( oneLinearCopy );
 			}
 
-			// if any exception occurs, return the original shape
-			catch( Exception ex ) {
+			// make angular array
+			List<List<TopoDS_Shape>> angularArrayShapeList = new List<List<TopoDS_Shape>>();
+			angularArrayShapeList.Add( linearArrayShapeList );
+			for( int i = 1; i < arrayParam.AngularCount; i++ ) {
+
+				// calculate the angular offset distance
+				double dAngle_Deg = arrayParam.AngularDistance_Deg * i * ( arrayParam.AngularDirection == ArrayDirection.Positive ? 1 : -1 );
+
+				// get the transformation around Y axis
+				gp_Trsf trsf = new gp_Trsf();
+				trsf.SetRotation( new gp_Ax1( new gp_Pnt( 0, 0, 0 ), new gp_Dir( 0, -1, 0 ) ), dAngle_Deg * Math.PI / 180 );
+
+				List<TopoDS_Shape> oneAngularArray = new List<TopoDS_Shape>();
+				foreach( TopoDS_Shape oneLinearCopy in linearArrayShapeList ) {
+					TopoDS_Shape oneAngularCopy = oneLinearCopy.Moved( new TopLoc_Location( trsf ) );
+					oneAngularArray.Add( oneAngularCopy );
+				}
+				angularArrayShapeList.Add( oneAngularArray );
+			}
+
+			// make coumpound
+			List<TopoDS_Shape> allShapeList = new List<TopoDS_Shape>();
+			foreach( List<TopoDS_Shape> oneAngularArray in angularArrayShapeList ) {
+				foreach( TopoDS_Shape oneLinearCopy in oneAngularArray ) {
+					allShapeList.Add( oneLinearCopy );
+				}
+			}
+			TopoDS_Shape compound = MakeCompound( allShapeList );
+			if( compound == null ) {
 				return oneFeature;
 			}
+			return compound;
 		}
 
 		// make wire

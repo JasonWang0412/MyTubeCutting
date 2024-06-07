@@ -386,28 +386,27 @@ namespace MyCADCore
 		static TopoDS_Shape MakeBranchTubePrism( CADft_BranchTubeParam branchTubeParam )
 		{
 			// calculate prism vector
-			gp_Pnt center;
+			gp_Pnt center = new gp_Pnt( branchTubeParam.Center_X, branchTubeParam.Center_Y, branchTubeParam.Center_Z );
 			GetBranchTubeDir( branchTubeParam.AAngle_deg, branchTubeParam.BAngle_deg, out gp_Dir dir );
-			gp_Vec prismVec = new gp_Vec( dir );
-			if( branchTubeParam.IntersectDir == BranchIntersectDir.Positive
-				|| branchTubeParam.IntersectDir == BranchIntersectDir.Negative ) {
-				center = new gp_Pnt( branchTubeParam.Center_X, branchTubeParam.Center_Y, branchTubeParam.Center_Z );
-				prismVec.Multiply( branchTubeParam.IntersectDir == BranchIntersectDir.Positive ? branchTubeParam.Length : -branchTubeParam.Length );
-			}
-			else {
-				center = new gp_Pnt(
-					branchTubeParam.Center_X - dir.x * branchTubeParam.Length,
-					branchTubeParam.Center_Y - dir.y * branchTubeParam.Length,
-					branchTubeParam.Center_Z - dir.z * branchTubeParam.Length );
-				prismVec.Multiply( branchTubeParam.Length * 2 );
-			}
 
 			// make branch tube
-			TopoDS_Wire outerWire = OCCTool.MakeGeom2DWire( branchTubeParam.Shape, 0, branchTubeParam.SelfRotateAngle_deg, center, dir );
-			if( outerWire == null ) {
+			TopoDS_Wire baseWire = OCCTool.MakeGeom2DWire( branchTubeParam.Shape, 0, branchTubeParam.SelfRotateAngle_deg, center, dir );
+			if( baseWire == null ) {
 				return null;
 			}
-			return OCCTool.MakeConcretePrismByWire( outerWire, prismVec, false );
+
+			// make prism
+			PrismDir prismDir;
+			if( branchTubeParam.IntersectDir == BranchIntersectDir.Both ) {
+				prismDir = PrismDir.Both;
+			}
+			else if( branchTubeParam.IntersectDir == BranchIntersectDir.Negative ) {
+				prismDir = PrismDir.Negative;
+			}
+			else {
+				prismDir = PrismDir.Positive;
+			}
+			return OCCTool.MakeConcretePrismByWire( baseWire, dir, branchTubeParam.Length, prismDir );
 		}
 
 		static void GetBranchTubeDir( double dA_deg, double dB_deg, out gp_Dir dir )
@@ -456,35 +455,136 @@ namespace MyCADCore
 			}
 
 			// make the bending notch
-			// 1. get the direction and size
-			// bending notch can use bounding box size for both display and cut
 			GetBendingNotchDir( bendingNotchParam.BAngle_deg, out gp_Dir dir );
 			GetMainTubeBoundingBox( mainTubeParam, out double dSize );
-
-			// 2. translate the notch wire to the start of prism
-			gp_Trsf trsf = new gp_Trsf();
-			gp_Vec transVec = new gp_Vec( dir );
-			transVec.Multiply( -dSize );
-			trsf.SetTranslation( transVec );
-			BRepBuilderAPI_Transform transform = new BRepBuilderAPI_Transform( notchWire, trsf );
-			if( transform.IsDone() == false ) {
-				return null;
-			}
-
-			// 3. make the prism
-			gp_Vec prismVec = new gp_Vec( dir );
-			prismVec.Multiply( dSize * 2 );
-			TopoDS_Shape bendingNotch = OCCTool.MakeConcretePrismByWire( TopoDS.ToWire( transform.Shape() ), prismVec, false );
+			TopoDS_Shape bendingNotch = OCCTool.MakeConcretePrismByWire( notchWire, dir, dSize, PrismDir.Both );
 			if( bendingNotch == null ) {
 				return null;
 			}
 
+			// make relief hole
+			TopoDS_Shape notchWithReliefHole = bendingNotch;
+			TopoDS_Shape reliefHole = MakeReliefHole( bendingNotchParam, mainTubeParam );
+			if( reliefHole != null ) {
+
+				// fuse the bending notch and relief hole
+				BRepAlgoAPI_Fuse fuse = new BRepAlgoAPI_Fuse( bendingNotch, reliefHole );
+				if( fuse.IsDone() != false ) {
+					notchWithReliefHole = fuse.Shape();
+				}
+			}
+
 			// make array
-			TopoDS_Shape arrayBendingNotch = OCCTool.MakeArrayCompound( bendingNotch, bendingNotchParam.ArrayParam );
+			TopoDS_Shape arrayBendingNotch = OCCTool.MakeArrayCompound( notchWithReliefHole, bendingNotchParam.ArrayParam );
 			if( arrayBendingNotch == null ) {
-				return bendingNotch;
+				return notchWithReliefHole;
 			}
 			return arrayBendingNotch;
+		}
+
+		static TopoDS_Shape MakeReliefHole( CADft_BendingNotchParam bendingNotchParam, CADft_MainTubeParam mainTubeParam )
+		{
+			if( bendingNotchParam.Shape.Type != BendingNotch_Type.VShape ) {
+				return null;
+			}
+
+			ReliefHoleType reliefHoleType = ( (BN_VShape)bendingNotchParam.Shape ).ReliefHoleType;
+			if( reliefHoleType == ReliefHoleType.No ) {
+				return null;
+			}
+
+			if( reliefHoleType == ReliefHoleType.Side ) {
+				return MakeSideReliefHole( bendingNotchParam, mainTubeParam );
+			}
+			else if( reliefHoleType == ReliefHoleType.Buttom ) {
+				return MakeButtomReliefHole( bendingNotchParam, mainTubeParam );
+			}
+			else {
+				return null;
+			}
+		}
+
+		static TopoDS_Shape MakeSideReliefHole( CADft_BendingNotchParam bendingNotchParam, CADft_MainTubeParam mainTubeParam )
+		{
+			ReliefHole reliefHole = ( (BN_VShape)bendingNotchParam.Shape ).ReliefHole;
+			if( reliefHole == null ) {
+				return null;
+			}
+
+			// get the relief hole position
+			TopoDS_Wire mainTubeWire = OCCTool.MakeXOYGeom2DWire( mainTubeParam.CrossSection.Shape, 0, bendingNotchParam.BAngle_deg );
+			if( mainTubeWire == null ) {
+				return null;
+			}
+			BoundingBox boundingBox = OCCTool.GetBoundingBox( mainTubeWire );
+			if( boundingBox == null ) {
+				return null;
+			}
+			double minZ = boundingBox.MinY; // taking Y here
+			double centerX = 0;
+			double centerY = bendingNotchParam.YPos;
+			double centerZ = minZ + bendingNotchParam.GapFromButtom + reliefHole.Width / 2;
+			gp_Pnt center = new gp_Pnt( centerX, centerY, centerZ );
+			GetBendingNotchDir( bendingNotchParam.BAngle_deg, out gp_Dir dir );
+
+			// make the relief hole wire
+			TopoDS_Wire reliefHoleWire = OCCTool.MakeGeom2DWire( new Geom2D_Rectangle( reliefHole.Width, reliefHole.Height, reliefHole.Fillet ), 0, 0, center, dir );
+			if( reliefHoleWire == null ) {
+				return null;
+			}
+
+			// make the relief hole prism
+			GetMainTubeBoundingBox( mainTubeParam, out double dSize );
+			return OCCTool.MakeConcretePrismByWire( reliefHoleWire, dir, dSize, PrismDir.Both );
+		}
+
+		static TopoDS_Shape MakeButtomReliefHole( CADft_BendingNotchParam bendingNotchParam, CADft_MainTubeParam mainTubeParam )
+		{
+			ReliefHole reliefHole = ( (BN_VShape)bendingNotchParam.Shape ).ReliefHole;
+			if( reliefHole == null ) {
+				return null;
+			}
+
+			// get the relief hole position
+			TopoDS_Wire mainTubeWire = OCCTool.MakeXOYGeom2DWire( mainTubeParam.CrossSection.Shape, 0, bendingNotchParam.BAngle_deg );
+			if( mainTubeWire == null ) {
+				return null;
+			}
+			BoundingBox boundingBox = OCCTool.GetBoundingBox( mainTubeWire );
+			if( boundingBox == null ) {
+				return null;
+			}
+			double centerX1 = boundingBox.MinX; // taking Y here
+			double centerX2 = boundingBox.MaxX;
+			double centerY = bendingNotchParam.YPos;
+			gp_Pnt center1 = new gp_Pnt( centerX1, centerY, 0 );
+			gp_Pnt center2 = new gp_Pnt( centerX2, centerY, 0 );
+
+			// the relief hole direction is perpendicular to the bending notch direction
+			GetBendingNotchDir( bendingNotchParam.BAngle_deg + 90, out gp_Dir dir );
+
+			// make the relief hole wire
+			// the width and wire should be exchange here, and the hole width should be doubled
+			TopoDS_Wire reliefHoleWire1 = OCCTool.MakeGeom2DWire( new Geom2D_Rectangle( reliefHole.Height * 2, reliefHole.Width, reliefHole.Fillet ), 0, 0, center1, dir );
+			TopoDS_Wire reliefHoleWire2 = OCCTool.MakeGeom2DWire( new Geom2D_Rectangle( reliefHole.Height * 2, reliefHole.Width, reliefHole.Fillet ), 0, 0, center2, dir );
+			if( reliefHoleWire1 == null || reliefHoleWire2 == null ) {
+				return null;
+			}
+
+			// make the relief hole prism
+			GetMainTubeBoundingBox( mainTubeParam, out double dSize );
+			TopoDS_Shape reliefHoleShape1 = OCCTool.MakeConcretePrismByWire( reliefHoleWire1, dir, dSize, PrismDir.Both );
+			TopoDS_Shape reliefHoleShape2 = OCCTool.MakeConcretePrismByWire( reliefHoleWire2, dir, dSize, PrismDir.Both );
+			if( reliefHoleShape1 == null || reliefHoleShape2 == null ) {
+				return null;
+			}
+
+			// fuse the relief holes
+			BRepAlgoAPI_Fuse fuse = new BRepAlgoAPI_Fuse( reliefHoleShape1, reliefHoleShape2 );
+			if( fuse.IsDone() == false ) {
+				return null;
+			}
+			return fuse.Shape();
 		}
 
 		static AIS_Shape MakeBendingNotchAIS( CADft_BendingNotchParam bendingNotchParam, CADft_MainTubeParam mainTubeParam )

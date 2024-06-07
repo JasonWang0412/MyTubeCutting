@@ -51,6 +51,7 @@
     <Compile Include="CADParam\BendingNotch\BN_OneSide.cs" />
     <Compile Include="CADParam\BendingNotch\BN_VShape.cs" />
     <Compile Include="CADParam\BendingNotch\IBendingNotchShape.cs" />
+    <Compile Include="CADParam\BendingNotch\ReliefHole.cs" />
     <Compile Include="CADParam\BoundingBox\BoundingBox.cs" />
     <Compile Include="CADParam\CADFeatureParam\CADFeatureParamMap.cs" />
     <Compile Include="CADParam\CADFeatureParam\CADft_BendingNotchParam.cs" />
