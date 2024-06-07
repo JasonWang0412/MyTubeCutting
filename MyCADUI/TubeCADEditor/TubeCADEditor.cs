@@ -2,9 +2,13 @@
 using OCC.AIS;
 using OCC.gp;
 using OCC.Graphic3d;
+using OCC.STEPControl;
 using OCC.TopoDS;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Windows.Forms;
 using Utility;
 
@@ -249,12 +253,69 @@ namespace MyCADUI
 
 		internal void ExportStep()
 		{
+			// file directory
+			string szFileDir = Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "OutPut" );
+			Directory.CreateDirectory( szFileDir );
+
+			// save map file
+			string szMapFilePath = Path.Combine( szFileDir, "map.dat" );
+			using( FileStream stream = new FileStream( szMapFilePath, FileMode.Create ) ) {
+				BinaryFormatter formatter = new BinaryFormatter();
+				formatter.Serialize( stream, m_CADFeatureParamMap );
+			}
+
+			// make result tube
 			TopoDS_Shape resultTube = CADFeatureMaker.MakeResultTube( m_CADFeatureParamMap );
 			if( resultTube == null ) {
 				CADEditErrorEvent?.Invoke( CADEditErrorCode.MakeShapeFailed );
 				return;
 			}
-			ExportHelper.ExportStep( resultTube, "ResultTube" );
+
+			// save step file
+			string szStepFilePath = Path.Combine( szFileDir, "result.stp" );
+			STEPControl_Writer writer = new STEPControl_Writer();
+			writer.Transfer( resultTube, STEPControl_StepModelType.STEPControl_AsIs );
+			writer.Write( szStepFilePath );
+		}
+
+		internal void OpenMapFile()
+		{
+			CADFeatureParamMap backupMap = CloneHelper.Clone( m_CADFeatureParamMap );
+
+			try {
+				// load map file
+				string szFileDir = Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "OutPut" );
+				string szFilePath = Path.Combine( szFileDir, "map.dat" );
+				using( FileStream stream = new FileStream( szFilePath, FileMode.Open ) ) {
+					BinaryFormatter formatter = new BinaryFormatter();
+					m_CADFeatureParamMap = formatter.Deserialize( stream ) as CADFeatureParamMap;
+				}
+			}
+			catch {
+				m_CADFeatureParamMap = backupMap;
+				return;
+			}
+
+			// update object browser
+			ReconstructObjectBrowser( string.Empty );
+
+			// update property bar
+			ShowObjectProperty( string.Empty );
+
+			// update cad feature display
+			m_Viewer.GetAISContext().RemoveAll( false );
+			m_CADFeatureNameAISMap.Clear();
+			foreach( var pair in m_CADFeatureParamMap.FeatureMap ) {
+				AIS_Shape cadFeatureAIS = CADFeatureMaker.MakeCADFeatureAIS( pair.Value, m_CADFeatureParamMap.MainTubeParam );
+				if( cadFeatureAIS == null ) {
+					CADEditErrorEvent?.Invoke( CADEditErrorCode.MakeShapeFailed );
+					return;
+				}
+				m_CADFeatureNameAISMap[ pair.Key ] = cadFeatureAIS;
+			}
+
+			// update result tube display
+			UpdateAndRedrawResultTube();
 		}
 
 		bool CheckFeatureSpecialCase( ICADFeatureParam cadFeatureParam )

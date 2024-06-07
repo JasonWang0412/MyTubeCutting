@@ -4,8 +4,6 @@ using System.ComponentModel;
 
 namespace MyCADCore
 {
-
-	// TODO: dont know shit about this
 	[Serializable]
 	public class CADft_MainTubeParam : ICADFeatureParam
 	{

@@ -68,6 +68,7 @@
 			this.m_tsmiBendingNotch_VShape = new System.Windows.Forms.ToolStripMenuItem();
 			this.m_tsmiBendingNotch_BothSide = new System.Windows.Forms.ToolStripMenuItem();
 			this.m_tsmiBendingNotch_OneSide = new System.Windows.Forms.ToolStripMenuItem();
+			this.openbetaToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.m_panViewer.SuspendLayout();
 			this.m_panObjBrowser.SuspendLayout();
 			this.m_panPropertyBar.SuspendLayout();
@@ -158,7 +159,8 @@
 			// m_tsmiFile
 			// 
 			this.m_tsmiFile.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.m_tsmiExport});
+            this.m_tsmiExport,
+            this.openbetaToolStripMenuItem});
 			this.m_tsmiFile.Name = "m_tsmiFile";
 			this.m_tsmiFile.Size = new System.Drawing.Size(38, 20);
 			this.m_tsmiFile.Text = "File";
@@ -166,7 +168,7 @@
 			// m_tsmiExport
 			// 
 			this.m_tsmiExport.Name = "m_tsmiExport";
-			this.m_tsmiExport.Size = new System.Drawing.Size(111, 22);
+			this.m_tsmiExport.Size = new System.Drawing.Size(180, 22);
 			this.m_tsmiExport.Text = "Export";
 			this.m_tsmiExport.Click += new System.EventHandler(this.m_tsmiExport_Click);
 			// 
@@ -414,6 +416,13 @@
 			this.m_tsmiBendingNotch_OneSide.Text = "One Side";
 			this.m_tsmiBendingNotch_OneSide.Click += new System.EventHandler(this.m_tsmiBendingNotch_OneSide_Click);
 			// 
+			// openbetaToolStripMenuItem
+			// 
+			this.openbetaToolStripMenuItem.Name = "openbetaToolStripMenuItem";
+			this.openbetaToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.openbetaToolStripMenuItem.Text = "Open (beta)";
+			this.openbetaToolStripMenuItem.Click += new System.EventHandler(this.openbetaToolStripMenuItem_Click);
+			// 
 			// CADEditMainForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -480,6 +489,7 @@
 		private System.Windows.Forms.ToolStripMenuItem m_tsmiUndo;
 		private System.Windows.Forms.ToolStripMenuItem m_tsmiRedo;
 		private System.Windows.Forms.Label m_lblWarnning;
+		private System.Windows.Forms.ToolStripMenuItem openbetaToolStripMenuItem;
 	}
 }
 
