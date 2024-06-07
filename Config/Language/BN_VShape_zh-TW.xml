@@ -2,4 +2,6 @@
 <ResMap>
   <Message ID="BendingAngle_deg" Content="折彎角度" />
   <Message ID="JointGapLength" Content="拼接口長度" />
+  <Message ID="ReliefHoleType" Content="釋放孔類型" />
+  <Message ID="ReliefHole" Content="釋放孔參數" />
 </ResMap>
