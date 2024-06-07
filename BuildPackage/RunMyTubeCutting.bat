@@ -1,4 +1,4 @@
 ::Run clAPP.exe
 echo Opening MyTubeCutting...
-start MyTubeCutting\MyCADUI.exe /qb
+start Release\MyCADUI.exe /qb
 Exit
