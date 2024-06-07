@@ -890,7 +890,7 @@ namespace MyCADCore
 				return 0;
 			}
 
-			// TODO: the distance API is not stable, this might from OCC, ref: AUTO-12540
+			// the distance API is not stable, this might from OCC, ref: AUTO-12540
 			BRepExtrema_DistShapeShape dss = new BRepExtrema_DistShapeShape( boundaryTestFace, Shape );
 			dss.Perform();
 			double dis = dss.Value();
