@@ -318,9 +318,8 @@ namespace MyCADUI
 			else if( type == EditType.AddCADFeature ) {
 
 				// update object browser
-				TreeNode newNode = m_MainTubeNode.Nodes.Add( szObjectName, szObjectName );
-				m_treeObjBrowser.Focus();
-				m_treeObjBrowser.SelectedNode = newNode;
+				// reconstruct object browser here to ensure the order of the node in case of undo remove
+				ReconstructObjectBrowser( szObjectName );
 
 				// update property bar
 				ShowObjectProperty( szObjectName );
@@ -390,6 +389,36 @@ namespace MyCADUI
 			m_bSupressBrowserSelectEvent = false;
 		}
 
+		void ReconstructObjectBrowser( string szSelectNodeName )
+		{
+			// remove all node
+			m_treeObjBrowser.Nodes.Clear();
+			m_treeObjBrowser.SelectedNode = null;
+			m_MainTubeNode = null;
+
+			// add main tube node
+			if( m_CADFeatureParamMap.MainTubeParam == null ) {
+				return;
+			}
+			m_MainTubeNode = m_treeObjBrowser.Nodes.Add( MAIN_TUBE_NAME, MAIN_TUBE_NAME );
+
+			// add cad feature node, and select node
+			foreach( var pair in m_CADFeatureParamMap.FeatureMap ) {
+				if( string.IsNullOrEmpty( pair.Key ) ) {
+					continue;
+				}
+				TreeNode newNode = m_MainTubeNode.Nodes.Add( pair.Key, pair.Key );
+				if( pair.Key == szSelectNodeName ) {
+					m_treeObjBrowser.SelectedNode = newNode;
+				}
+			}
+
+			// select main tube node if no node selected
+			if( m_treeObjBrowser.SelectedNode == null ) {
+				m_treeObjBrowser.SelectedNode = m_MainTubeNode;
+			}
+		}
+
 		void UpdateAndRedrawResultTube()
 		{
 			// remove all shape if main tube not exist
@@ -424,7 +453,7 @@ namespace MyCADUI
 
 		void RefreshAIS()
 		{
-			foreach( KeyValuePair<string, ICADFeatureParam> pair in m_CADFeatureParamMap.FeatureMap ) {
+			foreach( var pair in m_CADFeatureParamMap.FeatureMap ) {
 
 				// create new ais
 				ICADFeatureParam cadFeatureParam = pair.Value;
@@ -520,7 +549,7 @@ namespace MyCADUI
 
 		void HideAllShapeExceptMainTube()
 		{
-			foreach( KeyValuePair<string, AIS_Shape> pair in m_CADFeatureNameAISMap ) {
+			foreach( var pair in m_CADFeatureNameAISMap ) {
 				m_Viewer.GetAISContext().Erase( pair.Value, false );
 			}
 			m_Viewer.UpdateView();

@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace MyCADCore
 {
+	[Serializable]
 	public class CADFeatureParamMap
 	{
 		public CADft_MainTubeParam MainTubeParam

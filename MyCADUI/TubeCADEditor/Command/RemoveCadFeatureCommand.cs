@@ -1,4 +1,5 @@
 ﻿using MyCADCore;
+using Utility;
 
 namespace MyCADUI
 {
@@ -19,17 +20,8 @@ namespace MyCADUI
 			}
 
 			// backup old value
-			if( m_CADFeatureParamMap.FeatureMap.ContainsKey( m_szFeatureName ) == false
-				|| m_CADFeatureParamMap.FeatureMap[ m_szFeatureName ] == null ) {
-
-				// case when old value is not exist, should not go in here
-				m_BackupCADFeatureParam = null;
-
-			}
-			else {
-				m_BackupCADFeatureParam = m_CADFeatureParamMap.FeatureMap[ m_szFeatureName ];
-			}
-			m_BackupCADFeatureParam = m_CADFeatureParamMap.FeatureMap[ m_szFeatureName ];
+			// clone whole map here to reserve the order
+			m_BackupMap = CloneHelper.Clone( m_CADFeatureParamMap );
 
 			// remove the feature
 			m_CADFeatureParamMap.FeatureMap.Remove( m_szFeatureName );
@@ -40,8 +32,11 @@ namespace MyCADUI
 
 		public void Undo()
 		{
-			// add the feature back
-			m_CADFeatureParamMap.FeatureMap.Add( m_szFeatureName, m_BackupCADFeatureParam );
+			// restore the feature
+			m_CADFeatureParamMap.FeatureMap.Clear();
+			foreach( var pair in m_BackupMap.FeatureMap ) {
+				m_CADFeatureParamMap.FeatureMap[ pair.Key ] = pair.Value;
+			}
 
 			// invoke the event
 			CommandFinished?.Invoke( EditType.AddCADFeature, m_szFeatureName );
@@ -50,7 +45,7 @@ namespace MyCADUI
 		public event CADEditFinishEventHandler CommandFinished;
 
 		string m_szFeatureName;
-		ICADFeatureParam m_BackupCADFeatureParam;
 		CADFeatureParamMap m_CADFeatureParamMap;
+		CADFeatureParamMap m_BackupMap;
 	}
 }
