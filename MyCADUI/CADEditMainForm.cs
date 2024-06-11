@@ -41,7 +41,7 @@ namespace MyCADUI
 			m_TubeCADEditor = new TubeCADEditor( m_Viewer, m_treeObjBrowser, m_propgrdPropertyBar );
 			m_TubeCADEditor.MainTubeStatusChanged += MainTubeStatusChanged;
 			m_TubeCADEditor.CADEditErrorEvent += CADEditError;
-			m_TubeCADEditor.CADEditSuccessEvent += () => m_lblWarnning.Text = string.Empty;
+			m_TubeCADEditor.CADEditSuccessEvent += CADEditSuccess;
 			m_TubeCADEditor.CommandStatusChanged += ( bUndo, bRedo ) =>
 			{
 				m_tsmiUndo.Enabled = bUndo;
@@ -74,23 +74,6 @@ namespace MyCADUI
 		}
 
 		// main tube
-		void MainTubeStatusChanged( bool bExistMainTube )
-		{
-			// set button status
-			if( bExistMainTube == true ) {
-				m_tsmiEndCutter.Enabled = true;
-				m_tsmiBranchTube.Enabled = true;
-				m_tsmiBendingNotch.Enabled = true;
-				m_tsmiMainTube.Enabled = false;
-			}
-			else {
-				m_tsmiEndCutter.Enabled = false;
-				m_tsmiBranchTube.Enabled = false;
-				m_tsmiBendingNotch.Enabled = false;
-				m_tsmiMainTube.Enabled = true;
-			}
-		}
-
 		void m_tsmiMainTube_Circle_Click( object sender, System.EventArgs e )
 		{
 			MainTubeTypeSelected( MainTubeType.Circle );
@@ -319,6 +302,23 @@ namespace MyCADUI
 			m_TubeCADEditor.Redo();
 		}
 
+		void MainTubeStatusChanged( bool bExistMainTube )
+		{
+			// set button status
+			if( bExistMainTube == true ) {
+				m_tsmiEndCutter.Enabled = true;
+				m_tsmiBranchTube.Enabled = true;
+				m_tsmiBendingNotch.Enabled = true;
+				m_tsmiMainTube.Enabled = false;
+			}
+			else {
+				m_tsmiEndCutter.Enabled = false;
+				m_tsmiBranchTube.Enabled = false;
+				m_tsmiBendingNotch.Enabled = false;
+				m_tsmiMainTube.Enabled = true;
+			}
+		}
+
 		void CADEditError( CADEditErrorCode errorCode )
 		{
 			// TODO: magic number
@@ -330,52 +330,77 @@ namespace MyCADUI
 			}
 		}
 
+		void CADEditSuccess()
+		{
+			m_lblWarnning.Text = string.Empty;
+		}
+
 		// view action
 		void m_tsmiX_Pos_Click( object sender, System.EventArgs e )
 		{
 			m_Viewer.RightView();
+			m_Viewer.ZoomAllView();
 		}
 
 		void m_tsmiX_Neg_Click( object sender, System.EventArgs e )
 		{
 			m_Viewer.LeftView();
+			m_Viewer.ZoomAllView();
 		}
 
 		void m_tsmiY_Pos_Click( object sender, System.EventArgs e )
 		{
 			m_Viewer.FrontView();
+			m_Viewer.ZoomAllView();
 		}
 
 		void m_tsmiY_Neg_Click( object sender, System.EventArgs e )
 		{
 			m_Viewer.BackView();
+			m_Viewer.ZoomAllView();
 		}
 
 		void m_tsmiZ_Pos_Click( object sender, System.EventArgs e )
 		{
 			m_Viewer.TopView();
+			m_Viewer.ZoomAllView();
 		}
 
 		void m_tsmiZ_Neg_Click( object sender, System.EventArgs e )
 		{
 			m_Viewer.BottomView();
+			m_Viewer.ZoomAllView();
 		}
 
 		void m_tsmiDir_Pos_Click( object sender, System.EventArgs e )
 		{
 			gp_Dir dir = m_TubeCADEditor.GetEditObjectDir();
 			m_Viewer.SetViewDir( dir );
+			m_Viewer.ZoomAllView();
 		}
 
 		void m_tsmiDir_Neg_Click( object sender, System.EventArgs e )
 		{
 			gp_Dir dir = m_TubeCADEditor.GetEditObjectDir();
 			m_Viewer.SetViewDir( dir.Reversed() );
+			m_Viewer.ZoomAllView();
 		}
 
 		void m_tsmiISO_Click( object sender, System.EventArgs e )
 		{
 			m_Viewer.IsometricView();
+			m_Viewer.ZoomAllView();
+		}
+
+		void m_tsmiZoomToFit_Click( object sender, System.EventArgs e )
+		{
+			m_Viewer.ZoomAllView();
+		}
+
+		// Other action
+		void m_tsmiAbout_Click( object sender, System.EventArgs e )
+		{
+			MessageBox.Show( "My CAD V2" );
 		}
 
 		// this is temporary function

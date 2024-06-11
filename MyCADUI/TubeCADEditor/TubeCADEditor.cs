@@ -280,7 +280,7 @@ namespace MyCADUI
 
 		internal void OpenMapFile()
 		{
-			CADFeatureParamMap backupMap = CloneHelper.Clone( m_CADFeatureParamMap );
+			CADFeatureParamMap loadedMap;
 
 			try {
 				// load map file
@@ -288,34 +288,39 @@ namespace MyCADUI
 				string szFilePath = Path.Combine( szFileDir, "map.dat" );
 				using( FileStream stream = new FileStream( szFilePath, FileMode.Open ) ) {
 					BinaryFormatter formatter = new BinaryFormatter();
-					m_CADFeatureParamMap = formatter.Deserialize( stream ) as CADFeatureParamMap;
+					loadedMap = formatter.Deserialize( stream ) as CADFeatureParamMap;
 				}
 			}
 			catch {
-				m_CADFeatureParamMap = backupMap;
 				return;
 			}
 
-			// update object browser
-			ReconstructObjectBrowser( string.Empty );
+			// data protection
+			if( loadedMap == null || loadedMap.MainTubeParam == null || loadedMap.FeatureMap == null ) {
+				return;
+			}
+			m_CADFeatureParamMap = loadedMap;
 
-			// update property bar
+			// update object browser and update property bar
+			m_bSupressBrowserSelectEvent = true;
+			ReconstructObjectBrowser( string.Empty );
 			ShowObjectProperty( string.Empty );
+			m_bSupressBrowserSelectEvent = false;
 
 			// update cad feature display
-			m_Viewer.GetAISContext().RemoveAll( false );
-			m_CADFeatureNameAISMap.Clear();
-			foreach( var pair in m_CADFeatureParamMap.FeatureMap ) {
-				AIS_Shape cadFeatureAIS = CADFeatureMaker.MakeCADFeatureAIS( pair.Value, m_CADFeatureParamMap.MainTubeParam );
-				if( cadFeatureAIS == null ) {
-					CADEditErrorEvent?.Invoke( CADEditErrorCode.MakeShapeFailed );
-					return;
-				}
-				m_CADFeatureNameAISMap[ pair.Key ] = cadFeatureAIS;
-			}
+			RefreshAIS();
 
 			// update result tube display
-			UpdateAndRedrawResultTube();
+			UpdateAndRedrawResultTube( out bool isSucess );
+			if( isSucess ) {
+
+				// zoom all view
+				m_Viewer.ZoomAllView();
+
+				// invoke main tube status changed event and cad edit success event
+				MainTubeStatusChanged?.Invoke( true );
+				CADEditSuccessEvent?.Invoke();
+			}
 		}
 
 		bool CheckFeatureSpecialCase( ICADFeatureParam cadFeatureParam )
@@ -443,11 +448,20 @@ namespace MyCADUI
 				m_CADFeatureNameAISMap[ szObjectName ] = newCADFeatureAIS;
 				DisplayObjectShape( szObjectName );
 			}
+			m_bSupressBrowserSelectEvent = false;
 
 			// update result tube display
-			UpdateAndRedrawResultTube();
+			UpdateAndRedrawResultTube( out bool isSucess );
+			if( isSucess ) {
+				if( type == EditType.AddMainTube || type == EditType.ModifyMainTube ) {
 
-			m_bSupressBrowserSelectEvent = false;
+					// zoom all view
+					m_Viewer.ZoomAllView();
+				}
+
+				// invoke the cad edit success event
+				CADEditSuccessEvent?.Invoke();
+			}
 		}
 
 		void ReconstructObjectBrowser( string szSelectNodeName )
@@ -473,6 +487,7 @@ namespace MyCADUI
 					m_treeObjBrowser.SelectedNode = newNode;
 				}
 			}
+			m_MainTubeNode.Expand();
 
 			// select main tube node if no node selected
 			if( m_treeObjBrowser.SelectedNode == null ) {
@@ -480,8 +495,10 @@ namespace MyCADUI
 			}
 		}
 
-		void UpdateAndRedrawResultTube()
+		void UpdateAndRedrawResultTube( out bool isSucess )
 		{
+			isSucess = false;
+
 			// remove all shape if main tube not exist
 			if( m_CADFeatureParamMap.MainTubeParam == null ) {
 				m_Viewer.GetAISContext().RemoveAll( true );
@@ -509,29 +526,32 @@ namespace MyCADUI
 			m_ResultTubeAIS.SetDisplayMode( 1 );
 			m_Viewer.GetAISContext().Display( m_ResultTubeAIS, false );
 			m_Viewer.UpdateView();
-			CADEditSuccessEvent?.Invoke();
+			isSucess = true;
 		}
 
 		void RefreshAIS()
 		{
-			foreach( var pair in m_CADFeatureParamMap.FeatureMap ) {
+			// data protection
+			if( m_CADFeatureParamMap == null || m_CADFeatureParamMap.MainTubeParam == null || m_CADFeatureParamMap.FeatureMap == null ) {
+				return;
+			}
 
-				// create new ais
-				ICADFeatureParam cadFeatureParam = pair.Value;
-				if( cadFeatureParam == null ) {
-					CADEditErrorEvent?.Invoke( CADEditErrorCode.NoSelectedObject );
-					return;
+			// remove all shape from viewer
+			m_Viewer.GetAISContext().RemoveAll( false );
+
+			// remove all shape from map
+			m_CADFeatureNameAISMap.Clear();
+
+			// make new shape and add to map
+			foreach( var pair in m_CADFeatureParamMap.FeatureMap ) {
+				if( pair.Value == null ) {
+					continue;
 				}
-				AIS_Shape cadFeatureAIS = CADFeatureMaker.MakeCADFeatureAIS( cadFeatureParam, m_CADFeatureParamMap.MainTubeParam );
+				AIS_Shape cadFeatureAIS = CADFeatureMaker.MakeCADFeatureAIS( pair.Value, m_CADFeatureParamMap.MainTubeParam );
 				if( cadFeatureAIS == null ) {
 					CADEditErrorEvent?.Invoke( CADEditErrorCode.MakeShapeFailed );
-					return;
+					continue;
 				}
-
-				// remove old ais from viewer
-				m_Viewer.GetAISContext().Remove( m_CADFeatureNameAISMap[ pair.Key ], false );
-
-				// update ais map
 				m_CADFeatureNameAISMap[ pair.Key ] = cadFeatureAIS;
 			}
 

@@ -12,6 +12,7 @@
   <Message ID="m_tsmiDir_Pos" Content="特徵方向+" />
   <Message ID="m_tsmiDir_Neg" Content="特徵方向-" />
   <Message ID="m_tsmiISO" Content="等角投影" />
+  <Message ID="m_tsmiZoomToFit" Content="最適大小" />
   <Message ID="m_tsmiEdit" Content="編輯" />
   <Message ID="m_tsmiUndo" Content="復原" />
   <Message ID="m_tsmiRedo" Content="重作" />
@@ -33,4 +34,5 @@
   <Message ID="m_tsmiBendingNotch_VShape" Content="尖角V槽" />
   <Message ID="m_tsmiBendingNotch_BothSide" Content="圓角V槽" />
   <Message ID="m_tsmiBendingNotch_OneSide" Content="單側圓角V槽" />
+  <Message ID="m_tsmiAbout" Content="關於" />
 </ResMap>

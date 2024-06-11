@@ -69,6 +69,8 @@
 			this.m_tsmiBendingNotch_VShape = new System.Windows.Forms.ToolStripMenuItem();
 			this.m_tsmiBendingNotch_BothSide = new System.Windows.Forms.ToolStripMenuItem();
 			this.m_tsmiBendingNotch_OneSide = new System.Windows.Forms.ToolStripMenuItem();
+			this.m_tsmiZoomToFit = new System.Windows.Forms.ToolStripMenuItem();
+			this.m_tsmiAbout = new System.Windows.Forms.ToolStripMenuItem();
 			this.m_panObjBrowser.SuspendLayout();
 			this.m_panPropertyBar.SuspendLayout();
 			this.m_panBackGnd.SuspendLayout();
@@ -148,7 +150,8 @@
             this.m_tsmiView,
             this.m_tsmiEdit,
             this.m_tsmiMainTube,
-            this.m_tsmiCADFeature});
+            this.m_tsmiCADFeature,
+            this.m_tsmiAbout});
 			this.m_msMainMenu.Location = new System.Drawing.Point(0, 0);
 			this.m_msMainMenu.Name = "m_msMainMenu";
 			this.m_msMainMenu.Size = new System.Drawing.Size(801, 24);
@@ -189,7 +192,8 @@
             this.m_tsmiZ_Neg,
             this.m_tsmiDir_Pos,
             this.m_tsmiDir_Neg,
-            this.m_tsmiISO});
+            this.m_tsmiISO,
+            this.m_tsmiZoomToFit});
 			this.m_tsmiView.Name = "m_tsmiView";
 			this.m_tsmiView.Size = new System.Drawing.Size(46, 20);
 			this.m_tsmiView.Text = "View";
@@ -197,63 +201,63 @@
 			// m_tsmiX_Pos
 			// 
 			this.m_tsmiX_Pos.Name = "m_tsmiX_Pos";
-			this.m_tsmiX_Pos.Size = new System.Drawing.Size(99, 22);
+			this.m_tsmiX_Pos.Size = new System.Drawing.Size(180, 22);
 			this.m_tsmiX_Pos.Text = "X+";
 			this.m_tsmiX_Pos.Click += new System.EventHandler(this.m_tsmiX_Pos_Click);
 			// 
 			// m_tsmiX_Neg
 			// 
 			this.m_tsmiX_Neg.Name = "m_tsmiX_Neg";
-			this.m_tsmiX_Neg.Size = new System.Drawing.Size(99, 22);
+			this.m_tsmiX_Neg.Size = new System.Drawing.Size(180, 22);
 			this.m_tsmiX_Neg.Text = "X-";
 			this.m_tsmiX_Neg.Click += new System.EventHandler(this.m_tsmiX_Neg_Click);
 			// 
 			// m_tsmiY_Pos
 			// 
 			this.m_tsmiY_Pos.Name = "m_tsmiY_Pos";
-			this.m_tsmiY_Pos.Size = new System.Drawing.Size(99, 22);
+			this.m_tsmiY_Pos.Size = new System.Drawing.Size(180, 22);
 			this.m_tsmiY_Pos.Text = "Y+";
 			this.m_tsmiY_Pos.Click += new System.EventHandler(this.m_tsmiY_Pos_Click);
 			// 
 			// m_tsmiY_Neg
 			// 
 			this.m_tsmiY_Neg.Name = "m_tsmiY_Neg";
-			this.m_tsmiY_Neg.Size = new System.Drawing.Size(99, 22);
+			this.m_tsmiY_Neg.Size = new System.Drawing.Size(180, 22);
 			this.m_tsmiY_Neg.Text = "Y-";
 			this.m_tsmiY_Neg.Click += new System.EventHandler(this.m_tsmiY_Neg_Click);
 			// 
 			// m_tsmiZ_Pos
 			// 
 			this.m_tsmiZ_Pos.Name = "m_tsmiZ_Pos";
-			this.m_tsmiZ_Pos.Size = new System.Drawing.Size(99, 22);
+			this.m_tsmiZ_Pos.Size = new System.Drawing.Size(180, 22);
 			this.m_tsmiZ_Pos.Text = "Z+";
 			this.m_tsmiZ_Pos.Click += new System.EventHandler(this.m_tsmiZ_Pos_Click);
 			// 
 			// m_tsmiZ_Neg
 			// 
 			this.m_tsmiZ_Neg.Name = "m_tsmiZ_Neg";
-			this.m_tsmiZ_Neg.Size = new System.Drawing.Size(99, 22);
+			this.m_tsmiZ_Neg.Size = new System.Drawing.Size(180, 22);
 			this.m_tsmiZ_Neg.Text = "Z-";
 			this.m_tsmiZ_Neg.Click += new System.EventHandler(this.m_tsmiZ_Neg_Click);
 			// 
 			// m_tsmiDir_Pos
 			// 
 			this.m_tsmiDir_Pos.Name = "m_tsmiDir_Pos";
-			this.m_tsmiDir_Pos.Size = new System.Drawing.Size(99, 22);
+			this.m_tsmiDir_Pos.Size = new System.Drawing.Size(180, 22);
 			this.m_tsmiDir_Pos.Text = "Dir+";
 			this.m_tsmiDir_Pos.Click += new System.EventHandler(this.m_tsmiDir_Pos_Click);
 			// 
 			// m_tsmiDir_Neg
 			// 
 			this.m_tsmiDir_Neg.Name = "m_tsmiDir_Neg";
-			this.m_tsmiDir_Neg.Size = new System.Drawing.Size(99, 22);
+			this.m_tsmiDir_Neg.Size = new System.Drawing.Size(180, 22);
 			this.m_tsmiDir_Neg.Text = "Dir-";
 			this.m_tsmiDir_Neg.Click += new System.EventHandler(this.m_tsmiDir_Neg_Click);
 			// 
 			// m_tsmiISO
 			// 
 			this.m_tsmiISO.Name = "m_tsmiISO";
-			this.m_tsmiISO.Size = new System.Drawing.Size(99, 22);
+			this.m_tsmiISO.Size = new System.Drawing.Size(180, 22);
 			this.m_tsmiISO.Text = "ISO";
 			this.m_tsmiISO.Click += new System.EventHandler(this.m_tsmiISO_Click);
 			// 
@@ -269,14 +273,14 @@
 			// m_tsmiUndo
 			// 
 			this.m_tsmiUndo.Name = "m_tsmiUndo";
-			this.m_tsmiUndo.Size = new System.Drawing.Size(106, 22);
+			this.m_tsmiUndo.Size = new System.Drawing.Size(180, 22);
 			this.m_tsmiUndo.Text = "Undo";
 			this.m_tsmiUndo.Click += new System.EventHandler(this.m_tsmiUndo_Click);
 			// 
 			// m_tsmiRedo
 			// 
 			this.m_tsmiRedo.Name = "m_tsmiRedo";
-			this.m_tsmiRedo.Size = new System.Drawing.Size(106, 22);
+			this.m_tsmiRedo.Size = new System.Drawing.Size(180, 22);
 			this.m_tsmiRedo.Text = "Redo";
 			this.m_tsmiRedo.Click += new System.EventHandler(this.m_tsmiRedo_Click);
 			// 
@@ -295,35 +299,35 @@
 			// m_tsmiMainTube_Circle
 			// 
 			this.m_tsmiMainTube_Circle.Name = "m_tsmiMainTube_Circle";
-			this.m_tsmiMainTube_Circle.Size = new System.Drawing.Size(131, 22);
+			this.m_tsmiMainTube_Circle.Size = new System.Drawing.Size(180, 22);
 			this.m_tsmiMainTube_Circle.Text = "Circle";
 			this.m_tsmiMainTube_Circle.Click += new System.EventHandler(this.m_tsmiMainTube_Circle_Click);
 			// 
 			// m_tsmiMainTube_Rectangle
 			// 
 			this.m_tsmiMainTube_Rectangle.Name = "m_tsmiMainTube_Rectangle";
-			this.m_tsmiMainTube_Rectangle.Size = new System.Drawing.Size(131, 22);
+			this.m_tsmiMainTube_Rectangle.Size = new System.Drawing.Size(180, 22);
 			this.m_tsmiMainTube_Rectangle.Text = "Rectangle";
 			this.m_tsmiMainTube_Rectangle.Click += new System.EventHandler(this.m_tsmiMainTube_Rectangle_Click);
 			// 
 			// m_tsmiMainTube_Oval
 			// 
 			this.m_tsmiMainTube_Oval.Name = "m_tsmiMainTube_Oval";
-			this.m_tsmiMainTube_Oval.Size = new System.Drawing.Size(131, 22);
+			this.m_tsmiMainTube_Oval.Size = new System.Drawing.Size(180, 22);
 			this.m_tsmiMainTube_Oval.Text = "Oval";
 			this.m_tsmiMainTube_Oval.Click += new System.EventHandler(this.m_tsmiMainTube_Oval_Click);
 			// 
 			// m_tsmiMainTube_FlatOval
 			// 
 			this.m_tsmiMainTube_FlatOval.Name = "m_tsmiMainTube_FlatOval";
-			this.m_tsmiMainTube_FlatOval.Size = new System.Drawing.Size(131, 22);
+			this.m_tsmiMainTube_FlatOval.Size = new System.Drawing.Size(180, 22);
 			this.m_tsmiMainTube_FlatOval.Text = "Fla tOval";
 			this.m_tsmiMainTube_FlatOval.Click += new System.EventHandler(this.m_tsmiMainTube_FlatOval_Click);
 			// 
 			// m_tsmiMainTube_DShape
 			// 
 			this.m_tsmiMainTube_DShape.Name = "m_tsmiMainTube_DShape";
-			this.m_tsmiMainTube_DShape.Size = new System.Drawing.Size(131, 22);
+			this.m_tsmiMainTube_DShape.Size = new System.Drawing.Size(180, 22);
 			this.m_tsmiMainTube_DShape.Text = "DShape";
 			this.m_tsmiMainTube_DShape.Click += new System.EventHandler(this.m_tsmiMainTube_DShape_Click);
 			// 
@@ -422,6 +426,20 @@
 			this.m_tsmiBendingNotch_OneSide.Text = "One Side";
 			this.m_tsmiBendingNotch_OneSide.Click += new System.EventHandler(this.m_tsmiBendingNotch_OneSide_Click);
 			// 
+			// m_tsmiZoomToFit
+			// 
+			this.m_tsmiZoomToFit.Name = "m_tsmiZoomToFit";
+			this.m_tsmiZoomToFit.Size = new System.Drawing.Size(180, 22);
+			this.m_tsmiZoomToFit.Text = "Zoom to Fit";
+			this.m_tsmiZoomToFit.Click += new System.EventHandler(this.m_tsmiZoomToFit_Click);
+			// 
+			// m_tsmiAbout
+			// 
+			this.m_tsmiAbout.Name = "m_tsmiAbout";
+			this.m_tsmiAbout.Size = new System.Drawing.Size(54, 20);
+			this.m_tsmiAbout.Text = "About";
+			this.m_tsmiAbout.Click += new System.EventHandler(this.m_tsmiAbout_Click);
+			// 
 			// CADEditMainForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -488,6 +506,8 @@
 		private System.Windows.Forms.ToolStripMenuItem m_tsmiRedo;
 		private System.Windows.Forms.Label m_lblWarnning;
 		private System.Windows.Forms.ToolStripMenuItem openbetaToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem m_tsmiZoomToFit;
+		private System.Windows.Forms.ToolStripMenuItem m_tsmiAbout;
 	}
 }
 
