@@ -1,5 +1,6 @@
 ﻿using MyCADCore;
 using MyLanguageManager;
+using MyUIDisplayModel;
 using OCC.gp;
 using System.Collections.Generic;
 using System.Windows.Forms;
@@ -8,17 +9,6 @@ namespace MyCADUI
 {
 	public partial class CADEditMainForm : Form
 	{
-		// viewer property
-		OCCViewer m_Viewer = new OCCViewer();
-		int m_nXMousePosition = 0;
-		int m_nYMousePosition = 0;
-
-		// tube editor property
-		TubeCADEditor m_TubeCADEditor;
-
-		// language manager
-		LanguageManager m_LanguageManager = new LanguageManager( "CADEditMainForm" );
-
 		public CADEditMainForm()
 		{
 			// initalize component
@@ -50,6 +40,11 @@ namespace MyCADUI
 
 			// set language zh-TW
 			SetLanguage();
+
+			// set layout property
+			m_LayoutDic = Relayout.GetAllSubControlLayoutDic( this );
+			m_OriWidth = Width;
+			m_OriHeight = Height;
 		}
 
 		// viewer action
@@ -396,7 +391,7 @@ namespace MyCADUI
 			m_Viewer.ZoomAllView();
 		}
 
-		// Other action
+		// language action
 		void m_tsmiAbout_Click( object sender, System.EventArgs e )
 		{
 			MessageBox.Show( "My CAD V2" );
@@ -431,5 +426,36 @@ namespace MyCADUI
 			}
 			return list;
 		}
+
+		// layout action
+		void CADEditMainForm_Resize( object sender, System.EventArgs e )
+		{
+			float fRatioX = Width / m_OriWidth;
+			float fRatioY = Height / m_OriHeight;
+
+			// prevent divide by zero
+			if( fRatioX == 0 || fRatioY == 0 ) {
+				return;
+			}
+			foreach( KeyValuePair<Control, OriginalLayoutData> pair in m_LayoutDic ) {
+				Relayout.RelayoutControl( pair.Key, pair.Value, fRatioX, fRatioY );
+			}
+		}
+
+		// viewer property
+		OCCViewer m_Viewer = new OCCViewer();
+		int m_nXMousePosition = 0;
+		int m_nYMousePosition = 0;
+
+		// tube editor property
+		TubeCADEditor m_TubeCADEditor;
+
+		// language manager
+		LanguageManager m_LanguageManager = new LanguageManager( "CADEditMainForm" );
+
+		// layout property
+		Dictionary<Control, OriginalLayoutData> m_LayoutDic;
+		float m_OriWidth;
+		float m_OriHeight;
 	}
 }
