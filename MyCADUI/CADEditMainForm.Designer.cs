@@ -37,7 +37,7 @@
 			this.m_msMainMenu = new System.Windows.Forms.MenuStrip();
 			this.m_tsmiFile = new System.Windows.Forms.ToolStripMenuItem();
 			this.m_tsmiExport = new System.Windows.Forms.ToolStripMenuItem();
-			this.openbetaToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.m_tsmiOpen = new System.Windows.Forms.ToolStripMenuItem();
 			this.m_tsmiView = new System.Windows.Forms.ToolStripMenuItem();
 			this.m_tsmiX_Pos = new System.Windows.Forms.ToolStripMenuItem();
 			this.m_tsmiX_Neg = new System.Windows.Forms.ToolStripMenuItem();
@@ -162,7 +162,7 @@
 			// 
 			this.m_tsmiFile.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.m_tsmiExport,
-            this.openbetaToolStripMenuItem});
+            this.m_tsmiOpen});
 			this.m_tsmiFile.Name = "m_tsmiFile";
 			this.m_tsmiFile.Size = new System.Drawing.Size(38, 20);
 			this.m_tsmiFile.Text = "File";
@@ -170,16 +170,16 @@
 			// m_tsmiExport
 			// 
 			this.m_tsmiExport.Name = "m_tsmiExport";
-			this.m_tsmiExport.Size = new System.Drawing.Size(143, 22);
+			this.m_tsmiExport.Size = new System.Drawing.Size(180, 22);
 			this.m_tsmiExport.Text = "Export";
 			this.m_tsmiExport.Click += new System.EventHandler(this.m_tsmiExport_Click);
 			// 
-			// openbetaToolStripMenuItem
+			// m_tsmiOpen
 			// 
-			this.openbetaToolStripMenuItem.Name = "openbetaToolStripMenuItem";
-			this.openbetaToolStripMenuItem.Size = new System.Drawing.Size(143, 22);
-			this.openbetaToolStripMenuItem.Text = "Open (beta)";
-			this.openbetaToolStripMenuItem.Click += new System.EventHandler(this.openbetaToolStripMenuItem_Click);
+			this.m_tsmiOpen.Name = "m_tsmiOpen";
+			this.m_tsmiOpen.Size = new System.Drawing.Size(180, 22);
+			this.m_tsmiOpen.Text = "Open (beta)";
+			this.m_tsmiOpen.Click += new System.EventHandler(this.m_tsmiOpen_Click);
 			// 
 			// m_tsmiView
 			// 
@@ -505,7 +505,7 @@
 		private System.Windows.Forms.ToolStripMenuItem m_tsmiUndo;
 		private System.Windows.Forms.ToolStripMenuItem m_tsmiRedo;
 		private System.Windows.Forms.Label m_lblWarnning;
-		private System.Windows.Forms.ToolStripMenuItem openbetaToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem m_tsmiOpen;
 		private System.Windows.Forms.ToolStripMenuItem m_tsmiZoomToFit;
 		private System.Windows.Forms.ToolStripMenuItem m_tsmiAbout;
 	}

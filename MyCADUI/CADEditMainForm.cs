@@ -286,8 +286,7 @@ namespace MyCADUI
 			m_TubeCADEditor.ExportStep();
 		}
 
-		// TODO: compelte the implementation
-		void openbetaToolStripMenuItem_Click( object sender, System.EventArgs e )
+		void m_tsmiOpen_Click( object sender, System.EventArgs e )
 		{
 			m_TubeCADEditor.OpenMapFile();
 		}

@@ -278,6 +278,7 @@ namespace MyCADUI
 			writer.Write( szStepFilePath );
 		}
 
+		// TODO: compelte the implementation
 		internal void OpenMapFile()
 		{
 			CADFeatureParamMap loadedMap;
