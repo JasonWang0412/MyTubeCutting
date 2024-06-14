@@ -29,7 +29,7 @@ namespace MyCADCore
 			}
 
 			// the thickness should be less than min of width/2 or height/2
-			if( m_CrossSection.Thickness >= Math.Min( oval.Width, oval.Height ) / 2 ) {
+			if( m_CrossSection.Thickness >= oval.Width / 2 || m_CrossSection.Thickness >= oval.Height / 2 ) {
 				return false;
 			}
 
