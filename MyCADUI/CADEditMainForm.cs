@@ -1,6 +1,5 @@
 ﻿using MyCADCore;
 using MyLanguageManager;
-using MyUIDisplayModel;
 using OCC.gp;
 using System.Collections.Generic;
 using System.Windows.Forms;
@@ -66,11 +65,6 @@ namespace MyCADUI
 			// set language zh-TW
 			// TODO: any language
 			SetLanguage();
-
-			// set layout property
-			m_LayoutDic = Relayout.GetAllSubControlLayoutDic( this );
-			m_OriWidth = Width;
-			m_OriHeight = Height;
 		}
 
 		// viewer action
@@ -453,21 +447,6 @@ namespace MyCADUI
 			return list;
 		}
 
-		// layout action
-		void CADEditMainForm_Resize( object sender, System.EventArgs e )
-		{
-			float fRatioX = Width / m_OriWidth;
-			float fRatioY = Height / m_OriHeight;
-
-			// prevent divide by zero
-			if( fRatioX == 0 || fRatioY == 0 ) {
-				return;
-			}
-			foreach( KeyValuePair<Control, OriginalLayoutData> pair in m_LayoutDic ) {
-				Relayout.RelayoutControl( pair.Key, pair.Value, fRatioX, fRatioY );
-			}
-		}
-
 		// back ground
 		DockPanel m_dockPanel = new DockPanel();
 
@@ -491,10 +470,5 @@ namespace MyCADUI
 
 		// language manager
 		LanguageManager m_LanguageManager = new LanguageManager( "CADEditMainForm" );
-
-		// layout property
-		Dictionary<Control, OriginalLayoutData> m_LayoutDic;
-		float m_OriWidth;
-		float m_OriHeight;
 	}
 }

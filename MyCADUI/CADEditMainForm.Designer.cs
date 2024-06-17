@@ -374,7 +374,6 @@
 			this.MainMenuStrip = this.m_msMainMenu;
 			this.Name = "CADEditMainForm";
 			this.Text = "Form1";
-			this.Resize += new System.EventHandler(this.CADEditMainForm_Resize);
 			this.m_msMainMenu.ResumeLayout(false);
 			this.m_msMainMenu.PerformLayout();
 			this.ResumeLayout(false);
