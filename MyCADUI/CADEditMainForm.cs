@@ -4,6 +4,7 @@ using OCC.gp;
 using System.Collections.Generic;
 using System.Windows.Forms;
 using WeifenLuo.WinFormsUI.Docking;
+using MyUIDisplayModel;
 
 namespace MyCADUI
 {
@@ -451,18 +452,18 @@ namespace MyCADUI
 		DockPanel m_dockPanel = new DockPanel();
 
 		// viewer
-		DockContent m_panViewer = new DockContent();
+		MyDockContent m_panViewer = new MyDockContent();
 		Panel m_panViewerPanel = new Panel();
 		OCCViewer m_Viewer = new OCCViewer();
 		int m_nXMousePosition = 0;
 		int m_nYMousePosition = 0;
 
 		// object browser
-		DockContent m_panObjBrowser = new DockContent();
+		MyDockContent m_panObjBrowser = new MyDockContent();
 		TreeView m_treeObjBrowser = new TreeView();
 
 		// property bar
-		DockContent m_panPropertyBar = new DockContent();
+		MyDockContent m_panPropertyBar = new MyDockContent();
 		PropertyGrid m_propgrdPropertyBar = new PropertyGrid();
 
 		// tube editor property
