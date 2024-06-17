@@ -1,10 +1,9 @@
 ﻿using MyCADCore;
 using MyLanguageManager;
-using OCC.gp;
+using MyUIDisplayModel;
 using System.Collections.Generic;
 using System.Windows.Forms;
 using WeifenLuo.WinFormsUI.Docking;
-using MyUIDisplayModel;
 
 namespace MyCADUI
 {
@@ -12,6 +11,7 @@ namespace MyCADUI
 	{
 		public CADEditMainForm()
 		{
+			// set layout back ground
 			m_dockPanel.DocumentStyle = DocumentStyle.DockingWindow;
 			m_dockPanel.Dock = DockStyle.Fill;
 			Controls.Add( m_dockPanel );
@@ -25,35 +25,20 @@ namespace MyCADUI
 			m_tsmiUndo.Enabled = false;
 			m_tsmiRedo.Enabled = false;
 
-			// initialize viewer
-			bool isSuccess = m_Viewer.InitViewer( m_panViewerPanel.Handle );
-			if( isSuccess == false ) {
-				MessageBox.Show( "init failed" );
-			}
-			m_Viewer.SetBackgroundColor( 0, 0, 0 );
-			m_Viewer.IsometricView();
+			// editor
+			m_TubeCADEditor = new TubeCADEditor();
 
-			m_panViewerPanel.Dock = DockStyle.Fill;
-			m_panViewer.Controls.Add( m_panViewerPanel );
+			// editor layout
+			m_panViewer.Controls.Add( m_TubeCADEditor.ViewerPanel );
 			m_panViewer.Show( m_dockPanel, DockState.Document );
 
-			m_panViewerPanel.Paint += m_panViewerPanel_Paint;
-			m_panViewerPanel.MouseDown += m_panViewerPanel_MouseDown;
-			m_panViewerPanel.MouseMove += m_panViewerPanel_MouseMove;
-			m_panViewerPanel.MouseWheel += m_panViewerPanel_MouseWheel;
-
-			// initialize object browser
-			m_treeObjBrowser.Dock = DockStyle.Fill;
-			m_panObjBrowser.Controls.Add( m_treeObjBrowser );
+			m_panObjBrowser.Controls.Add( m_TubeCADEditor.ObjectBrowserPanel );
 			m_panObjBrowser.Show( m_dockPanel, DockState.DockRight );
 
-			// initialize property bar
-			m_propgrdPropertyBar.Dock = DockStyle.Fill;
-			m_panPropertyBar.Controls.Add( m_propgrdPropertyBar );
+			m_panPropertyBar.Controls.Add( m_TubeCADEditor.PropertyBarPanel );
 			m_panPropertyBar.Show( m_panObjBrowser.Pane, DockAlignment.Bottom, 0.5 );
 
 			// initialize tube editor
-			m_TubeCADEditor = new TubeCADEditor( m_Viewer, m_treeObjBrowser, m_propgrdPropertyBar );
 			m_TubeCADEditor.MainTubeStatusChanged += MainTubeStatusChanged;
 			m_TubeCADEditor.CADEditErrorEvent += CADEditError;
 			m_TubeCADEditor.CADEditSuccessEvent += CADEditSuccess;
@@ -66,27 +51,6 @@ namespace MyCADUI
 			// set language zh-TW
 			// TODO: any language
 			SetLanguage();
-		}
-
-		// viewer action
-		void m_panViewerPanel_MouseDown( object sender, MouseEventArgs e )
-		{
-			ViewerMouseAction.MouseDown( e, m_Viewer, ref m_nXMousePosition, ref m_nYMousePosition );
-		}
-
-		void m_panViewerPanel_MouseMove( object sender, MouseEventArgs e )
-		{
-			ViewerMouseAction.MouseMove( e, m_Viewer, ref m_nXMousePosition, ref m_nYMousePosition );
-		}
-
-		void m_panViewerPanel_MouseWheel( object sender, MouseEventArgs e )
-		{
-			ViewerMouseAction.MouseWheel( e, m_Viewer );
-		}
-
-		void m_panViewerPanel_Paint( object sender, PaintEventArgs e )
-		{
-			m_Viewer.UpdateView();
 		}
 
 		// main tube
@@ -353,63 +317,52 @@ namespace MyCADUI
 		// view action
 		void m_tsmiX_Pos_Click( object sender, System.EventArgs e )
 		{
-			m_Viewer.RightView();
-			m_Viewer.ZoomAllView();
+			m_TubeCADEditor.SetViewDir( ViewDir.Right );
 		}
 
 		void m_tsmiX_Neg_Click( object sender, System.EventArgs e )
 		{
-			m_Viewer.LeftView();
-			m_Viewer.ZoomAllView();
+			m_TubeCADEditor.SetViewDir( ViewDir.Left );
 		}
 
 		void m_tsmiY_Pos_Click( object sender, System.EventArgs e )
 		{
-			m_Viewer.FrontView();
-			m_Viewer.ZoomAllView();
+			m_TubeCADEditor.SetViewDir( ViewDir.Front );
 		}
 
 		void m_tsmiY_Neg_Click( object sender, System.EventArgs e )
 		{
-			m_Viewer.BackView();
-			m_Viewer.ZoomAllView();
+			m_TubeCADEditor.SetViewDir( ViewDir.Back );
 		}
 
 		void m_tsmiZ_Pos_Click( object sender, System.EventArgs e )
 		{
-			m_Viewer.TopView();
-			m_Viewer.ZoomAllView();
+			m_TubeCADEditor.SetViewDir( ViewDir.Top );
 		}
 
 		void m_tsmiZ_Neg_Click( object sender, System.EventArgs e )
 		{
-			m_Viewer.BottomView();
-			m_Viewer.ZoomAllView();
+			m_TubeCADEditor.SetViewDir( ViewDir.Bottom );
 		}
 
 		void m_tsmiDir_Pos_Click( object sender, System.EventArgs e )
 		{
-			gp_Dir dir = m_TubeCADEditor.GetEditObjectDir();
-			m_Viewer.SetViewDir( dir );
-			m_Viewer.ZoomAllView();
+			m_TubeCADEditor.SetViewDir( ViewDir.Dir_Pos );
 		}
 
 		void m_tsmiDir_Neg_Click( object sender, System.EventArgs e )
 		{
-			gp_Dir dir = m_TubeCADEditor.GetEditObjectDir();
-			m_Viewer.SetViewDir( dir.Reversed() );
-			m_Viewer.ZoomAllView();
+			m_TubeCADEditor.SetViewDir( ViewDir.Dir_Neg );
 		}
 
 		void m_tsmiISO_Click( object sender, System.EventArgs e )
 		{
-			m_Viewer.IsometricView();
-			m_Viewer.ZoomAllView();
+			m_TubeCADEditor.SetViewDir( ViewDir.Isometric );
 		}
 
 		void m_tsmiZoomToFit_Click( object sender, System.EventArgs e )
 		{
-			m_Viewer.ZoomAllView();
+			m_TubeCADEditor.ZoomToFit();
 		}
 
 		// language action
@@ -448,23 +401,11 @@ namespace MyCADUI
 			return list;
 		}
 
-		// back ground
+		// layout
 		DockPanel m_dockPanel = new DockPanel();
-
-		// viewer
 		MyDockContent m_panViewer = new MyDockContent();
-		Panel m_panViewerPanel = new Panel();
-		OCCViewer m_Viewer = new OCCViewer();
-		int m_nXMousePosition = 0;
-		int m_nYMousePosition = 0;
-
-		// object browser
 		MyDockContent m_panObjBrowser = new MyDockContent();
-		TreeView m_treeObjBrowser = new TreeView();
-
-		// property bar
 		MyDockContent m_panPropertyBar = new MyDockContent();
-		PropertyGrid m_propgrdPropertyBar = new PropertyGrid();
 
 		// tube editor property
 		TubeCADEditor m_TubeCADEditor;

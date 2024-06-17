@@ -14,13 +14,33 @@ using Utility;
 
 namespace MyCADUI
 {
+	internal enum ViewDir
+	{
+		Top,
+		Bottom,
+		Left,
+		Right,
+		Front,
+		Back,
+		Isometric,
+		Dir_Pos,
+		Dir_Neg,
+	}
+
 	internal class TubeCADEditor
 	{
 		// GUI
-		OCCViewer m_Viewer;
-		TreeView m_treeObjBrowser;
-		PropertyGrid m_propgrdPropertyBar;
+		Panel m_panViewer = new Panel();
+		Panel m_panObjBrowser = new Panel();
+		Panel m_panPropertyBar = new Panel();
+		OCCViewer m_Viewer = new OCCViewer();
+		TreeView m_treeObjBrowser = new TreeView();
+		PropertyGrid m_propgrdPropertyBar = new PropertyGrid();
 		bool m_bSupressBrowserSelectEvent = false;
+
+		// viewer
+		int m_nXMousePosition = 0;
+		int m_nYMousePosition = 0;
 
 		// parameter map
 		CADFeatureParamMap m_CADFeatureParamMap = new CADFeatureParamMap();
@@ -56,16 +76,34 @@ namespace MyCADUI
 		internal delegate void CADEditSuccessEventHandler();
 		internal event CADEditSuccessEventHandler CADEditSuccessEvent;
 
-		internal TubeCADEditor( OCCViewer viewer, TreeView treeObjBrowser, PropertyGrid propertyGrid )
+		internal TubeCADEditor()
 		{
-			m_Viewer = viewer;
-			m_treeObjBrowser = treeObjBrowser;
-			m_propgrdPropertyBar = propertyGrid;
+			bool isSuccess = m_Viewer.InitViewer( m_panViewer.Handle );
+			if( isSuccess == false ) {
+				MessageBox.Show( "init failed" );
+			}
+			m_Viewer.SetBackgroundColor( 0, 0, 0 );
+			m_Viewer.IsometricView();
+			m_panViewer.Dock = DockStyle.Fill;
 
-			// event
+			m_treeObjBrowser.Dock = DockStyle.Fill;
+			m_panObjBrowser.Controls.Add( m_treeObjBrowser );
+			m_panObjBrowser.Dock = DockStyle.Fill;
+
+			m_propgrdPropertyBar.Dock = DockStyle.Fill;
+			m_panPropertyBar.Controls.Add( m_propgrdPropertyBar );
+			m_panPropertyBar.Dock = DockStyle.Fill;
+
+			// action
+			m_panViewer.Paint += m_panViewer_Paint;
+			m_panViewer.MouseDown += m_panViewer_MouseDown;
+			m_panViewer.MouseMove += m_panViewer_MouseMove;
+			m_panViewer.MouseWheel += m_panViewer_MouseWheel;
+
 			m_treeObjBrowser.KeyDown += m_treeObjBrowser_KeyDown;
-			m_propgrdPropertyBar.PropertyValueChanged += m_propgrdPropertyBar_PropertyValueChanged;
 			m_treeObjBrowser.AfterSelect += m_treeObjBrowser_AfterSelect;
+
+			m_propgrdPropertyBar.PropertyValueChanged += m_propgrdPropertyBar_PropertyValueChanged;
 		}
 
 		internal void AddMainTube( CADft_MainTubeParam mainTubeParam )
@@ -322,6 +360,58 @@ namespace MyCADUI
 				MainTubeStatusChanged?.Invoke( true );
 				CADEditSuccessEvent?.Invoke();
 			}
+		}
+
+		// layout property
+		internal Panel ViewerPanel => m_panViewer;
+
+		internal Panel ObjectBrowserPanel => m_panObjBrowser;
+
+		internal Panel PropertyBarPanel => m_panPropertyBar;
+
+		// viewer pointer
+		internal OCCViewer Viewer => m_Viewer;
+
+		// view direction
+		internal void SetViewDir( ViewDir dir )
+		{
+			switch( dir ) {
+				case ViewDir.Top:
+					m_Viewer.TopView();
+					break;
+				case ViewDir.Bottom:
+					m_Viewer.BottomView();
+					break;
+				case ViewDir.Left:
+					m_Viewer.LeftView();
+					break;
+				case ViewDir.Right:
+					m_Viewer.RightView();
+					break;
+				case ViewDir.Front:
+					m_Viewer.FrontView();
+					break;
+				case ViewDir.Back:
+					m_Viewer.BackView();
+					break;
+				case ViewDir.Isometric:
+					m_Viewer.IsometricView();
+					break;
+				case ViewDir.Dir_Pos:
+					m_Viewer.SetViewDir( GetEditObjectDir() );
+					break;
+				case ViewDir.Dir_Neg:
+					m_Viewer.SetViewDir( GetEditObjectDir().Reversed() );
+					break;
+				default:
+					break;
+			}
+			m_Viewer.ZoomAllView();
+		}
+
+		internal void ZoomToFit()
+		{
+			m_Viewer.ZoomAllView();
 		}
 
 		bool CheckFeatureSpecialCase( ICADFeatureParam cadFeatureParam )
@@ -646,6 +736,28 @@ namespace MyCADUI
 			CommandStatusChanged?.Invoke( true, false );
 		}
 
+		// viewer action
+		void m_panViewer_MouseDown( object sender, MouseEventArgs e )
+		{
+			ViewerMouseAction.MouseDown( e, m_Viewer, ref m_nXMousePosition, ref m_nYMousePosition );
+		}
+
+		void m_panViewer_MouseMove( object sender, MouseEventArgs e )
+		{
+			ViewerMouseAction.MouseMove( e, m_Viewer, ref m_nXMousePosition, ref m_nYMousePosition );
+		}
+
+		void m_panViewer_MouseWheel( object sender, MouseEventArgs e )
+		{
+			ViewerMouseAction.MouseWheel( e, m_Viewer );
+		}
+
+		void m_panViewer_Paint( object sender, PaintEventArgs e )
+		{
+			m_Viewer.UpdateView();
+		}
+
+		// object browser action
 		void m_treeObjBrowser_KeyDown( object sender, KeyEventArgs e )
 		{
 			if( e.KeyCode == Keys.Delete ) {
@@ -659,11 +771,6 @@ namespace MyCADUI
 					Redo();
 				}
 			}
-		}
-
-		void m_propgrdPropertyBar_PropertyValueChanged( object s, PropertyValueChangedEventArgs e )
-		{
-			ModifyCADFeature();
 		}
 
 		void m_treeObjBrowser_AfterSelect( object sender, TreeViewEventArgs e )
@@ -686,6 +793,12 @@ namespace MyCADUI
 			// set edit object
 			ShowObjectProperty( szObjectName );
 			DisplayObjectShape( szObjectName );
+		}
+
+		// property bar action
+		void m_propgrdPropertyBar_PropertyValueChanged( object s, PropertyValueChangedEventArgs e )
+		{
+			ModifyCADFeature();
 		}
 	}
 }
