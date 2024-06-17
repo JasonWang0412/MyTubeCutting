@@ -4,6 +4,7 @@ using MyUIDisplayModel;
 using OCC.gp;
 using System.Collections.Generic;
 using System.Windows.Forms;
+using WeifenLuo.WinFormsUI.Docking;
 
 namespace MyCADUI
 {
@@ -11,6 +12,11 @@ namespace MyCADUI
 	{
 		public CADEditMainForm()
 		{
+			m_dockPanel.DocumentStyle = DocumentStyle.DockingWindow;
+			m_dockPanel.Dock = DockStyle.Fill;
+			Controls.Add( m_dockPanel );
+			m_dockPanel.DockRightPortion = 0.3;
+
 			// initalize component
 			InitializeComponent();
 			m_tsmiEndCutter.Enabled = false;
@@ -20,12 +26,31 @@ namespace MyCADUI
 			m_tsmiRedo.Enabled = false;
 
 			// initialize viewer
-			bool isSuccess = m_Viewer.InitViewer( m_panViewer.Handle );
+			bool isSuccess = m_Viewer.InitViewer( m_panViewerPanel.Handle );
 			if( isSuccess == false ) {
 				MessageBox.Show( "init failed" );
 			}
 			m_Viewer.SetBackgroundColor( 0, 0, 0 );
 			m_Viewer.IsometricView();
+
+			m_panViewerPanel.Dock = DockStyle.Fill;
+			m_panViewer.Controls.Add( m_panViewerPanel );
+			m_panViewer.Show( m_dockPanel, DockState.Document );
+
+			m_panViewerPanel.Paint += m_panViewerPanel_Paint;
+			m_panViewerPanel.MouseDown += m_panViewerPanel_MouseDown;
+			m_panViewerPanel.MouseMove += m_panViewerPanel_MouseMove;
+			m_panViewerPanel.MouseWheel += m_panViewerPanel_MouseWheel;
+
+			// initialize object browser
+			m_treeObjBrowser.Dock = DockStyle.Fill;
+			m_panObjBrowser.Controls.Add( m_treeObjBrowser );
+			m_panObjBrowser.Show( m_dockPanel, DockState.DockRight );
+
+			// initialize property bar
+			m_propgrdPropertyBar.Dock = DockStyle.Fill;
+			m_panPropertyBar.Controls.Add( m_propgrdPropertyBar );
+			m_panPropertyBar.Show( m_panObjBrowser.Pane, DockAlignment.Bottom, 0.5 );
 
 			// initialize tube editor
 			m_TubeCADEditor = new TubeCADEditor( m_Viewer, m_treeObjBrowser, m_propgrdPropertyBar );
@@ -39,6 +64,7 @@ namespace MyCADUI
 			};
 
 			// set language zh-TW
+			// TODO: any language
 			SetLanguage();
 
 			// set layout property
@@ -48,22 +74,22 @@ namespace MyCADUI
 		}
 
 		// viewer action
-		void m_panViewer_MouseDown( object sender, MouseEventArgs e )
+		void m_panViewerPanel_MouseDown( object sender, MouseEventArgs e )
 		{
 			ViewerMouseAction.MouseDown( e, m_Viewer, ref m_nXMousePosition, ref m_nYMousePosition );
 		}
 
-		void m_panViewer_MouseMove( object sender, MouseEventArgs e )
+		void m_panViewerPanel_MouseMove( object sender, MouseEventArgs e )
 		{
 			ViewerMouseAction.MouseMove( e, m_Viewer, ref m_nXMousePosition, ref m_nYMousePosition );
 		}
 
-		void m_panViewer_MouseWheel( object sender, MouseEventArgs e )
+		void m_panViewerPanel_MouseWheel( object sender, MouseEventArgs e )
 		{
 			ViewerMouseAction.MouseWheel( e, m_Viewer );
 		}
 
-		void m_panViewer_Paint( object sender, PaintEventArgs e )
+		void m_panViewerPanel_Paint( object sender, PaintEventArgs e )
 		{
 			m_Viewer.UpdateView();
 		}
@@ -320,13 +346,13 @@ namespace MyCADUI
 				MessageBox.Show( errorCode.ToString() );
 			}
 			else {
-				m_lblWarnning.Text = errorCode.ToString();
+				// TODO: m_lblWarnning.Text = errorCode.ToString();
 			}
 		}
 
 		void CADEditSuccess()
 		{
-			m_lblWarnning.Text = string.Empty;
+			// TODO: m_lblWarnning.Text = string.Empty;
 		}
 
 		// view action
@@ -442,10 +468,23 @@ namespace MyCADUI
 			}
 		}
 
-		// viewer property
+		// back ground
+		DockPanel m_dockPanel = new DockPanel();
+
+		// viewer
+		DockContent m_panViewer = new DockContent();
+		Panel m_panViewerPanel = new Panel();
 		OCCViewer m_Viewer = new OCCViewer();
 		int m_nXMousePosition = 0;
 		int m_nYMousePosition = 0;
+
+		// object browser
+		DockContent m_panObjBrowser = new DockContent();
+		TreeView m_treeObjBrowser = new TreeView();
+
+		// property bar
+		DockContent m_panPropertyBar = new DockContent();
+		PropertyGrid m_propgrdPropertyBar = new PropertyGrid();
 
 		// tube editor property
 		TubeCADEditor m_TubeCADEditor;

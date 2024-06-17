@@ -27,13 +27,6 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
-			this.m_panViewer = new System.Windows.Forms.Panel();
-			this.m_lblWarnning = new System.Windows.Forms.Label();
-			this.m_panObjBrowser = new System.Windows.Forms.Panel();
-			this.m_treeObjBrowser = new System.Windows.Forms.TreeView();
-			this.m_panPropertyBar = new System.Windows.Forms.Panel();
-			this.m_propgrdPropertyBar = new System.Windows.Forms.PropertyGrid();
-			this.m_panBackGnd = new System.Windows.Forms.Panel();
 			this.m_msMainMenu = new System.Windows.Forms.MenuStrip();
 			this.m_tsmiFile = new System.Windows.Forms.ToolStripMenuItem();
 			this.m_tsmiExport = new System.Windows.Forms.ToolStripMenuItem();
@@ -71,79 +64,8 @@
 			this.m_tsmiBendingNotch_BothSide = new System.Windows.Forms.ToolStripMenuItem();
 			this.m_tsmiBendingNotch_OneSide = new System.Windows.Forms.ToolStripMenuItem();
 			this.m_tsmiAbout = new System.Windows.Forms.ToolStripMenuItem();
-			this.m_panViewer.SuspendLayout();
-			this.m_panObjBrowser.SuspendLayout();
-			this.m_panPropertyBar.SuspendLayout();
-			this.m_panBackGnd.SuspendLayout();
 			this.m_msMainMenu.SuspendLayout();
 			this.SuspendLayout();
-			// 
-			// m_panViewer
-			// 
-			this.m_panViewer.Controls.Add(this.m_lblWarnning);
-			this.m_panViewer.Location = new System.Drawing.Point(0, 0);
-			this.m_panViewer.Name = "m_panViewer";
-			this.m_panViewer.Size = new System.Drawing.Size(500, 600);
-			this.m_panViewer.TabIndex = 0;
-			this.m_panViewer.Paint += new System.Windows.Forms.PaintEventHandler(this.m_panViewer_Paint);
-			this.m_panViewer.MouseDown += new System.Windows.Forms.MouseEventHandler(this.m_panViewer_MouseDown);
-			this.m_panViewer.MouseMove += new System.Windows.Forms.MouseEventHandler(this.m_panViewer_MouseMove);
-			this.m_panViewer.MouseWheel += new System.Windows.Forms.MouseEventHandler(this.m_panViewer_MouseWheel);
-			// 
-			// m_lblWarnning
-			// 
-			this.m_lblWarnning.AutoSize = true;
-			this.m_lblWarnning.BackColor = System.Drawing.SystemColors.ActiveCaptionText;
-			this.m_lblWarnning.Font = new System.Drawing.Font("PMingLiU", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-			this.m_lblWarnning.ForeColor = System.Drawing.Color.Red;
-			this.m_lblWarnning.Location = new System.Drawing.Point(488, 569);
-			this.m_lblWarnning.Name = "m_lblWarnning";
-			this.m_lblWarnning.Size = new System.Drawing.Size(0, 16);
-			this.m_lblWarnning.TabIndex = 0;
-			this.m_lblWarnning.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-			// 
-			// m_panObjBrowser
-			// 
-			this.m_panObjBrowser.Controls.Add(this.m_treeObjBrowser);
-			this.m_panObjBrowser.Location = new System.Drawing.Point(500, 0);
-			this.m_panObjBrowser.Name = "m_panObjBrowser";
-			this.m_panObjBrowser.Size = new System.Drawing.Size(300, 300);
-			this.m_panObjBrowser.TabIndex = 1;
-			// 
-			// m_treeObjBrowser
-			// 
-			this.m_treeObjBrowser.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.m_treeObjBrowser.Location = new System.Drawing.Point(0, 0);
-			this.m_treeObjBrowser.Name = "m_treeObjBrowser";
-			this.m_treeObjBrowser.Size = new System.Drawing.Size(300, 300);
-			this.m_treeObjBrowser.TabIndex = 0;
-			// 
-			// m_panPropertyBar
-			// 
-			this.m_panPropertyBar.Controls.Add(this.m_propgrdPropertyBar);
-			this.m_panPropertyBar.Location = new System.Drawing.Point(500, 300);
-			this.m_panPropertyBar.Name = "m_panPropertyBar";
-			this.m_panPropertyBar.Size = new System.Drawing.Size(300, 300);
-			this.m_panPropertyBar.TabIndex = 2;
-			// 
-			// m_propgrdPropertyBar
-			// 
-			this.m_propgrdPropertyBar.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.m_propgrdPropertyBar.Location = new System.Drawing.Point(0, 0);
-			this.m_propgrdPropertyBar.Name = "m_propgrdPropertyBar";
-			this.m_propgrdPropertyBar.Size = new System.Drawing.Size(300, 300);
-			this.m_propgrdPropertyBar.TabIndex = 0;
-			// 
-			// m_panBackGnd
-			// 
-			this.m_panBackGnd.Controls.Add(this.m_panViewer);
-			this.m_panBackGnd.Controls.Add(this.m_panObjBrowser);
-			this.m_panBackGnd.Controls.Add(this.m_panPropertyBar);
-			this.m_panBackGnd.Dock = System.Windows.Forms.DockStyle.Top;
-			this.m_panBackGnd.Location = new System.Drawing.Point(0, 24);
-			this.m_panBackGnd.Name = "m_panBackGnd";
-			this.m_panBackGnd.Size = new System.Drawing.Size(801, 600);
-			this.m_panBackGnd.TabIndex = 14;
 			// 
 			// m_msMainMenu
 			// 
@@ -448,17 +370,11 @@
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.AutoSize = true;
 			this.ClientSize = new System.Drawing.Size(801, 624);
-			this.Controls.Add(this.m_panBackGnd);
 			this.Controls.Add(this.m_msMainMenu);
 			this.MainMenuStrip = this.m_msMainMenu;
 			this.Name = "CADEditMainForm";
 			this.Text = "Form1";
 			this.Resize += new System.EventHandler(this.CADEditMainForm_Resize);
-			this.m_panViewer.ResumeLayout(false);
-			this.m_panViewer.PerformLayout();
-			this.m_panObjBrowser.ResumeLayout(false);
-			this.m_panPropertyBar.ResumeLayout(false);
-			this.m_panBackGnd.ResumeLayout(false);
 			this.m_msMainMenu.ResumeLayout(false);
 			this.m_msMainMenu.PerformLayout();
 			this.ResumeLayout(false);
@@ -467,13 +383,6 @@
 		}
 
 		#endregion
-
-		private System.Windows.Forms.Panel m_panViewer;
-		private System.Windows.Forms.Panel m_panObjBrowser;
-		private System.Windows.Forms.Panel m_panPropertyBar;
-		private System.Windows.Forms.TreeView m_treeObjBrowser;
-		private System.Windows.Forms.PropertyGrid m_propgrdPropertyBar;
-		private System.Windows.Forms.Panel m_panBackGnd;
 		private System.Windows.Forms.MenuStrip m_msMainMenu;
 		private System.Windows.Forms.ToolStripMenuItem m_tsmiFile;
 		private System.Windows.Forms.ToolStripMenuItem m_tsmiExport;
@@ -508,7 +417,6 @@
 		private System.Windows.Forms.ToolStripMenuItem m_tsmiEdit;
 		private System.Windows.Forms.ToolStripMenuItem m_tsmiUndo;
 		private System.Windows.Forms.ToolStripMenuItem m_tsmiRedo;
-		private System.Windows.Forms.Label m_lblWarnning;
 		private System.Windows.Forms.ToolStripMenuItem m_tsmiOpen;
 		private System.Windows.Forms.ToolStripMenuItem m_tsmiZoomToFit;
 		private System.Windows.Forms.ToolStripMenuItem m_tsmiAbout;
