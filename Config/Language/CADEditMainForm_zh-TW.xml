@@ -21,7 +21,7 @@
   <Message ID="m_tsmiMainTube_Rectangle" Content="矩形" />
   <Message ID="m_tsmiMainTube_Oval" Content="橢圓" />
   <Message ID="m_tsmiMainTube_FlatOval" Content="跑道" />
-  <Message ID="m_tsmiMainTube_DShape" Content="D型" />
+  <Message ID="m_tsmiMainTube_DShape" Content="D形" />
   <Message ID="m_tsmiCADFeature" Content="CAD 特徵" />
   <Message ID="m_tsmiEndCutter" Content="切斷" />
   <Message ID="m_tsmiBranchTube" Content="支管" />
@@ -29,7 +29,7 @@
   <Message ID="m_tsmiBranchTube_Rectangle" Content="矩形" />
   <Message ID="m_tsmiBranchTube_Oval" Content="橢圓" />
   <Message ID="m_tsmiBranchTube_FlatOval" Content="跑道" />
-  <Message ID="m_tsmiBranchTube_DShape" Content="D型" />
+  <Message ID="m_tsmiBranchTube_DShape" Content="D形" />
   <Message ID="m_tsmiBendingNotch" Content="V槽" />
   <Message ID="m_tsmiBendingNotch_VShape" Content="尖角V槽" />
   <Message ID="m_tsmiBendingNotch_BothSide" Content="圓角V槽" />

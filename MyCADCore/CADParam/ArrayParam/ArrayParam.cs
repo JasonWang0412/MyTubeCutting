@@ -7,6 +7,7 @@ namespace MyCADCore
 	{
 		Positive = 0,
 		Negative = 1,
+		Both = 2
 	}
 
 	[Serializable]

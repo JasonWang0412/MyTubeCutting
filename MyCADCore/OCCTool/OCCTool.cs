@@ -220,6 +220,7 @@ namespace MyCADCore
 			return branchTubeMaker.Shape();
 		}
 
+		// make compound
 		internal static TopoDS_Shape MakeCompound( List<TopoDS_Shape> shapeList )
 		{
 			// data protection
@@ -266,16 +267,30 @@ namespace MyCADCore
 			List<TopoDS_Shape> linearArrayShapeList = new List<TopoDS_Shape>();
 			linearArrayShapeList.Add( oneFeature );
 			for( int i = 1; i < arrayParam.LinearCount; i++ ) {
+				if( arrayParam.LinearDirection == ArrayDirection.Positive || arrayParam.LinearDirection == ArrayDirection.Both ) {
 
-				// caluculate the linear offset distance
-				double dOffset = arrayParam.LinearDistance * i * ( arrayParam.LinearDirection == ArrayDirection.Positive ? 1 : -1 );
+					// caluculate the linear offset distance
+					double dOffset = arrayParam.LinearDistance * i;
 
-				// get the transformation along Y axis
-				gp_Trsf trsf = new gp_Trsf();
-				trsf.SetTranslation( new gp_Vec( 0, dOffset, 0 ) );
-				TopoDS_Shape oneLinearCopy = oneFeature.Moved( new TopLoc_Location( trsf ) );
+					// get the transformation along Y axis
+					gp_Trsf trsf = new gp_Trsf();
+					trsf.SetTranslation( new gp_Vec( 0, dOffset, 0 ) );
+					TopoDS_Shape oneLinearCopy = oneFeature.Moved( new TopLoc_Location( trsf ) );
 
-				linearArrayShapeList.Add( oneLinearCopy );
+					linearArrayShapeList.Add( oneLinearCopy );
+				}
+				if( arrayParam.LinearDirection == ArrayDirection.Negative || arrayParam.LinearDirection == ArrayDirection.Both ) {
+
+					// caluculate the linear offset distance
+					double dOffset = arrayParam.LinearDistance * -i;
+
+					// get the transformation along Y axis
+					gp_Trsf trsf = new gp_Trsf();
+					trsf.SetTranslation( new gp_Vec( 0, dOffset, 0 ) );
+					TopoDS_Shape oneLinearCopy = oneFeature.Moved( new TopLoc_Location( trsf ) );
+
+					linearArrayShapeList.Add( oneLinearCopy );
+				}
 			}
 
 			// make angular array
@@ -283,19 +298,38 @@ namespace MyCADCore
 			angularArrayShapeList.Add( linearArrayShapeList );
 			for( int i = 1; i < arrayParam.AngularCount; i++ ) {
 
-				// calculate the angular offset distance
-				double dAngle_Deg = arrayParam.AngularDistance_Deg * i * ( arrayParam.AngularDirection == ArrayDirection.Positive ? 1 : -1 );
+				if( arrayParam.AngularDirection == ArrayDirection.Positive || arrayParam.AngularDirection == ArrayDirection.Both ) {
 
-				// get the transformation around Y axis
-				gp_Trsf trsf = new gp_Trsf();
-				trsf.SetRotation( new gp_Ax1( new gp_Pnt( 0, 0, 0 ), new gp_Dir( 0, -1, 0 ) ), dAngle_Deg * Math.PI / 180 );
+					// calculate the angular offset distance
+					double dAngle_Deg = arrayParam.AngularDistance_Deg * i;
 
-				List<TopoDS_Shape> oneAngularArray = new List<TopoDS_Shape>();
-				foreach( TopoDS_Shape oneLinearCopy in linearArrayShapeList ) {
-					TopoDS_Shape oneAngularCopy = oneLinearCopy.Moved( new TopLoc_Location( trsf ) );
-					oneAngularArray.Add( oneAngularCopy );
+					// get the transformation around Y axis
+					gp_Trsf trsf = new gp_Trsf();
+					trsf.SetRotation( new gp_Ax1( new gp_Pnt( 0, 0, 0 ), new gp_Dir( 0, -1, 0 ) ), dAngle_Deg * Math.PI / 180 );
+
+					List<TopoDS_Shape> oneAngularArray = new List<TopoDS_Shape>();
+					foreach( TopoDS_Shape oneLinearCopy in linearArrayShapeList ) {
+						TopoDS_Shape oneAngularCopy = oneLinearCopy.Moved( new TopLoc_Location( trsf ) );
+						oneAngularArray.Add( oneAngularCopy );
+					}
+					angularArrayShapeList.Add( oneAngularArray );
 				}
-				angularArrayShapeList.Add( oneAngularArray );
+				if( arrayParam.AngularDirection == ArrayDirection.Negative || arrayParam.AngularDirection == ArrayDirection.Both ) {
+
+					// calculate the angular offset distance
+					double dAngle_Deg = arrayParam.AngularDistance_Deg * -i;
+
+					// get the transformation around Y axis
+					gp_Trsf trsf = new gp_Trsf();
+					trsf.SetRotation( new gp_Ax1( new gp_Pnt( 0, 0, 0 ), new gp_Dir( 0, -1, 0 ) ), dAngle_Deg * Math.PI / 180 );
+
+					List<TopoDS_Shape> oneAngularArray = new List<TopoDS_Shape>();
+					foreach( TopoDS_Shape oneLinearCopy in linearArrayShapeList ) {
+						TopoDS_Shape oneAngularCopy = oneLinearCopy.Moved( new TopLoc_Location( trsf ) );
+						oneAngularArray.Add( oneAngularCopy );
+					}
+					angularArrayShapeList.Add( oneAngularArray );
+				}
 			}
 
 			// make coumpound

@@ -1,4 +1,5 @@
 ﻿using MyCADCore;
+using MyLanguageManager;
 using OCC.AIS;
 using OCC.gp;
 using OCC.Graphic3d;
@@ -52,11 +53,12 @@ namespace MyCADUI
 		// object browser map
 		TreeNode m_MainTubeNode;
 
-		// action
+		// feature name
 		int m_nEndCutterCount = 1;
 		int m_nBranchTubeCount = 1;
 		int m_nBendingNotchCount = 1;
-		const string MAIN_TUBE_NAME = "MainTube";
+		string m_szMainTubeName = "MainTube";
+		LanguageManager m_LanguageManager = new LanguageManager( "TubeCADEditor" );
 
 		// command
 		List<ICADEditCommand> m_CADEditUndoCommandQueue = new List<ICADEditCommand>();
@@ -118,7 +120,8 @@ namespace MyCADUI
 				return;
 			}
 
-			AddMainTubeCommand command = new AddMainTubeCommand( MAIN_TUBE_NAME, mainTubeParam, m_CADFeatureParamMap );
+			m_szMainTubeName = GetMainTubeName( mainTubeParam );
+			AddMainTubeCommand command = new AddMainTubeCommand( m_szMainTubeName, mainTubeParam, m_CADFeatureParamMap );
 			DoCommand( command );
 		}
 
@@ -141,7 +144,7 @@ namespace MyCADUI
 			// check special case if feature type is bending notch
 			CheckFeatureSpecialCase( cadFeatureParam );
 
-			string szName = GetNewCADFeatureName( cadFeatureParam.Type );
+			string szName = GetNewCADFeatureName( cadFeatureParam );
 			AddCadFeatureCommand command = new AddCadFeatureCommand( szName, cadFeatureParam, m_CADFeatureParamMap );
 			DoCommand( command );
 		}
@@ -176,8 +179,8 @@ namespace MyCADUI
 			}
 
 			// main tube
-			if( szObjecName == MAIN_TUBE_NAME ) {
-				ModifyMainTubeCommand command = new ModifyMainTubeCommand( MAIN_TUBE_NAME, CloneHelper.Clone( editingParam ), m_CADFeatureParamMap );
+			if( szObjecName == m_szMainTubeName ) {
+				ModifyMainTubeCommand command = new ModifyMainTubeCommand( m_szMainTubeName, CloneHelper.Clone( editingParam ), m_CADFeatureParamMap );
 				DoCommand( command );
 			}
 
@@ -205,12 +208,12 @@ namespace MyCADUI
 			}
 
 			// remove main tube
-			if( szObjectName == MAIN_TUBE_NAME ) {
+			if( szObjectName == m_szMainTubeName ) {
 				if( m_CADFeatureParamMap.FeatureMap.Count != 0 ) {
 					CADEditErrorEvent?.Invoke( CADEditErrorCode.CanNotRemoveMainTube );
 					return;
 				}
-				RemoveMainTubeCommand command = new RemoveMainTubeCommand( MAIN_TUBE_NAME, m_CADFeatureParamMap );
+				RemoveMainTubeCommand command = new RemoveMainTubeCommand( m_szMainTubeName, m_CADFeatureParamMap );
 				DoCommand( command );
 			}
 
@@ -234,7 +237,7 @@ namespace MyCADUI
 			}
 
 			// main tube
-			if( szObjectName == MAIN_TUBE_NAME
+			if( szObjectName == m_szMainTubeName
 				&& m_CADFeatureParamMap.MainTubeParam != null ) {
 				return new gp_Dir( 0, 1, 0 );
 			}
@@ -339,6 +342,7 @@ namespace MyCADUI
 				return;
 			}
 			m_CADFeatureParamMap = loadedMap;
+			m_szMainTubeName = GetMainTubeName( m_CADFeatureParamMap.MainTubeParam );
 
 			// update object browser and update property bar
 			m_bSupressBrowserSelectEvent = true;
@@ -444,12 +448,12 @@ namespace MyCADUI
 				}
 
 				// add new main tube node
-				m_MainTubeNode = m_treeObjBrowser.Nodes.Add( MAIN_TUBE_NAME, MAIN_TUBE_NAME );
+				m_MainTubeNode = m_treeObjBrowser.Nodes.Add( m_szMainTubeName, m_szMainTubeName );
 				m_treeObjBrowser.Focus();
 				m_treeObjBrowser.SelectedNode = m_MainTubeNode;
 
 				// update property bar
-				ShowObjectProperty( MAIN_TUBE_NAME );
+				ShowObjectProperty( m_szMainTubeName );
 
 				// invoke the main tube status changed event
 				MainTubeStatusChanged?.Invoke( true );
@@ -566,7 +570,7 @@ namespace MyCADUI
 			if( m_CADFeatureParamMap.MainTubeParam == null ) {
 				return;
 			}
-			m_MainTubeNode = m_treeObjBrowser.Nodes.Add( MAIN_TUBE_NAME, MAIN_TUBE_NAME );
+			m_MainTubeNode = m_treeObjBrowser.Nodes.Add( m_szMainTubeName, m_szMainTubeName );
 
 			// add cad feature node, and select node
 			foreach( var pair in m_CADFeatureParamMap.FeatureMap ) {
@@ -650,17 +654,58 @@ namespace MyCADUI
 			m_Viewer.UpdateView();
 		}
 
-		string GetNewCADFeatureName( CADFeatureType type )
+		string GetNewCADFeatureName( ICADFeatureParam param )
 		{
+			CADFeatureType type = param.Type;
 			switch( type ) {
 				case CADFeatureType.EndCutter:
-					return "EndCutter" + m_nEndCutterCount++;
+					return m_LanguageManager.GetString( "EndCutter" ) + "_" + m_nEndCutterCount++;
 				case CADFeatureType.BranchTube:
-					return "BranchTube" + m_nBranchTubeCount++;
+					CADft_BranchTubeParam branchTubeParam = param as CADft_BranchTubeParam;
+					string szBranchTubeShapeName = GetGeom2DShapeName( branchTubeParam.Shape.Type );
+					return m_LanguageManager.GetString( "BranchTube" ) + "_" + szBranchTubeShapeName + "_" + m_nBranchTubeCount++;
 				case CADFeatureType.BendingNotch:
-					return "BendingNotch" + m_nBendingNotchCount++;
+					CADft_BendingNotchParam bendingNotchParam = param as CADft_BendingNotchParam;
+					string szBendingNotchShapeName = string.Empty;
+					switch( bendingNotchParam.Shape.Type ) {
+						case BendingNotch_Type.VShape:
+							szBendingNotchShapeName = m_LanguageManager.GetString( "VShape" );
+							break;
+						case BendingNotch_Type.BothSide:
+							szBendingNotchShapeName = m_LanguageManager.GetString( "BothSide" );
+							break;
+						case BendingNotch_Type.OneSide:
+							szBendingNotchShapeName = m_LanguageManager.GetString( "OneSide" );
+							break;
+						default:
+							break;
+					}
+					return m_LanguageManager.GetString( "BendingNotch" ) + "_" + szBendingNotchShapeName + "_" + m_nBendingNotchCount++;
 				default:
 					return "NewFeature";
+			}
+		}
+
+		string GetMainTubeName( CADft_MainTubeParam mainTUbeParam )
+		{
+			return m_LanguageManager.GetString( "MainTube" ) + "_" + GetGeom2DShapeName( mainTUbeParam.CrossSection.Shape.Type );
+		}
+
+		string GetGeom2DShapeName( Geom2D_Type type )
+		{
+			switch( type ) {
+				case Geom2D_Type.Circle:
+					return m_LanguageManager.GetString( "Circle" );
+				case Geom2D_Type.Rectangle:
+					return m_LanguageManager.GetString( "Rectangle" );
+				case Geom2D_Type.Oval:
+					return m_LanguageManager.GetString( "Oval" );
+				case Geom2D_Type.FlatOval:
+					return m_LanguageManager.GetString( "FlatOval" );
+				case Geom2D_Type.DShape:
+					return m_LanguageManager.GetString( "DShape" );
+				default:
+					return string.Empty;
 			}
 		}
 
@@ -673,7 +718,7 @@ namespace MyCADUI
 			HideAllShapeExceptMainTube();
 
 			// just hide all shape except main tube
-			if( szObjectName == MAIN_TUBE_NAME ) {
+			if( szObjectName == m_szMainTubeName ) {
 				return;
 			}
 
@@ -699,7 +744,7 @@ namespace MyCADUI
 			ICADFeatureParam editingObjParam;
 
 			// main tube
-			if( szObjectName == MAIN_TUBE_NAME ) {
+			if( szObjectName == m_szMainTubeName ) {
 				if( m_CADFeatureParamMap.MainTubeParam == null ) {
 					CADEditErrorEvent?.Invoke( CADEditErrorCode.NoSelectedObject );
 					return;
