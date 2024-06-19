@@ -1,6 +1,6 @@
 ﻿namespace MyCADUI
 {
-	internal enum CADEditErrorCode
+	public enum CADEditErrorCode
 	{
 		// process error
 		NullParam = 0,

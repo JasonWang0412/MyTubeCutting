@@ -15,7 +15,7 @@ using Utility;
 
 namespace MyCADUI
 {
-	internal enum ViewDir
+	public enum ViewDir
 	{
 		Top,
 		Bottom,
@@ -28,7 +28,7 @@ namespace MyCADUI
 		Dir_Neg,
 	}
 
-	internal class TubeCADEditor
+	public class TubeCADEditor
 	{
 		// GUI
 		Panel m_panViewer = new Panel();
@@ -63,22 +63,22 @@ namespace MyCADUI
 		// command
 		List<ICADEditCommand> m_CADEditUndoCommandQueue = new List<ICADEditCommand>();
 		List<ICADEditCommand> m_CADEditRedoCommandQueue = new List<ICADEditCommand>();
-		internal delegate void CommandStatusChangedEventHandler( bool bUndo, bool bRedo );
-		internal event CommandStatusChangedEventHandler CommandStatusChanged;
+		public delegate void CommandStatusChangedEventHandler( bool bUndo, bool bRedo );
+		public event CommandStatusChangedEventHandler CommandStatusChanged;
 
 		// main tube status changed event
-		internal delegate void MainTubeStatusChangedEventHandler( bool bExistMainTube );
-		internal event MainTubeStatusChangedEventHandler MainTubeStatusChanged;
+		public delegate void MainTubeStatusChangedEventHandler( bool bExistMainTube );
+		public event MainTubeStatusChangedEventHandler MainTubeStatusChanged;
 
 		// cad edit error event
-		internal delegate void CADEditErrorEventHandler( CADEditErrorCode errorCode );
-		internal event CADEditErrorEventHandler CADEditErrorEvent;
+		public delegate void CADEditErrorEventHandler( CADEditErrorCode errorCode );
+		public event CADEditErrorEventHandler CADEditErrorEvent;
 
 		// cad edit sucess event
-		internal delegate void CADEditSuccessEventHandler();
-		internal event CADEditSuccessEventHandler CADEditSuccessEvent;
+		public delegate void CADEditSuccessEventHandler();
+		public event CADEditSuccessEventHandler CADEditSuccessEvent;
 
-		internal TubeCADEditor()
+		public TubeCADEditor()
 		{
 			bool isSuccess = m_Viewer.InitViewer( m_panViewer.Handle );
 			if( isSuccess == false ) {
@@ -108,7 +108,7 @@ namespace MyCADUI
 			m_propgrdPropertyBar.PropertyValueChanged += m_propgrdPropertyBar_PropertyValueChanged;
 		}
 
-		internal void AddMainTube( CADft_MainTubeParam mainTubeParam )
+		public void AddMainTube( CADft_MainTubeParam mainTubeParam )
 		{
 			// data protection
 			if( mainTubeParam == null ) {
@@ -124,7 +124,7 @@ namespace MyCADUI
 			DoCommand( command );
 		}
 
-		internal void AddCADFeature( ICADFeatureParam cadFeatureParam )
+		public void AddCADFeature( ICADFeatureParam cadFeatureParam )
 		{
 			// data protection
 			if( m_CADFeatureParamMap.MainTubeParam == null ) {
@@ -148,7 +148,7 @@ namespace MyCADUI
 			DoCommand( command );
 		}
 
-		internal void ModifyCADFeature()
+		public void ModifyCADFeature()
 		{
 			// data protection
 			if( m_treeObjBrowser.SelectedNode == null ) {
@@ -193,7 +193,7 @@ namespace MyCADUI
 			}
 		}
 
-		internal void RemoveCADFeature()
+		public void RemoveCADFeature()
 		{
 			// data protection
 			if( m_treeObjBrowser.SelectedNode == null ) {
@@ -223,7 +223,7 @@ namespace MyCADUI
 			}
 		}
 
-		internal gp_Dir GetEditObjectDir()
+		public gp_Dir GetEditObjectDir()
 		{
 			// data protection
 			if( m_treeObjBrowser.SelectedNode == null ) {
@@ -251,7 +251,7 @@ namespace MyCADUI
 			return new gp_Dir( 0, 1, 0 );
 		}
 
-		internal void Undo()
+		public void Undo()
 		{
 			// no command to undo
 			if( m_CADEditUndoCommandQueue.Count == 0 ) {
@@ -271,7 +271,7 @@ namespace MyCADUI
 			CommandStatusChanged?.Invoke( m_CADEditUndoCommandQueue.Count != 0, true );
 		}
 
-		internal void Redo()
+		public void Redo()
 		{
 			// no command to redo
 			if( m_CADEditRedoCommandQueue.Count == 0 ) {
@@ -291,7 +291,7 @@ namespace MyCADUI
 			CommandStatusChanged?.Invoke( true, m_CADEditRedoCommandQueue.Count != 0 );
 		}
 
-		internal void ExportStep()
+		public void ExportStep()
 		{
 			// file directory
 			string szFileDir = Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "OutPut" );
@@ -319,7 +319,7 @@ namespace MyCADUI
 		}
 
 		// TODO: compelte the implementation
-		internal void OpenMapFile()
+		public void OpenMapFile()
 		{
 			CADFeatureParamMap loadedMap;
 
@@ -365,17 +365,17 @@ namespace MyCADUI
 		}
 
 		// layout property
-		internal Panel ViewerPanel => m_panViewer;
+		public Panel ViewerPanel => m_panViewer;
 
-		internal Panel ObjectBrowserPanel => m_panObjBrowser;
+		public Panel ObjectBrowserPanel => m_panObjBrowser;
 
-		internal Panel PropertyBarPanel => m_panPropertyBar;
+		public Panel PropertyBarPanel => m_panPropertyBar;
 
 		// viewer pointer
-		internal OCCViewer Viewer => m_Viewer;
+		public OCCViewer Viewer => m_Viewer;
 
 		// view direction
-		internal void SetViewDir( ViewDir dir )
+		public void SetViewDir( ViewDir dir )
 		{
 			switch( dir ) {
 				case ViewDir.Top:
@@ -411,7 +411,7 @@ namespace MyCADUI
 			m_Viewer.ZoomAllView();
 		}
 
-		internal void ZoomToFit()
+		public void ZoomToFit()
 		{
 			m_Viewer.ZoomAllView();
 		}
