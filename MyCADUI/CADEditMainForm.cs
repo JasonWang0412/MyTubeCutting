@@ -1,7 +1,11 @@
 ﻿using MyCADCore;
 using MyLanguageManager;
 using MyUIDisplayModel;
+using OCC.STEPControl;
+using OCC.TopoDS;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Windows.Forms;
 using WeifenLuo.WinFormsUI.Docking;
 
@@ -263,7 +267,20 @@ namespace MyCADUI
 
 		void m_tsmiExport_Click( object sender, System.EventArgs e )
 		{
-			m_TubeCADEditor.ExportStep();
+			TopoDS_Shape resultTube = m_TubeCADEditor.GetResultTube();
+			if( resultTube == null ) {
+				return;
+			}
+
+			// file directory
+			string szFileDir = Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "OutPut" );
+			Directory.CreateDirectory( szFileDir );
+
+			// save step file
+			string szStepFilePath = Path.Combine( szFileDir, "result.stp" );
+			STEPControl_Writer writer = new STEPControl_Writer();
+			writer.Transfer( resultTube, STEPControl_StepModelType.STEPControl_AsIs );
+			writer.Write( szStepFilePath );
 		}
 
 		void m_tsmiOpen_Click( object sender, System.EventArgs e )

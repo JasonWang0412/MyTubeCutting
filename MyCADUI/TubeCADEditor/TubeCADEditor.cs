@@ -3,7 +3,6 @@ using MyLanguageManager;
 using OCC.AIS;
 using OCC.gp;
 using OCC.Graphic3d;
-using OCC.STEPControl;
 using OCC.TopoDS;
 using System;
 using System.Collections.Generic;
@@ -291,31 +290,15 @@ namespace MyCADUI
 			CommandStatusChanged?.Invoke( true, m_CADEditRedoCommandQueue.Count != 0 );
 		}
 
-		public void ExportStep()
+		public TopoDS_Shape GetResultTube()
 		{
-			// file directory
-			string szFileDir = Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "OutPut" );
-			Directory.CreateDirectory( szFileDir );
-
-			// save map file
-			string szMapFilePath = Path.Combine( szFileDir, "map.dat" );
-			using( FileStream stream = new FileStream( szMapFilePath, FileMode.Create ) ) {
-				BinaryFormatter formatter = new BinaryFormatter();
-				formatter.Serialize( stream, m_CADFeatureParamMap );
-			}
-
 			// make result tube
 			TopoDS_Shape resultTube = CADFeatureMaker.MakeResultTube( m_CADFeatureParamMap );
 			if( resultTube == null ) {
 				CADEditErrorEvent?.Invoke( CADEditErrorCode.MakeShapeFailed );
-				return;
+				return null;
 			}
-
-			// save step file
-			string szStepFilePath = Path.Combine( szFileDir, "result.stp" );
-			STEPControl_Writer writer = new STEPControl_Writer();
-			writer.Transfer( resultTube, STEPControl_StepModelType.STEPControl_AsIs );
-			writer.Write( szStepFilePath );
+			return resultTube;
 		}
 
 		// TODO: compelte the implementation
@@ -370,9 +353,6 @@ namespace MyCADUI
 		public Panel ObjectBrowserPanel => m_panObjBrowser;
 
 		public Panel PropertyBarPanel => m_panPropertyBar;
-
-		// viewer pointer
-		public OCCViewer Viewer => m_Viewer;
 
 		// view direction
 		public void SetViewDir( ViewDir dir )
