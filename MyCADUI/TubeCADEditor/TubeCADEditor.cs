@@ -48,16 +48,16 @@ namespace MyCADUI
 
 		// display shape map
 		AIS_Shape m_ResultTubeAIS;
-		Dictionary<string, AIS_Shape> m_CADFeatureNameAISMap = new Dictionary<string, AIS_Shape>();
+		Dictionary<string, AIS_Shape> m_CADFeatureID2AISMap = new Dictionary<string, AIS_Shape>();
 
 		// object browser map
 		TreeNode m_MainTubeNode;
 
-		// feature name
+		// feature ID
 		int m_nEndCutterCount = 1;
 		int m_nBranchTubeCount = 1;
 		int m_nBendingNotchCount = 1;
-		string m_szMainTubeName = "MainTube";
+		const string MAIN_TUBE_ID = "MainTube";
 		LanguageManager m_LanguageManager = new LanguageManager( "TubeCADEditor" );
 
 		// command
@@ -120,8 +120,7 @@ namespace MyCADUI
 				return;
 			}
 
-			m_szMainTubeName = GetMainTubeName( mainTubeParam );
-			AddMainTubeCommand command = new AddMainTubeCommand( m_szMainTubeName, mainTubeParam, m_CADFeatureParamMap );
+			AddMainTubeCommand command = new AddMainTubeCommand( MAIN_TUBE_ID, mainTubeParam, m_CADFeatureParamMap );
 			DoCommand( command );
 		}
 
@@ -144,8 +143,8 @@ namespace MyCADUI
 			// check special case if feature type is bending notch
 			CheckFeatureSpecialCase( cadFeatureParam );
 
-			string szName = GetNewCADFeatureName( cadFeatureParam );
-			AddCadFeatureCommand command = new AddCadFeatureCommand( szName, cadFeatureParam, m_CADFeatureParamMap );
+			string szID = GetCADFeatureID( cadFeatureParam );
+			AddCadFeatureCommand command = new AddCadFeatureCommand( szID, cadFeatureParam, m_CADFeatureParamMap );
 			DoCommand( command );
 		}
 
@@ -156,8 +155,8 @@ namespace MyCADUI
 				CADEditErrorEvent?.Invoke( CADEditErrorCode.NoSelectedObject );
 				return;
 			}
-			string szObjecName = m_treeObjBrowser.SelectedNode.Text;
-			if( string.IsNullOrEmpty( szObjecName ) ) {
+			string szObjecID = m_treeObjBrowser.SelectedNode.Name;
+			if( string.IsNullOrEmpty( szObjecID ) ) {
 				CADEditErrorEvent?.Invoke( CADEditErrorCode.NoSelectedObject );
 				return;
 			}
@@ -174,13 +173,13 @@ namespace MyCADUI
 				CADEditErrorEvent?.Invoke( CADEditErrorCode.InvalidParam );
 
 				// show original property when modify failed
-				ShowObjectProperty( szObjecName );
+				ShowObjectProperty( szObjecID );
 				return;
 			}
 
 			// main tube
-			if( szObjecName == m_szMainTubeName ) {
-				ModifyMainTubeCommand command = new ModifyMainTubeCommand( m_szMainTubeName, CloneHelper.Clone( editingParam ), m_CADFeatureParamMap );
+			if( szObjecID == MAIN_TUBE_ID ) {
+				ModifyMainTubeCommand command = new ModifyMainTubeCommand( MAIN_TUBE_ID, CloneHelper.Clone( editingParam ), m_CADFeatureParamMap );
 				DoCommand( command );
 			}
 
@@ -189,7 +188,7 @@ namespace MyCADUI
 
 				// check special case if feature type is bending notch
 				CheckFeatureSpecialCase( editingParam );
-				ModifyCadFeatureCommand command = new ModifyCadFeatureCommand( szObjecName, CloneHelper.Clone( editingParam ), m_CADFeatureParamMap );
+				ModifyCadFeatureCommand command = new ModifyCadFeatureCommand( szObjecID, CloneHelper.Clone( editingParam ), m_CADFeatureParamMap );
 				DoCommand( command );
 			}
 		}
@@ -201,25 +200,25 @@ namespace MyCADUI
 				CADEditErrorEvent?.Invoke( CADEditErrorCode.NoSelectedObject );
 				return;
 			}
-			string szObjectName = m_treeObjBrowser.SelectedNode.Text;
-			if( string.IsNullOrEmpty( szObjectName ) ) {
+			string szObjectID = m_treeObjBrowser.SelectedNode.Name;
+			if( string.IsNullOrEmpty( szObjectID ) ) {
 				CADEditErrorEvent?.Invoke( CADEditErrorCode.NoSelectedObject );
 				return;
 			}
 
 			// remove main tube
-			if( szObjectName == m_szMainTubeName ) {
+			if( szObjectID == MAIN_TUBE_ID ) {
 				if( m_CADFeatureParamMap.FeatureMap.Count != 0 ) {
 					CADEditErrorEvent?.Invoke( CADEditErrorCode.CanNotRemoveMainTube );
 					return;
 				}
-				RemoveMainTubeCommand command = new RemoveMainTubeCommand( m_szMainTubeName, m_CADFeatureParamMap );
+				RemoveMainTubeCommand command = new RemoveMainTubeCommand( MAIN_TUBE_ID, m_CADFeatureParamMap );
 				DoCommand( command );
 			}
 
 			// remove cad feature
 			else {
-				RemoveCadFeatureCommand command = new RemoveCadFeatureCommand( szObjectName, m_CADFeatureParamMap );
+				RemoveCadFeatureCommand command = new RemoveCadFeatureCommand( szObjectID, m_CADFeatureParamMap );
 				DoCommand( command );
 			}
 		}
@@ -231,21 +230,21 @@ namespace MyCADUI
 				return new gp_Dir( 0, 1, 0 );
 			}
 
-			string szObjectName = m_treeObjBrowser.SelectedNode.Text;
-			if( string.IsNullOrEmpty( szObjectName ) ) {
+			string szObjectID = m_treeObjBrowser.SelectedNode.Name;
+			if( string.IsNullOrEmpty( szObjectID ) ) {
 				return new gp_Dir( 0, 1, 0 );
 			}
 
 			// main tube
-			if( szObjectName == m_szMainTubeName
+			if( szObjectID == MAIN_TUBE_ID
 				&& m_CADFeatureParamMap.MainTubeParam != null ) {
 				return new gp_Dir( 0, 1, 0 );
 			}
 
 			// cad feature
-			if( m_CADFeatureParamMap.FeatureMap.ContainsKey( szObjectName )
-				&& m_CADFeatureParamMap.FeatureMap[ szObjectName ] != null ) {
-				return CADFeatureMaker.GetCADFeatureDir( m_CADFeatureParamMap.FeatureMap[ szObjectName ] );
+			if( m_CADFeatureParamMap.FeatureMap.ContainsKey( szObjectID )
+				&& m_CADFeatureParamMap.FeatureMap[ szObjectID ] != null ) {
+				return CADFeatureMaker.GetCADFeatureDir( m_CADFeatureParamMap.FeatureMap[ szObjectID ] );
 			}
 
 			// default dir
@@ -342,7 +341,6 @@ namespace MyCADUI
 				return;
 			}
 			m_CADFeatureParamMap = loadedMap;
-			m_szMainTubeName = GetMainTubeName( m_CADFeatureParamMap.MainTubeParam );
 
 			// update object browser and update property bar
 			m_bSupressBrowserSelectEvent = true;
@@ -431,10 +429,10 @@ namespace MyCADUI
 			return true;
 		}
 
-		void UpdateEditorAfterCommand( EditType type, string szObjectName )
+		void UpdateEditorAfterCommand( EditType type, string szObjectID )
 		{
 			// data protection
-			if( string.IsNullOrEmpty( szObjectName ) ) {
+			if( string.IsNullOrEmpty( szObjectID ) ) {
 				return;
 			}
 
@@ -448,12 +446,12 @@ namespace MyCADUI
 				}
 
 				// add new main tube node
-				m_MainTubeNode = m_treeObjBrowser.Nodes.Add( m_szMainTubeName, m_szMainTubeName );
+				m_MainTubeNode = m_treeObjBrowser.Nodes.Add( MAIN_TUBE_ID, GetMainTubeDisplayName( m_CADFeatureParamMap.MainTubeParam ) );
 				m_treeObjBrowser.Focus();
 				m_treeObjBrowser.SelectedNode = m_MainTubeNode;
 
 				// update property bar
-				ShowObjectProperty( m_szMainTubeName );
+				ShowObjectProperty( MAIN_TUBE_ID );
 
 				// invoke the main tube status changed event
 				MainTubeStatusChanged?.Invoke( true );
@@ -480,42 +478,42 @@ namespace MyCADUI
 
 				// update object browser
 				// reconstruct object browser here to ensure the order of the node in case of undo remove
-				ReconstructObjectBrowser( szObjectName );
+				ReconstructObjectBrowser( szObjectID );
 
 				// update property bar
-				ShowObjectProperty( szObjectName );
+				ShowObjectProperty( szObjectID );
 
 				// update cad feature display
-				if( m_CADFeatureParamMap.FeatureMap.ContainsKey( szObjectName ) == false || m_CADFeatureParamMap.FeatureMap[ szObjectName ] == null ) {
+				if( m_CADFeatureParamMap.FeatureMap.ContainsKey( szObjectID ) == false || m_CADFeatureParamMap.FeatureMap[ szObjectID ] == null ) {
 					CADEditErrorEvent?.Invoke( CADEditErrorCode.NoSelectedObject );
 					return;
 				}
-				AIS_Shape cadFeatureAIS = CADFeatureMaker.MakeCADFeatureAIS( m_CADFeatureParamMap.FeatureMap[ szObjectName ], m_CADFeatureParamMap.MainTubeParam );
+				AIS_Shape cadFeatureAIS = CADFeatureMaker.MakeCADFeatureAIS( m_CADFeatureParamMap.FeatureMap[ szObjectID ], m_CADFeatureParamMap.MainTubeParam );
 				if( cadFeatureAIS == null ) {
 					CADEditErrorEvent?.Invoke( CADEditErrorCode.MakeShapeFailed );
 					return;
 				}
-				m_CADFeatureNameAISMap[ szObjectName ] = cadFeatureAIS;
-				DisplayObjectShape( szObjectName );
+				m_CADFeatureID2AISMap[ szObjectID ] = cadFeatureAIS;
+				DisplayObjectShape( szObjectID );
 			}
 			else if( type == EditType.RemoveCADFeature ) {
 
 				// update object browser
-				m_MainTubeNode.Nodes.RemoveByKey( szObjectName );
-				string szNextObjectName = string.Empty;
+				m_MainTubeNode.Nodes.RemoveByKey( szObjectID );
+				string szNextObjectID = string.Empty;
 				if( m_treeObjBrowser.SelectedNode != null ) {
-					szNextObjectName = m_treeObjBrowser.SelectedNode.Text;
+					szNextObjectID = m_treeObjBrowser.SelectedNode.Name;
 				}
 
 				// update property bar
-				ShowObjectProperty( szNextObjectName );
+				ShowObjectProperty( szNextObjectID );
 
 				// update cad feature display
-				if( m_CADFeatureNameAISMap.ContainsKey( szObjectName ) ) {
-					m_Viewer.GetAISContext().Remove( m_CADFeatureNameAISMap[ szObjectName ], false );
-					m_CADFeatureNameAISMap.Remove( szObjectName );
+				if( m_CADFeatureID2AISMap.ContainsKey( szObjectID ) ) {
+					m_Viewer.GetAISContext().Remove( m_CADFeatureID2AISMap[ szObjectID ], false );
+					m_CADFeatureID2AISMap.Remove( szObjectID );
 				}
-				DisplayObjectShape( szNextObjectName );
+				DisplayObjectShape( szNextObjectID );
 			}
 			else if( type == EditType.ModifyCADFeature ) {
 
@@ -523,25 +521,25 @@ namespace MyCADUI
 
 				// update property bar
 				// this is to ensure the dynamic property reloaded
-				ShowObjectProperty( szObjectName );
+				ShowObjectProperty( szObjectID );
 
 				// update cad feature display
-				if( m_CADFeatureParamMap.FeatureMap.ContainsKey( szObjectName ) == false || m_CADFeatureParamMap.FeatureMap[ szObjectName ] == null ) {
+				if( m_CADFeatureParamMap.FeatureMap.ContainsKey( szObjectID ) == false || m_CADFeatureParamMap.FeatureMap[ szObjectID ] == null ) {
 					CADEditErrorEvent?.Invoke( CADEditErrorCode.NoSelectedObject );
 					return;
 				}
-				ICADFeatureParam cadFeatureParam = m_CADFeatureParamMap.FeatureMap[ szObjectName ];
+				ICADFeatureParam cadFeatureParam = m_CADFeatureParamMap.FeatureMap[ szObjectID ];
 				AIS_Shape newCADFeatureAIS = CADFeatureMaker.MakeCADFeatureAIS( cadFeatureParam, m_CADFeatureParamMap.MainTubeParam );
 				if( newCADFeatureAIS == null ) {
 					CADEditErrorEvent?.Invoke( CADEditErrorCode.MakeShapeFailed );
 					return;
 				}
-				if( m_CADFeatureNameAISMap.ContainsKey( szObjectName ) ) {
-					m_Viewer.GetAISContext().Remove( m_CADFeatureNameAISMap[ szObjectName ], false );
-					m_CADFeatureNameAISMap.Remove( szObjectName );
+				if( m_CADFeatureID2AISMap.ContainsKey( szObjectID ) ) {
+					m_Viewer.GetAISContext().Remove( m_CADFeatureID2AISMap[ szObjectID ], false );
+					m_CADFeatureID2AISMap.Remove( szObjectID );
 				}
-				m_CADFeatureNameAISMap[ szObjectName ] = newCADFeatureAIS;
-				DisplayObjectShape( szObjectName );
+				m_CADFeatureID2AISMap[ szObjectID ] = newCADFeatureAIS;
+				DisplayObjectShape( szObjectID );
 			}
 			m_bSupressBrowserSelectEvent = false;
 
@@ -570,14 +568,14 @@ namespace MyCADUI
 			if( m_CADFeatureParamMap.MainTubeParam == null ) {
 				return;
 			}
-			m_MainTubeNode = m_treeObjBrowser.Nodes.Add( m_szMainTubeName, m_szMainTubeName );
+			m_MainTubeNode = m_treeObjBrowser.Nodes.Add( MAIN_TUBE_ID, GetMainTubeDisplayName( m_CADFeatureParamMap.MainTubeParam ) );
 
 			// add cad feature node, and select node
 			foreach( var pair in m_CADFeatureParamMap.FeatureMap ) {
 				if( string.IsNullOrEmpty( pair.Key ) ) {
 					continue;
 				}
-				TreeNode newNode = m_MainTubeNode.Nodes.Add( pair.Key, pair.Key );
+				TreeNode newNode = m_MainTubeNode.Nodes.Add( pair.Key, GetCADFeatureDisplayName( pair.Key, pair.Value ) );
 				if( pair.Key == szSelectNodeName ) {
 					m_treeObjBrowser.SelectedNode = newNode;
 				}
@@ -635,7 +633,7 @@ namespace MyCADUI
 			m_Viewer.GetAISContext().RemoveAll( false );
 
 			// remove all shape from map
-			m_CADFeatureNameAISMap.Clear();
+			m_CADFeatureID2AISMap.Clear();
 
 			// make new shape and add to map
 			foreach( var pair in m_CADFeatureParamMap.FeatureMap ) {
@@ -647,23 +645,24 @@ namespace MyCADUI
 					CADEditErrorEvent?.Invoke( CADEditErrorCode.MakeShapeFailed );
 					continue;
 				}
-				m_CADFeatureNameAISMap[ pair.Key ] = cadFeatureAIS;
+				m_CADFeatureID2AISMap[ pair.Key ] = cadFeatureAIS;
 			}
 
 			// update display
 			m_Viewer.UpdateView();
 		}
 
-		string GetNewCADFeatureName( ICADFeatureParam param )
+		string GetCADFeatureDisplayName( string szID, ICADFeatureParam param )
 		{
 			CADFeatureType type = param.Type;
+			string szNumber = GetNumberFromID( szID );
 			switch( type ) {
 				case CADFeatureType.EndCutter:
-					return m_LanguageManager.GetString( "EndCutter" ) + "_" + m_nEndCutterCount++;
+					return m_LanguageManager.GetString( "EndCutter" ) + "_" + szNumber;
 				case CADFeatureType.BranchTube:
 					CADft_BranchTubeParam branchTubeParam = param as CADft_BranchTubeParam;
 					string szBranchTubeShapeName = GetGeom2DShapeName( branchTubeParam.Shape.Type );
-					return m_LanguageManager.GetString( "BranchTube" ) + "_" + szBranchTubeShapeName + "_" + m_nBranchTubeCount++;
+					return m_LanguageManager.GetString( "BranchTube" ) + "_" + szBranchTubeShapeName + "_" + szNumber;
 				case CADFeatureType.BendingNotch:
 					CADft_BendingNotchParam bendingNotchParam = param as CADft_BendingNotchParam;
 					string szBendingNotchShapeName = string.Empty;
@@ -680,13 +679,40 @@ namespace MyCADUI
 						default:
 							break;
 					}
-					return m_LanguageManager.GetString( "BendingNotch" ) + "_" + szBendingNotchShapeName + "_" + m_nBendingNotchCount++;
+					return m_LanguageManager.GetString( "BendingNotch" ) + "_" + szBendingNotchShapeName + "_" + szNumber;
 				default:
 					return "NewFeature";
 			}
 		}
 
-		string GetMainTubeName( CADft_MainTubeParam mainTUbeParam )
+		string GetNumberFromID( string szID )
+		{
+			// split by _
+			string[] szArray = szID.Split( '_' );
+
+			// data protection
+			if( szArray.Length != 2 ) {
+				return string.Empty;
+			}
+			return szArray[ 1 ];
+		}
+
+		string GetCADFeatureID( ICADFeatureParam param )
+		{
+			CADFeatureType type = param.Type;
+			switch( type ) {
+				case CADFeatureType.EndCutter:
+					return "EndCutter" + "_" + m_nEndCutterCount++;
+				case CADFeatureType.BranchTube:
+					return "BranchTube" + "_" + m_nBranchTubeCount++;
+				case CADFeatureType.BendingNotch:
+					return "BendingNotch" + "_" + m_nBendingNotchCount++;
+				default:
+					return "NewFeature";
+			}
+		}
+
+		string GetMainTubeDisplayName( CADft_MainTubeParam mainTUbeParam )
 		{
 			return m_LanguageManager.GetString( "MainTube" ) + "_" + GetGeom2DShapeName( mainTUbeParam.CrossSection.Shape.Type );
 		}
@@ -709,33 +735,33 @@ namespace MyCADUI
 			}
 		}
 
-		void DisplayObjectShape( string szObjectName )
+		void DisplayObjectShape( string szObjectID )
 		{
-			if( string.IsNullOrEmpty( szObjectName ) ) {
+			if( string.IsNullOrEmpty( szObjectID ) ) {
 				HideAllShapeExceptMainTube();
 				return;
 			}
 			HideAllShapeExceptMainTube();
 
 			// just hide all shape except main tube
-			if( szObjectName == m_szMainTubeName ) {
+			if( szObjectID == MAIN_TUBE_ID ) {
 				return;
 			}
 
 			// display selected object shape
 			else {
-				if( m_CADFeatureNameAISMap.ContainsKey( szObjectName ) == false || m_CADFeatureNameAISMap[ szObjectName ] == null ) {
+				if( m_CADFeatureID2AISMap.ContainsKey( szObjectID ) == false || m_CADFeatureID2AISMap[ szObjectID ] == null ) {
 					CADEditErrorEvent?.Invoke( CADEditErrorCode.NoSelectedObject );
 					return;
 				}
 			}
-			m_Viewer.GetAISContext().Display( m_CADFeatureNameAISMap[ szObjectName ], false );
+			m_Viewer.GetAISContext().Display( m_CADFeatureID2AISMap[ szObjectID ], false );
 			m_Viewer.UpdateView();
 		}
 
-		void ShowObjectProperty( string szObjectName )
+		void ShowObjectProperty( string szObjectID )
 		{
-			if( string.IsNullOrEmpty( szObjectName ) ) {
+			if( string.IsNullOrEmpty( szObjectID ) ) {
 				m_propgrdPropertyBar.SelectedObject = null;
 				return;
 			}
@@ -744,7 +770,7 @@ namespace MyCADUI
 			ICADFeatureParam editingObjParam;
 
 			// main tube
-			if( szObjectName == m_szMainTubeName ) {
+			if( szObjectID == MAIN_TUBE_ID ) {
 				if( m_CADFeatureParamMap.MainTubeParam == null ) {
 					CADEditErrorEvent?.Invoke( CADEditErrorCode.NoSelectedObject );
 					return;
@@ -754,11 +780,11 @@ namespace MyCADUI
 
 			// cad feature
 			else {
-				if( m_CADFeatureParamMap.FeatureMap.ContainsKey( szObjectName ) == false || m_CADFeatureParamMap.FeatureMap[ szObjectName ] == null ) {
+				if( m_CADFeatureParamMap.FeatureMap.ContainsKey( szObjectID ) == false || m_CADFeatureParamMap.FeatureMap[ szObjectID ] == null ) {
 					CADEditErrorEvent?.Invoke( CADEditErrorCode.NoSelectedObject );
 					return;
 				}
-				editingObjParam = CloneHelper.Clone( m_CADFeatureParamMap.FeatureMap[ szObjectName ] );
+				editingObjParam = CloneHelper.Clone( m_CADFeatureParamMap.FeatureMap[ szObjectID ] );
 			}
 			m_propgrdPropertyBar.SelectedObject = editingObjParam;
 			m_propgrdPropertyBar.ExpandAllGridItems();
@@ -766,7 +792,7 @@ namespace MyCADUI
 
 		void HideAllShapeExceptMainTube()
 		{
-			foreach( var pair in m_CADFeatureNameAISMap ) {
+			foreach( var pair in m_CADFeatureID2AISMap ) {
 				m_Viewer.GetAISContext().Erase( pair.Value, false );
 			}
 			m_Viewer.UpdateView();
@@ -828,16 +854,16 @@ namespace MyCADUI
 			if( e.Node == null ) {
 				return;
 			}
-			string szObjectName = e.Node.Text;
+			string szObjectID = e.Node.Name;
 
 			// data protection
-			if( string.IsNullOrEmpty( szObjectName ) ) {
+			if( string.IsNullOrEmpty( szObjectID ) ) {
 				return;
 			}
 
 			// set edit object
-			ShowObjectProperty( szObjectName );
-			DisplayObjectShape( szObjectName );
+			ShowObjectProperty( szObjectID );
+			DisplayObjectShape( szObjectID );
 		}
 
 		// property bar action

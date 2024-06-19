@@ -6,9 +6,9 @@ namespace MyCADUI
 {
 	internal class ModifyMainTubeCommand : ICADEditCommand
 	{
-		public ModifyMainTubeCommand( string szMainTubeName, ICADFeatureParam newMainTubeParam, CADFeatureParamMap paramMap )
+		public ModifyMainTubeCommand( string szMainTubeID, ICADFeatureParam newMainTubeParam, CADFeatureParamMap paramMap )
 		{
-			m_szMainTubeName = szMainTubeName;
+			m_szMainTubeID = szMainTubeID;
 			m_NewMainTubeParam = newMainTubeParam;
 			m_CADFeatureParamMap = paramMap;
 		}
@@ -16,7 +16,7 @@ namespace MyCADUI
 		public void Do()
 		{
 			// data protection
-			if( string.IsNullOrEmpty( m_szMainTubeName ) || m_NewMainTubeParam == null || m_CADFeatureParamMap == null ) {
+			if( string.IsNullOrEmpty( m_szMainTubeID ) || m_NewMainTubeParam == null || m_CADFeatureParamMap == null ) {
 				return;
 			}
 
@@ -27,7 +27,7 @@ namespace MyCADUI
 			m_CADFeatureParamMap.MainTubeParam = CloneHelper.Clone( m_NewMainTubeParam ) as CADft_MainTubeParam;
 
 			// invoke the event
-			CommandFinished?.Invoke( EditType.ModifyMainTube, m_szMainTubeName );
+			CommandFinished?.Invoke( EditType.ModifyMainTube, m_szMainTubeID );
 		}
 
 		public void Undo()
@@ -36,12 +36,12 @@ namespace MyCADUI
 			m_CADFeatureParamMap.MainTubeParam = m_OldMainTubeParam as CADft_MainTubeParam;
 
 			// invoke the event
-			CommandFinished?.Invoke( EditType.ModifyMainTube, m_szMainTubeName );
+			CommandFinished?.Invoke( EditType.ModifyMainTube, m_szMainTubeID );
 		}
 
 		public event CADEditFinishEventHandler CommandFinished;
 
-		string m_szMainTubeName;
+		string m_szMainTubeID;
 		ICADFeatureParam m_OldMainTubeParam;
 		ICADFeatureParam m_NewMainTubeParam;
 		CADFeatureParamMap m_CADFeatureParamMap;

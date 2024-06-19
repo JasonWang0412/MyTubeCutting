@@ -5,16 +5,16 @@ namespace MyCADUI
 {
 	internal class RemoveCadFeatureCommand : ICADEditCommand
 	{
-		public RemoveCadFeatureCommand( string szFeatureName, CADFeatureParamMap paramMap )
+		public RemoveCadFeatureCommand( string szFeatureID, CADFeatureParamMap paramMap )
 		{
-			m_szFeatureName = szFeatureName;
+			m_szFeatureID = szFeatureID;
 			m_CADFeatureParamMap = paramMap;
 		}
 
 		public void Do()
 		{
 			// data protection
-			if( string.IsNullOrEmpty( m_szFeatureName )
+			if( string.IsNullOrEmpty( m_szFeatureID )
 				|| m_CADFeatureParamMap == null || m_CADFeatureParamMap.FeatureMap == null ) {
 				return;
 			}
@@ -24,10 +24,10 @@ namespace MyCADUI
 			m_BackupMap = CloneHelper.Clone( m_CADFeatureParamMap );
 
 			// remove the feature
-			m_CADFeatureParamMap.FeatureMap.Remove( m_szFeatureName );
+			m_CADFeatureParamMap.FeatureMap.Remove( m_szFeatureID );
 
 			// invoke the event
-			CommandFinished?.Invoke( EditType.RemoveCADFeature, m_szFeatureName );
+			CommandFinished?.Invoke( EditType.RemoveCADFeature, m_szFeatureID );
 		}
 
 		public void Undo()
@@ -39,12 +39,12 @@ namespace MyCADUI
 			}
 
 			// invoke the event
-			CommandFinished?.Invoke( EditType.AddCADFeature, m_szFeatureName );
+			CommandFinished?.Invoke( EditType.AddCADFeature, m_szFeatureID );
 		}
 
 		public event CADEditFinishEventHandler CommandFinished;
 
-		string m_szFeatureName;
+		string m_szFeatureID;
 		CADFeatureParamMap m_CADFeatureParamMap;
 		CADFeatureParamMap m_BackupMap;
 	}
