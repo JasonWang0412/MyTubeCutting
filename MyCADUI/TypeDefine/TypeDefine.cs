@@ -1,6 +1,6 @@
 ﻿namespace MyCADUI
 {
-	internal enum MainTubeType
+	public enum MainTubeType
 	{
 		Circle,
 		Rectangle,
@@ -9,7 +9,7 @@
 		DShape,
 	}
 
-	internal enum BranchTubeType
+	public enum BranchTubeType
 	{
 		Circle,
 		Rectangle,
@@ -18,7 +18,7 @@
 		DShape,
 	}
 
-	internal enum BendingNotchType
+	public enum BendingNotchType
 	{
 		VShape,
 		BothSide,
