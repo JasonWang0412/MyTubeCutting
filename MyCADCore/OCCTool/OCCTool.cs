@@ -84,7 +84,7 @@ namespace MyCADCore
 			// rotate shape aroud Z axis by dRotation
 			gp_Trsf transformR = new gp_Trsf();
 			transformR.SetRotation( new gp_Ax1( new gp_Pnt( 0, 0, 0 ), new gp_Dir( 0, 0, 1 ) ), dRotation_deg * Math.PI / 180 );
-			BRepBuilderAPI_Transform wireTrsf = new BRepBuilderAPI_Transform( wireXOY, transformR );
+			BRepBuilderAPI_Transform wireTrsf = new BRepBuilderAPI_Transform( wireXOY, transformR, true );
 			if( wireTrsf.IsDone() == false ) {
 				return null;
 			}
@@ -119,7 +119,7 @@ namespace MyCADCore
 			// rotate wire around -Y axis by angleB
 			gp_Trsf trsf = new gp_Trsf();
 			trsf.SetRotation( new gp_Ax1( new gp_Pnt( 0, 0, 0 ), new gp_Dir( 0, -1, 0 ) ), angleB_deg * Math.PI / 180 );
-			BRepBuilderAPI_Transform wireTrsf = new BRepBuilderAPI_Transform( baseWire, trsf );
+			BRepBuilderAPI_Transform wireTrsf = new BRepBuilderAPI_Transform( baseWire, trsf, true );
 			if( wireTrsf.IsDone() == false ) {
 				return null;
 			}
@@ -166,7 +166,7 @@ namespace MyCADCore
 
 			// combine all transformations
 			gp_Trsf trsfFinal = transformC.Multiplied( transformD );
-			BRepBuilderAPI_Transform shapeTrsfFinal = new BRepBuilderAPI_Transform( shapeToTransform, trsfFinal );
+			BRepBuilderAPI_Transform shapeTrsfFinal = new BRepBuilderAPI_Transform( shapeToTransform, trsfFinal, true );
 			if( shapeTrsfFinal.IsDone() == false ) {
 				return null;
 			}
@@ -198,7 +198,7 @@ namespace MyCADCore
 				gp_Vec transVec = new gp_Vec( dir );
 				transVec.Multiply( -dSize );
 				trsf.SetTranslation( transVec );
-				BRepBuilderAPI_Transform transform = new BRepBuilderAPI_Transform( branchFace, trsf );
+				BRepBuilderAPI_Transform transform = new BRepBuilderAPI_Transform( branchFace, trsf, true );
 				if( transform.IsDone() == false ) {
 					return null;
 				}
@@ -501,7 +501,7 @@ namespace MyCADCore
 			// rotate shape around Z axis by 90 degree
 			gp_Trsf transformR = new gp_Trsf();
 			transformR.SetRotation( new gp_Ax1( new gp_Pnt( 0, 0, 0 ), new gp_Dir( 0, 0, 1 ) ), Math.PI / 2 );
-			BRepBuilderAPI_Transform wireTrsf = new BRepBuilderAPI_Transform( wireMaker.Wire(), transformR );
+			BRepBuilderAPI_Transform wireTrsf = new BRepBuilderAPI_Transform( wireMaker.Wire(), transformR, true );
 			if( wireTrsf.IsDone() == false ) {
 				return null;
 			}
@@ -906,7 +906,7 @@ namespace MyCADCore
 			// flip the wire by rotate 180 degree around Z axis and center <0, y, 0>
 			gp_Trsf trsf = new gp_Trsf();
 			trsf.SetRotation( new gp_Ax1( new gp_Pnt( 0, y, 0 ), new gp_Dir( 0, 0, 1 ) ), Math.PI );
-			BRepBuilderAPI_Transform wireTrsf = new BRepBuilderAPI_Transform( wireMaker.Wire(), trsf );
+			BRepBuilderAPI_Transform wireTrsf = new BRepBuilderAPI_Transform( wireMaker.Wire(), trsf, true );
 			if( wireTrsf.IsDone() == false ) {
 				return null;
 			}

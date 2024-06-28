@@ -437,6 +437,7 @@ namespace MyCADCore
 			}
 
 			// 2. get the extrema, there might meet some bug, ref: AUTO-12540
+			// solved by "copy: true" when transforming shape, dont know shit but work
 			BoundingBox boundingBox = OCCTool.GetBoundingBox( mainTubeWire );
 			if( boundingBox == null ) {
 				return null;
