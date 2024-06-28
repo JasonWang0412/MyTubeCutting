@@ -1,6 +1,5 @@
 ﻿using MyCADCore;
 using MyLanguageManager;
-using MyUIDisplayModel;
 using OCC.STEPControl;
 using OCC.TopoDS;
 using System;
@@ -35,12 +34,15 @@ namespace MyCADUI
 			// editor layout
 			m_panViewer.Controls.Add( m_TubeCADEditor.ViewerPanel );
 			m_panViewer.Show( m_dockPanel, DockState.Document );
+			m_panViewer.FormClosing += DockContentClosing;
 
 			m_panObjBrowser.Controls.Add( m_TubeCADEditor.ObjectBrowserPanel );
 			m_panObjBrowser.Show( m_dockPanel, DockState.DockRight );
+			m_panObjBrowser.FormClosing += DockContentClosing;
 
 			m_panPropertyBar.Controls.Add( m_TubeCADEditor.PropertyBarPanel );
 			m_panPropertyBar.Show( m_panObjBrowser.Pane, DockAlignment.Bottom, 0.5 );
+			m_panPropertyBar.FormClosing += DockContentClosing;
 
 			// initialize tube editor
 			m_TubeCADEditor.MainTubeStatusChanged += MainTubeStatusChanged;
@@ -382,6 +384,13 @@ namespace MyCADUI
 			m_TubeCADEditor.ZoomToFit();
 		}
 
+		// DockContent closing
+		void DockContentClosing( object sender, FormClosingEventArgs e )
+		{
+			// cancel closing
+			e.Cancel = true;
+		}
+
 		// language action
 		void m_tsmiAbout_Click( object sender, System.EventArgs e )
 		{
@@ -420,9 +429,9 @@ namespace MyCADUI
 
 		// layout
 		DockPanel m_dockPanel = new DockPanel();
-		MyDockContent m_panViewer = new MyDockContent();
-		MyDockContent m_panObjBrowser = new MyDockContent();
-		MyDockContent m_panPropertyBar = new MyDockContent();
+		DockContent m_panViewer = new DockContent();
+		DockContent m_panObjBrowser = new DockContent();
+		DockContent m_panPropertyBar = new DockContent();
 
 		// tube editor property
 		TubeCADEditor m_TubeCADEditor;

@@ -46,9 +46,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MyDisplayNameAttribute.cs" />
-    <Compile Include="MyDockContent.cs">
-      <SubType>Form</SubType>
-    </Compile>
     <Compile Include="MyObjectConverter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
