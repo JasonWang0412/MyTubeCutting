@@ -1,5 +1,5 @@
 ﻿using MyCADCore;
-using Utility;
+using MyUtility;
 
 namespace MyCADUI
 {

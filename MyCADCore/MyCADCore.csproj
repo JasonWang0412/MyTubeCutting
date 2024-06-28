@@ -84,9 +84,9 @@
       <Project>{50c11367-5719-4246-a006-6998837ab54e}</Project>
       <Name>MyUIDisplayModel</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Utility\Utility.csproj">
+    <ProjectReference Include="..\MyUtility\MyUtility.csproj">
       <Project>{e3e8855e-f88f-42b6-9f5f-bb02d8221353}</Project>
-      <Name>Utility</Name>
+      <Name>MyUtility</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
