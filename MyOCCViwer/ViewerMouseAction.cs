@@ -1,8 +1,8 @@
 ﻿using System.Windows.Forms;
 
-namespace MyCADUI
+namespace MyOCCViewer
 {
-	internal class ViewerMouseAction
+	public class ViewerMouseAction
 	{
 		public static void MouseWheel( MouseEventArgs e, OCCViewer Viewer )
 		{

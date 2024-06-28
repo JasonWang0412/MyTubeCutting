@@ -36,7 +36,7 @@ using OCC.V3d;
 using OCC.WNT;
 using System;
 
-namespace MyCADUI
+namespace MyOCCViewer
 {
 	public class OCCViewer : IDisposable
 	{

@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyLanguageManager", "MyLang
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyUIDisplayModel", "MyUIDisplayModel\MyUIDisplayModel.csproj", "{50C11367-5719-4246-A006-6998837AB54E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyOCCViwer", "MyOCCViwer\MyOCCViwer.csproj", "{D53B3D86-2889-47C5-A868-EEA858805227}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{50C11367-5719-4246-A006-6998837AB54E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{50C11367-5719-4246-A006-6998837AB54E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{50C11367-5719-4246-A006-6998837AB54E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D53B3D86-2889-47C5-A868-EEA858805227}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D53B3D86-2889-47C5-A868-EEA858805227}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D53B3D86-2889-47C5-A868-EEA858805227}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D53B3D86-2889-47C5-A868-EEA858805227}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

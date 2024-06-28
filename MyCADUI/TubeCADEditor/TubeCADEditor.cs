@@ -1,5 +1,6 @@
 ﻿using MyCADCore;
 using MyLanguageManager;
+using MyOCCViewer;
 using OCC.AIS;
 using OCC.gp;
 using OCC.Graphic3d;
