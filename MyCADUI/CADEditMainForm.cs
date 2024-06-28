@@ -1,4 +1,5 @@
 ﻿using MyCADCore;
+using MyCADEditor;
 using MyLanguageManager;
 using OCC.STEPControl;
 using OCC.TopoDS;

@@ -1,6 +1,6 @@
 ﻿using MyCADCore;
 
-namespace MyCADUI
+namespace MyCADEditor
 {
 	internal class AddCadFeatureCommand : ICADEditCommand
 	{

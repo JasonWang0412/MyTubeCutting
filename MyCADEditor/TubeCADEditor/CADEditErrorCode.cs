@@ -1,4 +1,4 @@
-﻿namespace MyCADUI
+﻿namespace MyCADEditor
 {
 	public enum CADEditErrorCode
 	{

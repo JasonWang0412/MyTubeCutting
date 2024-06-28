@@ -2,7 +2,7 @@
 using MyUtility.General;
 
 
-namespace MyCADUI
+namespace MyCADEditor
 {
 	internal class ModifyMainTubeCommand : ICADEditCommand
 	{

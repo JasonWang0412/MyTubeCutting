@@ -142,7 +142,6 @@ namespace MyCADCore
 			return shapeTrsfFinal.Shape();
 		}
 
-		// make wire
 		static TopoDS_Wire MakeXOYCircleWire( Geom2D_Circle param, double dNeckin )
 		{
 			// get radius

@@ -13,7 +13,7 @@ using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Windows.Forms;
 
-namespace MyCADUI
+namespace MyCADEditor
 {
 	public enum ViewDir
 	{

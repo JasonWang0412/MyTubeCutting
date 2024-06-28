@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyUIDisplayModel", "MyUIDis
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyOCCViwer", "MyOCCViwer\MyOCCViwer.csproj", "{D53B3D86-2889-47C5-A868-EEA858805227}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyCADEditor", "MyCADEditor\MyCADEditor.csproj", "{3978A70E-1C4F-44E2-8E0A-F9689C8C9807}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +47,10 @@ Global
 		{D53B3D86-2889-47C5-A868-EEA858805227}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D53B3D86-2889-47C5-A868-EEA858805227}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D53B3D86-2889-47C5-A868-EEA858805227}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3978A70E-1C4F-44E2-8E0A-F9689C8C9807}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3978A70E-1C4F-44E2-8E0A-F9689C8C9807}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3978A70E-1C4F-44E2-8E0A-F9689C8C9807}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3978A70E-1C4F-44E2-8E0A-F9689C8C9807}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

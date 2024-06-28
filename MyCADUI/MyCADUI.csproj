@@ -62,15 +62,6 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TubeCADEditor\CADEditErrorCode.cs" />
-    <Compile Include="TubeCADEditor\Command\AddCadFeatureCommand.cs" />
-    <Compile Include="TubeCADEditor\Command\AddMainTubeCommand.cs" />
-    <Compile Include="TubeCADEditor\Command\ICADEditCommand.cs" />
-    <Compile Include="TubeCADEditor\Command\ModifyCadFeatureCommand.cs" />
-    <Compile Include="TubeCADEditor\Command\ModifyMainTubeCommand.cs" />
-    <Compile Include="TubeCADEditor\Command\RemoveCadFeatureCommand.cs" />
-    <Compile Include="TubeCADEditor\Command\RemoveMainTubeCommand.cs" />
-    <Compile Include="TubeCADEditor\TubeCADEditor.cs" />
     <Compile Include="TypeDefine\TypeDefine.cs" />
     <EmbeddedResource Include="CADEditMainForm.resx">
       <DependentUpon>CADEditMainForm.cs</DependentUpon>
@@ -103,24 +94,15 @@
       <Project>{65f21621-44bf-4e0a-b3e2-ad3cf215418a}</Project>
       <Name>MyCADCore</Name>
     </ProjectReference>
+    <ProjectReference Include="..\MyCADEditor\MyCADEditor.csproj">
+      <Project>{3978a70e-1c4f-44e2-8e0a-f9689c8c9807}</Project>
+      <Name>MyCADEditor</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MyLanguageManager\MyLanguageManager.csproj">
       <Project>{04fcc0ce-27d3-4262-b609-d776490124ee}</Project>
       <Name>MyLanguageManager</Name>
     </ProjectReference>
-    <ProjectReference Include="..\MyOCCViwer\MyOCCViwer.csproj">
-      <Project>{d53b3d86-2889-47c5-a868-eea858805227}</Project>
-      <Name>MyOCCViwer</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\MyUIDisplayModel\MyUIDisplayModel.csproj">
-      <Project>{50c11367-5719-4246-a006-6998837ab54e}</Project>
-      <Name>MyUIDisplayModel</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\MyUtility\MyUtility.csproj">
-      <Project>{e3e8855e-f88f-42b6-9f5f-bb02d8221353}</Project>
-      <Name>MyUtility</Name>
-    </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>copy /Y $(SolutionDir)reference\OCCwrapCSharp.dll $(TargetDir)

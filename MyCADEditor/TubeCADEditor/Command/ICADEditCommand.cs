@@ -1,4 +1,4 @@
-﻿namespace MyCADUI
+﻿namespace MyCADEditor
 {
 	delegate void CADEditFinishEventHandler( EditType type, string szObjectName );
 

@@ -1,7 +1,7 @@
 ﻿using MyCADCore;
 using MyUtility.General;
 
-namespace MyCADUI
+namespace MyCADEditor
 {
 	internal class RemoveCadFeatureCommand : ICADEditCommand
 	{
