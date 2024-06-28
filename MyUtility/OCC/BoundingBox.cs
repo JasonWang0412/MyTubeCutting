@@ -1,4 +1,4 @@
-﻿namespace MyCADCore
+﻿namespace MyUtility.MyOCC
 {
 	public enum BoundaryType
 	{

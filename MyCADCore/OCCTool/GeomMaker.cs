@@ -1,24 +1,13 @@
-﻿using OCC.BRep;
-using OCC.BRepBuilderAPI;
-using OCC.BRepExtrema;
-using OCC.BRepPrimAPI;
+﻿using OCC.BRepBuilderAPI;
 using OCC.Geom;
 using OCC.gp;
-using OCC.TopLoc;
 using OCC.TopoDS;
 using System;
 using System.Collections.Generic;
 
 namespace MyCADCore
 {
-	internal enum PrismDir
-	{
-		Positive,
-		Negative,
-		Both,
-	}
-
-	internal class OCCTool
+	internal class GeomMaker
 	{
 		// make wire
 		internal static TopoDS_Wire MakeGeom2DWire( IGeom2D basicGeom, double dNeckin, double dRotation_deg, gp_Pnt center, gp_Dir dir )
@@ -127,26 +116,6 @@ namespace MyCADCore
 			return TopoDS.ToWire( wireTrsf.Shape() );
 		}
 
-		// get bounding box
-		internal static BoundingBox GetBoundingBox( TopoDS_Shape shape )
-		{
-			// data protection
-			if( shape == null ) {
-				return null;
-			}
-
-			// get bounding box
-			double minX = GetBoundaryValue( shape, BoundaryType.MinX );
-			double maxX = GetBoundaryValue( shape, BoundaryType.MaxX );
-			double minY = GetBoundaryValue( shape, BoundaryType.MinY );
-			double maxY = GetBoundaryValue( shape, BoundaryType.MaxY );
-			double minZ = GetBoundaryValue( shape, BoundaryType.MinZ );
-			double maxZ = GetBoundaryValue( shape, BoundaryType.MaxZ );
-
-			BoundingBox BoundingBox = new BoundingBox( minX, maxX, minY, maxY, minZ, maxZ );
-			return BoundingBox;
-		}
-
 		// transform XOY base shape
 		internal static TopoDS_Shape TransformXOYBaseShape( TopoDS_Shape shapeToTransform, gp_Pnt targetCenter, gp_Dir targetDir )
 		{
@@ -171,179 +140,6 @@ namespace MyCADCore
 				return null;
 			}
 			return shapeTrsfFinal.Shape();
-		}
-
-		// make prism
-		// a lot of bug happens when using Inf prism, not recommended, ref: AUTO-12540
-		internal static TopoDS_Shape MakeConcretePrismByWire( TopoDS_Wire baseWire, gp_Dir dir, double dSize, PrismDir prismDir )
-		{
-			// data protection
-			if( baseWire == null || dir == null || dSize <= 0 ) {
-				return null;
-			}
-
-			// make face
-			BRepBuilderAPI_MakeFace branchFaceMaker = new BRepBuilderAPI_MakeFace( baseWire );
-			if( branchFaceMaker.IsDone() == false ) {
-				return null;
-			}
-			TopoDS_Face branchFace = branchFaceMaker.Face();
-
-			// translate and scale direction
-			gp_Vec prismVec = new gp_Vec( dir );
-			if( prismDir == PrismDir.Both ) {
-
-				// translate center
-				gp_Trsf trsf = new gp_Trsf();
-				gp_Vec transVec = new gp_Vec( dir );
-				transVec.Multiply( -dSize );
-				trsf.SetTranslation( transVec );
-				BRepBuilderAPI_Transform transform = new BRepBuilderAPI_Transform( branchFace, trsf, true );
-				if( transform.IsDone() == false ) {
-					return null;
-				}
-				branchFace = TopoDS.ToFace( transform.Shape() );
-				prismVec.Multiply( dSize * 2 );
-			}
-			else if( prismDir == PrismDir.Negative ) {
-				prismVec.Multiply( -dSize );
-			}
-			else {
-				prismVec.Multiply( dSize );
-			}
-
-			// make prism
-			BRepPrimAPI_MakePrism branchTubeMaker = new BRepPrimAPI_MakePrism( branchFace, prismVec );
-			if( branchTubeMaker.IsDone() == false ) {
-				return null;
-			}
-			return branchTubeMaker.Shape();
-		}
-
-		// make compound
-		internal static TopoDS_Shape MakeCompound( List<TopoDS_Shape> shapeList )
-		{
-			// data protection
-			if( shapeList == null || shapeList.Count == 0 ) {
-				return null;
-			}
-
-			try {
-				// create compound
-				TopoDS_Compound compound = new TopoDS_Compound();
-				TopoDS_Shape compoundShape = compound;
-				BRep_Builder builder = new BRep_Builder();
-				builder.MakeCompound( ref compound );
-
-				// add all shapes to compound
-				foreach( TopoDS_Shape oneShape in shapeList ) {
-					if( oneShape == null ) {
-						continue;
-					}
-					builder.Add( ref compoundShape, oneShape );
-				}
-				if( compound.elementsAsList.Count == 0 ) {
-					return null;
-				}
-				return compound;
-			}
-			catch( Exception e ) {
-				return null;
-			}
-		}
-
-		// make array
-		internal static TopoDS_Shape MakeArrayCompound( TopoDS_Shape oneFeature, ArrayParam arrayParam )
-		{
-			// data protection
-			if( oneFeature == null || arrayParam == null || arrayParam.IsValid() == false ) {
-				return null;
-			}
-			if( arrayParam.LinearCount == 1 && arrayParam.AngularCount == 1 ) {
-				return oneFeature;
-			}
-
-			// make linear array
-			List<TopoDS_Shape> linearArrayShapeList = new List<TopoDS_Shape>();
-			linearArrayShapeList.Add( oneFeature );
-			for( int i = 1; i < arrayParam.LinearCount; i++ ) {
-				if( arrayParam.LinearDirection == ArrayDirection.Positive || arrayParam.LinearDirection == ArrayDirection.Both ) {
-
-					// caluculate the linear offset distance
-					double dOffset = arrayParam.LinearDistance * i;
-
-					// get the transformation along Y axis
-					gp_Trsf trsf = new gp_Trsf();
-					trsf.SetTranslation( new gp_Vec( 0, dOffset, 0 ) );
-					TopoDS_Shape oneLinearCopy = oneFeature.Moved( new TopLoc_Location( trsf ) );
-
-					linearArrayShapeList.Add( oneLinearCopy );
-				}
-				if( arrayParam.LinearDirection == ArrayDirection.Negative || arrayParam.LinearDirection == ArrayDirection.Both ) {
-
-					// caluculate the linear offset distance
-					double dOffset = arrayParam.LinearDistance * -i;
-
-					// get the transformation along Y axis
-					gp_Trsf trsf = new gp_Trsf();
-					trsf.SetTranslation( new gp_Vec( 0, dOffset, 0 ) );
-					TopoDS_Shape oneLinearCopy = oneFeature.Moved( new TopLoc_Location( trsf ) );
-
-					linearArrayShapeList.Add( oneLinearCopy );
-				}
-			}
-
-			// make angular array
-			List<List<TopoDS_Shape>> angularArrayShapeList = new List<List<TopoDS_Shape>>();
-			angularArrayShapeList.Add( linearArrayShapeList );
-			for( int i = 1; i < arrayParam.AngularCount; i++ ) {
-
-				if( arrayParam.AngularDirection == ArrayDirection.Positive || arrayParam.AngularDirection == ArrayDirection.Both ) {
-
-					// calculate the angular offset distance
-					double dAngle_Deg = arrayParam.AngularDistance_Deg * i;
-
-					// get the transformation around Y axis
-					gp_Trsf trsf = new gp_Trsf();
-					trsf.SetRotation( new gp_Ax1( new gp_Pnt( 0, 0, 0 ), new gp_Dir( 0, -1, 0 ) ), dAngle_Deg * Math.PI / 180 );
-
-					List<TopoDS_Shape> oneAngularArray = new List<TopoDS_Shape>();
-					foreach( TopoDS_Shape oneLinearCopy in linearArrayShapeList ) {
-						TopoDS_Shape oneAngularCopy = oneLinearCopy.Moved( new TopLoc_Location( trsf ) );
-						oneAngularArray.Add( oneAngularCopy );
-					}
-					angularArrayShapeList.Add( oneAngularArray );
-				}
-				if( arrayParam.AngularDirection == ArrayDirection.Negative || arrayParam.AngularDirection == ArrayDirection.Both ) {
-
-					// calculate the angular offset distance
-					double dAngle_Deg = arrayParam.AngularDistance_Deg * -i;
-
-					// get the transformation around Y axis
-					gp_Trsf trsf = new gp_Trsf();
-					trsf.SetRotation( new gp_Ax1( new gp_Pnt( 0, 0, 0 ), new gp_Dir( 0, -1, 0 ) ), dAngle_Deg * Math.PI / 180 );
-
-					List<TopoDS_Shape> oneAngularArray = new List<TopoDS_Shape>();
-					foreach( TopoDS_Shape oneLinearCopy in linearArrayShapeList ) {
-						TopoDS_Shape oneAngularCopy = oneLinearCopy.Moved( new TopLoc_Location( trsf ) );
-						oneAngularArray.Add( oneAngularCopy );
-					}
-					angularArrayShapeList.Add( oneAngularArray );
-				}
-			}
-
-			// make coumpound
-			List<TopoDS_Shape> allShapeList = new List<TopoDS_Shape>();
-			foreach( List<TopoDS_Shape> oneAngularArray in angularArrayShapeList ) {
-				foreach( TopoDS_Shape oneLinearCopy in oneAngularArray ) {
-					allShapeList.Add( oneLinearCopy );
-				}
-			}
-			TopoDS_Shape compound = MakeCompound( allShapeList );
-			if( compound == null ) {
-				return oneFeature;
-			}
-			return compound;
 		}
 
 		// make wire
@@ -911,69 +707,6 @@ namespace MyCADCore
 				return null;
 			}
 			return TopoDS.ToWire( wireTrsf.Shape() );
-		}
-
-		// get bounding box
-		// u'll meet some bug if u use double.MaxValue or double.MinValue directly
-		const double MAX_VALUE = 999999;
-
-		static double GetBoundaryValue( TopoDS_Shape Shape, BoundaryType type )
-		{
-			TopoDS_Face boundaryTestFace = GetBoundingTestFace( type );
-			if( boundaryTestFace == null ) {
-				return 0;
-			}
-
-			// the distance API is not stable, this might from OCC, ref: AUTO-12540
-			BRepExtrema_DistShapeShape dss = new BRepExtrema_DistShapeShape( boundaryTestFace, Shape );
-			dss.Perform();
-			double dis = dss.Value();
-
-			if( type == BoundaryType.MinX || type == BoundaryType.MinY || type == BoundaryType.MinZ ) {
-				return -MAX_VALUE + dis;
-			}
-			else {
-				return MAX_VALUE - dis;
-			}
-		}
-
-		static TopoDS_Face GetBoundingTestFace( BoundaryType type )
-		{
-			gp_Pnt center;
-			gp_Dir dir;
-			if( type == BoundaryType.MinX ) {
-				center = new gp_Pnt( -MAX_VALUE, 0, 0 );
-				dir = new gp_Dir( 1, 0, 0 );
-			}
-			else if( type == BoundaryType.MaxX ) {
-				center = new gp_Pnt( MAX_VALUE, 0, 0 );
-				dir = new gp_Dir( -1, 0, 0 );
-			}
-			else if( type == BoundaryType.MinY ) {
-				center = new gp_Pnt( 0, -MAX_VALUE, 0 );
-				dir = new gp_Dir( 0, 1, 0 );
-			}
-			else if( type == BoundaryType.MaxY ) {
-				center = new gp_Pnt( 0, MAX_VALUE, 0 );
-				dir = new gp_Dir( 0, -1, 0 );
-			}
-			else if( type == BoundaryType.MinZ ) {
-				center = new gp_Pnt( 0, 0, -MAX_VALUE );
-				dir = new gp_Dir( 0, 0, 1 );
-			}
-			else if( type == BoundaryType.MaxZ ) {
-				center = new gp_Pnt( 0, 0, MAX_VALUE );
-				dir = new gp_Dir( 0, 0, -1 );
-			}
-			else {
-				return null;
-			}
-			gp_Pln plane = new gp_Pln( center, dir );
-			BRepBuilderAPI_MakeFace makeFace = new BRepBuilderAPI_MakeFace( plane );
-			if( makeFace.IsDone() == false ) {
-				return null;
-			}
-			return makeFace.Face();
 		}
 	}
 }

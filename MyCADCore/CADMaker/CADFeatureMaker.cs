@@ -1,4 +1,6 @@
-﻿using OCC.AIS;
+﻿using MyUtility.General;
+using MyUtility.MyOCC;
+using OCC.AIS;
 using OCC.BRep;
 using OCC.BRepAlgoAPI;
 using OCC.BRepBuilderAPI;
@@ -8,11 +10,11 @@ using OCC.gp;
 using OCC.Graphic3d;
 using OCC.Quantity;
 using OCC.TopAbs;
+using OCC.TopLoc;
 using OCC.TopoDS;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using MyUtility;
 
 namespace MyCADCore
 {
@@ -224,8 +226,8 @@ namespace MyCADCore
 			gp_Dir dir = new gp_Dir( 0, -1, 0 ); // -Y axis, to flip to predicted orientation
 
 			// TODO: extend tp no-center-tunnel tube
-			TopoDS_Wire outerWire = OCCTool.MakeGeom2DWire( mainTubeParam.CrossSection.Shape, 0, 0, center, dir );
-			TopoDS_Wire innerWire = OCCTool.MakeGeom2DWire( mainTubeParam.CrossSection.Shape, mainTubeParam.CrossSection.Thickness, 0, center, dir );
+			TopoDS_Wire outerWire = GeomMaker.MakeGeom2DWire( mainTubeParam.CrossSection.Shape, 0, 0, center, dir );
+			TopoDS_Wire innerWire = GeomMaker.MakeGeom2DWire( mainTubeParam.CrossSection.Shape, mainTubeParam.CrossSection.Thickness, 0, center, dir );
 			if( outerWire == null || innerWire == null ) {
 				return null;
 			}
@@ -367,7 +369,7 @@ namespace MyCADCore
 			}
 
 			// make array
-			TopoDS_Shape arrayBranchTube = OCCTool.MakeArrayCompound( branchTube, branchTubeParam.ArrayParam );
+			TopoDS_Shape arrayBranchTube = MakeArrayCompound( branchTube, branchTubeParam.ArrayParam );
 			if( arrayBranchTube == null ) {
 				return branchTube;
 			}
@@ -390,7 +392,7 @@ namespace MyCADCore
 			GetBranchTubeDir( branchTubeParam.AAngle_deg, branchTubeParam.BAngle_deg, out gp_Dir dir );
 
 			// make branch tube
-			TopoDS_Wire baseWire = OCCTool.MakeGeom2DWire( branchTubeParam.Shape, 0, branchTubeParam.SelfRotateAngle_deg, center, dir );
+			TopoDS_Wire baseWire = GeomMaker.MakeGeom2DWire( branchTubeParam.Shape, 0, branchTubeParam.SelfRotateAngle_deg, center, dir );
 			if( baseWire == null ) {
 				return null;
 			}
@@ -406,7 +408,7 @@ namespace MyCADCore
 			else {
 				prismDir = PrismDir.Positive;
 			}
-			return OCCTool.MakeConcretePrismByWire( baseWire, dir, branchTubeParam.Length, prismDir );
+			return OCCHelper.MakeConcretePrismByWire( baseWire, dir, branchTubeParam.Length, prismDir );
 		}
 
 		static void GetBranchTubeDir( double dA_deg, double dB_deg, out gp_Dir dir )
@@ -431,14 +433,14 @@ namespace MyCADCore
 		{
 			// get the main tube size after rotation (ON XY PLANE)
 			// 1. make the wire
-			TopoDS_Wire mainTubeWire = OCCTool.MakeXOYGeom2DWire( mainTubeParam.CrossSection.Shape, 0, bendingNotchParam.BAngle_deg );
+			TopoDS_Wire mainTubeWire = GeomMaker.MakeXOYGeom2DWire( mainTubeParam.CrossSection.Shape, 0, bendingNotchParam.BAngle_deg );
 			if( mainTubeWire == null ) {
 				return null;
 			}
 
 			// 2. get the extrema, there might meet some bug, ref: AUTO-12540
 			// solved by "copy: true" when transforming shape, dont know shit but work
-			BoundingBox boundingBox = OCCTool.GetBoundingBox( mainTubeWire );
+			BoundingBox boundingBox = OCCHelper.GetBoundingBox( mainTubeWire );
 			if( boundingBox == null ) {
 				return null;
 			}
@@ -450,7 +452,7 @@ namespace MyCADCore
 			double posZ = minZ + bendingNotchParam.GapFromButtom;
 			double angleB_deg = bendingNotchParam.BAngle_deg;
 			double dThickness = mainTubeParam.CrossSection.Thickness;
-			TopoDS_Wire notchWire = OCCTool.MakeBendingNotchWire( bendingNotchParam.Shape, posY, posZ, minZ, maxZ, dThickness, angleB_deg );
+			TopoDS_Wire notchWire = GeomMaker.MakeBendingNotchWire( bendingNotchParam.Shape, posY, posZ, minZ, maxZ, dThickness, angleB_deg );
 			if( notchWire == null ) {
 				return null;
 			}
@@ -458,7 +460,7 @@ namespace MyCADCore
 			// make the bending notch
 			GetBendingNotchDir( bendingNotchParam.BAngle_deg, out gp_Dir dir );
 			GetMainTubeBoundingBox( mainTubeParam, out double dSize );
-			TopoDS_Shape bendingNotch = OCCTool.MakeConcretePrismByWire( notchWire, dir, dSize, PrismDir.Both );
+			TopoDS_Shape bendingNotch = OCCHelper.MakeConcretePrismByWire( notchWire, dir, dSize, PrismDir.Both );
 			if( bendingNotch == null ) {
 				return null;
 			}
@@ -476,7 +478,7 @@ namespace MyCADCore
 			}
 
 			// make array
-			TopoDS_Shape arrayBendingNotch = OCCTool.MakeArrayCompound( notchWithReliefHole, bendingNotchParam.ArrayParam );
+			TopoDS_Shape arrayBendingNotch = MakeArrayCompound( notchWithReliefHole, bendingNotchParam.ArrayParam );
 			if( arrayBendingNotch == null ) {
 				return notchWithReliefHole;
 			}
@@ -513,11 +515,11 @@ namespace MyCADCore
 			}
 
 			// get the relief hole position
-			TopoDS_Wire mainTubeWire = OCCTool.MakeXOYGeom2DWire( mainTubeParam.CrossSection.Shape, 0, bendingNotchParam.BAngle_deg );
+			TopoDS_Wire mainTubeWire = GeomMaker.MakeXOYGeom2DWire( mainTubeParam.CrossSection.Shape, 0, bendingNotchParam.BAngle_deg );
 			if( mainTubeWire == null ) {
 				return null;
 			}
-			BoundingBox boundingBox = OCCTool.GetBoundingBox( mainTubeWire );
+			BoundingBox boundingBox = OCCHelper.GetBoundingBox( mainTubeWire );
 			if( boundingBox == null ) {
 				return null;
 			}
@@ -530,14 +532,14 @@ namespace MyCADCore
 
 			// make the relief hole wire
 			// the width and wire should be switched here
-			TopoDS_Wire reliefHoleWire = OCCTool.MakeGeom2DWire( new Geom2D_Rectangle( reliefHole.Height, reliefHole.Width, reliefHole.Fillet ), 0, 0, center, dir );
+			TopoDS_Wire reliefHoleWire = GeomMaker.MakeGeom2DWire( new Geom2D_Rectangle( reliefHole.Height, reliefHole.Width, reliefHole.Fillet ), 0, 0, center, dir );
 			if( reliefHoleWire == null ) {
 				return null;
 			}
 
 			// make the relief hole prism
 			GetMainTubeBoundingBox( mainTubeParam, out double dSize );
-			return OCCTool.MakeConcretePrismByWire( reliefHoleWire, dir, dSize, PrismDir.Both );
+			return OCCHelper.MakeConcretePrismByWire( reliefHoleWire, dir, dSize, PrismDir.Both );
 		}
 
 		static TopoDS_Shape MakeButtomReliefHole( CADft_BendingNotchParam bendingNotchParam, CADft_MainTubeParam mainTubeParam )
@@ -548,11 +550,11 @@ namespace MyCADCore
 			}
 
 			// get the relief hole position
-			TopoDS_Wire mainTubeWire = OCCTool.MakeXOYGeom2DWire( mainTubeParam.CrossSection.Shape, 0, bendingNotchParam.BAngle_deg );
+			TopoDS_Wire mainTubeWire = GeomMaker.MakeXOYGeom2DWire( mainTubeParam.CrossSection.Shape, 0, bendingNotchParam.BAngle_deg );
 			if( mainTubeWire == null ) {
 				return null;
 			}
-			BoundingBox boundingBox = OCCTool.GetBoundingBox( mainTubeWire );
+			BoundingBox boundingBox = OCCHelper.GetBoundingBox( mainTubeWire );
 			if( boundingBox == null ) {
 				return null;
 			}
@@ -567,16 +569,16 @@ namespace MyCADCore
 
 			// make the relief hole wire
 			// the width and wire should be switched here, and the hole width should be doubled
-			TopoDS_Wire reliefHoleWire1 = OCCTool.MakeGeom2DWire( new Geom2D_Rectangle( reliefHole.Height * 2, reliefHole.Width, reliefHole.Fillet ), 0, 0, center1, dir );
-			TopoDS_Wire reliefHoleWire2 = OCCTool.MakeGeom2DWire( new Geom2D_Rectangle( reliefHole.Height * 2, reliefHole.Width, reliefHole.Fillet ), 0, 0, center2, dir );
+			TopoDS_Wire reliefHoleWire1 = GeomMaker.MakeGeom2DWire( new Geom2D_Rectangle( reliefHole.Height * 2, reliefHole.Width, reliefHole.Fillet ), 0, 0, center1, dir );
+			TopoDS_Wire reliefHoleWire2 = GeomMaker.MakeGeom2DWire( new Geom2D_Rectangle( reliefHole.Height * 2, reliefHole.Width, reliefHole.Fillet ), 0, 0, center2, dir );
 			if( reliefHoleWire1 == null || reliefHoleWire2 == null ) {
 				return null;
 			}
 
 			// make the relief hole prism
 			GetMainTubeBoundingBox( mainTubeParam, out double dSize );
-			TopoDS_Shape reliefHoleShape1 = OCCTool.MakeConcretePrismByWire( reliefHoleWire1, dir, dSize, PrismDir.Both );
-			TopoDS_Shape reliefHoleShape2 = OCCTool.MakeConcretePrismByWire( reliefHoleWire2, dir, dSize, PrismDir.Both );
+			TopoDS_Shape reliefHoleShape1 = OCCHelper.MakeConcretePrismByWire( reliefHoleWire1, dir, dSize, PrismDir.Both );
+			TopoDS_Shape reliefHoleShape2 = OCCHelper.MakeConcretePrismByWire( reliefHoleWire2, dir, dSize, PrismDir.Both );
 			if( reliefHoleShape1 == null || reliefHoleShape2 == null ) {
 				return null;
 			}
@@ -608,6 +610,100 @@ namespace MyCADCore
 			transform.SetRotation( new gp_Ax1( new gp_Pnt( 0, 0, 0 ), new gp_Dir( 0, -1, 0 ) ), dAngle_deg * Math.PI / 180 );
 
 			dir = dirInit.Transformed( transform );
+		}
+
+		// make array
+		static TopoDS_Shape MakeArrayCompound( TopoDS_Shape oneFeature, ArrayParam arrayParam )
+		{
+			// data protection
+			if( oneFeature == null || arrayParam == null || arrayParam.IsValid() == false ) {
+				return null;
+			}
+			if( arrayParam.LinearCount == 1 && arrayParam.AngularCount == 1 ) {
+				return oneFeature;
+			}
+
+			// make linear array
+			List<TopoDS_Shape> linearArrayShapeList = new List<TopoDS_Shape>();
+			linearArrayShapeList.Add( oneFeature );
+			for( int i = 1; i < arrayParam.LinearCount; i++ ) {
+				if( arrayParam.LinearDirection == ArrayDirection.Positive || arrayParam.LinearDirection == ArrayDirection.Both ) {
+
+					// caluculate the linear offset distance
+					double dOffset = arrayParam.LinearDistance * i;
+
+					// get the transformation along Y axis
+					gp_Trsf trsf = new gp_Trsf();
+					trsf.SetTranslation( new gp_Vec( 0, dOffset, 0 ) );
+					TopoDS_Shape oneLinearCopy = oneFeature.Moved( new TopLoc_Location( trsf ) );
+
+					linearArrayShapeList.Add( oneLinearCopy );
+				}
+				if( arrayParam.LinearDirection == ArrayDirection.Negative || arrayParam.LinearDirection == ArrayDirection.Both ) {
+
+					// caluculate the linear offset distance
+					double dOffset = arrayParam.LinearDistance * -i;
+
+					// get the transformation along Y axis
+					gp_Trsf trsf = new gp_Trsf();
+					trsf.SetTranslation( new gp_Vec( 0, dOffset, 0 ) );
+					TopoDS_Shape oneLinearCopy = oneFeature.Moved( new TopLoc_Location( trsf ) );
+
+					linearArrayShapeList.Add( oneLinearCopy );
+				}
+			}
+
+			// make angular array
+			List<List<TopoDS_Shape>> angularArrayShapeList = new List<List<TopoDS_Shape>>();
+			angularArrayShapeList.Add( linearArrayShapeList );
+			for( int i = 1; i < arrayParam.AngularCount; i++ ) {
+
+				if( arrayParam.AngularDirection == ArrayDirection.Positive || arrayParam.AngularDirection == ArrayDirection.Both ) {
+
+					// calculate the angular offset distance
+					double dAngle_Deg = arrayParam.AngularDistance_Deg * i;
+
+					// get the transformation around Y axis
+					gp_Trsf trsf = new gp_Trsf();
+					trsf.SetRotation( new gp_Ax1( new gp_Pnt( 0, 0, 0 ), new gp_Dir( 0, -1, 0 ) ), dAngle_Deg * Math.PI / 180 );
+
+					List<TopoDS_Shape> oneAngularArray = new List<TopoDS_Shape>();
+					foreach( TopoDS_Shape oneLinearCopy in linearArrayShapeList ) {
+						TopoDS_Shape oneAngularCopy = oneLinearCopy.Moved( new TopLoc_Location( trsf ) );
+						oneAngularArray.Add( oneAngularCopy );
+					}
+					angularArrayShapeList.Add( oneAngularArray );
+				}
+				if( arrayParam.AngularDirection == ArrayDirection.Negative || arrayParam.AngularDirection == ArrayDirection.Both ) {
+
+					// calculate the angular offset distance
+					double dAngle_Deg = arrayParam.AngularDistance_Deg * -i;
+
+					// get the transformation around Y axis
+					gp_Trsf trsf = new gp_Trsf();
+					trsf.SetRotation( new gp_Ax1( new gp_Pnt( 0, 0, 0 ), new gp_Dir( 0, -1, 0 ) ), dAngle_Deg * Math.PI / 180 );
+
+					List<TopoDS_Shape> oneAngularArray = new List<TopoDS_Shape>();
+					foreach( TopoDS_Shape oneLinearCopy in linearArrayShapeList ) {
+						TopoDS_Shape oneAngularCopy = oneLinearCopy.Moved( new TopLoc_Location( trsf ) );
+						oneAngularArray.Add( oneAngularCopy );
+					}
+					angularArrayShapeList.Add( oneAngularArray );
+				}
+			}
+
+			// make coumpound
+			List<TopoDS_Shape> allShapeList = new List<TopoDS_Shape>();
+			foreach( List<TopoDS_Shape> oneAngularArray in angularArrayShapeList ) {
+				foreach( TopoDS_Shape oneLinearCopy in oneAngularArray ) {
+					allShapeList.Add( oneLinearCopy );
+				}
+			}
+			TopoDS_Shape compound = OCCHelper.MakeCompound( allShapeList );
+			if( compound == null ) {
+				return oneFeature;
+			}
+			return compound;
 		}
 
 		// display size

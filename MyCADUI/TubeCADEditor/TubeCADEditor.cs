@@ -1,6 +1,7 @@
 ﻿using MyCADCore;
 using MyLanguageManager;
 using MyOCCViewer;
+using MyUtility.General;
 using OCC.AIS;
 using OCC.gp;
 using OCC.Graphic3d;
@@ -11,7 +12,6 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Windows.Forms;
-using MyUtility;
 
 namespace MyCADUI
 {

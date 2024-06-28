@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace MyUtility
+namespace MyUtility.MyOCC
 {
 	public class ExportHelper
 	{

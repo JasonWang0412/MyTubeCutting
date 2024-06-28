@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 
-namespace MyUtility
+namespace MyUtility.General
 {
 	public class CloneHelper
 	{

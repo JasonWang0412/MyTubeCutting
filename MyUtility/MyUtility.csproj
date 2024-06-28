@@ -45,7 +45,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="General\CloneHelper.cs" />
+    <Compile Include="OCC\BoundingBox.cs" />
     <Compile Include="OCC\ExportHelper.cs" />
+    <Compile Include="OCC\OCCHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
