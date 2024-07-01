@@ -408,7 +408,7 @@ namespace MyCADCore
 			else {
 				prismDir = PrismDir.Positive;
 			}
-			return OCCHelper.MakeConcretePrismByWire( baseWire, dir, branchTubeParam.Length, prismDir );
+			return MakeConcretePrismByWire( baseWire, dir, branchTubeParam.Length, prismDir );
 		}
 
 		static void GetBranchTubeDir( double dA_deg, double dB_deg, out gp_Dir dir )
@@ -460,7 +460,7 @@ namespace MyCADCore
 			// make the bending notch
 			GetBendingNotchDir( bendingNotchParam.BAngle_deg, out gp_Dir dir );
 			GetMainTubeBoundingBox( mainTubeParam, out double dSize );
-			TopoDS_Shape bendingNotch = OCCHelper.MakeConcretePrismByWire( notchWire, dir, dSize, PrismDir.Both );
+			TopoDS_Shape bendingNotch = MakeConcretePrismByWire( notchWire, dir, dSize, PrismDir.Both );
 			if( bendingNotch == null ) {
 				return null;
 			}
@@ -539,7 +539,7 @@ namespace MyCADCore
 
 			// make the relief hole prism
 			GetMainTubeBoundingBox( mainTubeParam, out double dSize );
-			return OCCHelper.MakeConcretePrismByWire( reliefHoleWire, dir, dSize, PrismDir.Both );
+			return MakeConcretePrismByWire( reliefHoleWire, dir, dSize, PrismDir.Both );
 		}
 
 		static TopoDS_Shape MakeButtomReliefHole( CADft_BendingNotchParam bendingNotchParam, CADft_MainTubeParam mainTubeParam )
@@ -577,8 +577,8 @@ namespace MyCADCore
 
 			// make the relief hole prism
 			GetMainTubeBoundingBox( mainTubeParam, out double dSize );
-			TopoDS_Shape reliefHoleShape1 = OCCHelper.MakeConcretePrismByWire( reliefHoleWire1, dir, dSize, PrismDir.Both );
-			TopoDS_Shape reliefHoleShape2 = OCCHelper.MakeConcretePrismByWire( reliefHoleWire2, dir, dSize, PrismDir.Both );
+			TopoDS_Shape reliefHoleShape1 = MakeConcretePrismByWire( reliefHoleWire1, dir, dSize, PrismDir.Both );
+			TopoDS_Shape reliefHoleShape2 = MakeConcretePrismByWire( reliefHoleWire2, dir, dSize, PrismDir.Both );
 			if( reliefHoleShape1 == null || reliefHoleShape2 == null ) {
 				return null;
 			}
@@ -610,6 +610,53 @@ namespace MyCADCore
 			transform.SetRotation( new gp_Ax1( new gp_Pnt( 0, 0, 0 ), new gp_Dir( 0, -1, 0 ) ), dAngle_deg * Math.PI / 180 );
 
 			dir = dirInit.Transformed( transform );
+		}
+
+		// make prism
+		// a lot of bug happens when using Inf prism, not recommended, ref: AUTO-12540
+		static TopoDS_Shape MakeConcretePrismByWire( TopoDS_Wire baseWire, gp_Dir dir, double dSize, PrismDir prismDir )
+		{
+			// data protection
+			if( baseWire == null || dir == null || dSize <= 0 ) {
+				return null;
+			}
+
+			// make face
+			BRepBuilderAPI_MakeFace branchFaceMaker = new BRepBuilderAPI_MakeFace( baseWire );
+			if( branchFaceMaker.IsDone() == false ) {
+				return null;
+			}
+			TopoDS_Face branchFace = branchFaceMaker.Face();
+
+			// translate and scale direction
+			gp_Vec prismVec = new gp_Vec( dir );
+			if( prismDir == PrismDir.Both ) {
+
+				// translate center
+				gp_Trsf trsf = new gp_Trsf();
+				gp_Vec transVec = new gp_Vec( dir );
+				transVec.Multiply( -dSize );
+				trsf.SetTranslation( transVec );
+				BRepBuilderAPI_Transform transform = new BRepBuilderAPI_Transform( branchFace, trsf, true );
+				if( transform.IsDone() == false ) {
+					return null;
+				}
+				branchFace = TopoDS.ToFace( transform.Shape() );
+				prismVec.Multiply( dSize * 2 );
+			}
+			else if( prismDir == PrismDir.Negative ) {
+				prismVec.Multiply( -dSize );
+			}
+			else {
+				prismVec.Multiply( dSize );
+			}
+
+			// make prism
+			BRepPrimAPI_MakePrism branchTubeMaker = new BRepPrimAPI_MakePrism( branchFace, prismVec );
+			if( branchTubeMaker.IsDone() == false ) {
+				return null;
+			}
+			return branchTubeMaker.Shape();
 		}
 
 		// make array

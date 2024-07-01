@@ -1,7 +1,6 @@
 ﻿using OCC.BRep;
 using OCC.BRepBuilderAPI;
 using OCC.BRepExtrema;
-using OCC.BRepPrimAPI;
 using OCC.gp;
 using OCC.TopoDS;
 using System;
@@ -18,53 +17,6 @@ namespace MyUtility.MyOCC
 
 	public class OCCHelper
 	{
-		// make prism
-		// a lot of bug happens when using Inf prism, not recommended, ref: AUTO-12540
-		public static TopoDS_Shape MakeConcretePrismByWire( TopoDS_Wire baseWire, gp_Dir dir, double dSize, PrismDir prismDir )
-		{
-			// data protection
-			if( baseWire == null || dir == null || dSize <= 0 ) {
-				return null;
-			}
-
-			// make face
-			BRepBuilderAPI_MakeFace branchFaceMaker = new BRepBuilderAPI_MakeFace( baseWire );
-			if( branchFaceMaker.IsDone() == false ) {
-				return null;
-			}
-			TopoDS_Face branchFace = branchFaceMaker.Face();
-
-			// translate and scale direction
-			gp_Vec prismVec = new gp_Vec( dir );
-			if( prismDir == PrismDir.Both ) {
-
-				// translate center
-				gp_Trsf trsf = new gp_Trsf();
-				gp_Vec transVec = new gp_Vec( dir );
-				transVec.Multiply( -dSize );
-				trsf.SetTranslation( transVec );
-				BRepBuilderAPI_Transform transform = new BRepBuilderAPI_Transform( branchFace, trsf, true );
-				if( transform.IsDone() == false ) {
-					return null;
-				}
-				branchFace = TopoDS.ToFace( transform.Shape() );
-				prismVec.Multiply( dSize * 2 );
-			}
-			else if( prismDir == PrismDir.Negative ) {
-				prismVec.Multiply( -dSize );
-			}
-			else {
-				prismVec.Multiply( dSize );
-			}
-
-			// make prism
-			BRepPrimAPI_MakePrism branchTubeMaker = new BRepPrimAPI_MakePrism( branchFace, prismVec );
-			if( branchTubeMaker.IsDone() == false ) {
-				return null;
-			}
-			return branchTubeMaker.Shape();
-		}
-
 		// make compound
 		public static TopoDS_Shape MakeCompound( List<TopoDS_Shape> shapeList )
 		{
