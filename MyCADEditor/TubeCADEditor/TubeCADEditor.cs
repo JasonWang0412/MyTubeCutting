@@ -148,81 +148,6 @@ namespace MyCADEditor
 			DoCommand( command );
 		}
 
-		public void ModifyCADFeature()
-		{
-			// data protection
-			if( m_treeObjBrowser.SelectedNode == null ) {
-				CADEditErrorEvent?.Invoke( CADEditErrorCode.NoSelectedObject );
-				return;
-			}
-			string szObjecID = m_treeObjBrowser.SelectedNode.Name;
-			if( string.IsNullOrEmpty( szObjecID ) ) {
-				CADEditErrorEvent?.Invoke( CADEditErrorCode.NoSelectedObject );
-				return;
-			}
-			if( m_propgrdPropertyBar.SelectedObject == null ) {
-				CADEditErrorEvent?.Invoke( CADEditErrorCode.NoSelectedObject );
-				return;
-			}
-			ICADFeatureParam editingParam = m_propgrdPropertyBar.SelectedObject as ICADFeatureParam;
-			if( editingParam == null ) {
-				CADEditErrorEvent?.Invoke( CADEditErrorCode.NoSelectedObject );
-				return;
-			}
-			if( editingParam.IsValid() == false ) {
-				CADEditErrorEvent?.Invoke( CADEditErrorCode.InvalidParam );
-
-				// show original property when modify failed
-				ShowObjectProperty( szObjecID );
-				return;
-			}
-
-			// main tube
-			if( szObjecID == MAIN_TUBE_ID ) {
-				ModifyMainTubeCommand command = new ModifyMainTubeCommand( MAIN_TUBE_ID, CloneHelper.Clone( editingParam ), m_CADFeatureParamMap );
-				DoCommand( command );
-			}
-
-			// cad feature
-			else {
-
-				// check special case if feature type is bending notch
-				CheckFeatureSpecialCase( editingParam );
-				ModifyCadFeatureCommand command = new ModifyCadFeatureCommand( szObjecID, CloneHelper.Clone( editingParam ), m_CADFeatureParamMap );
-				DoCommand( command );
-			}
-		}
-
-		public void RemoveCADFeature()
-		{
-			// data protection
-			if( m_treeObjBrowser.SelectedNode == null ) {
-				CADEditErrorEvent?.Invoke( CADEditErrorCode.NoSelectedObject );
-				return;
-			}
-			string szObjectID = m_treeObjBrowser.SelectedNode.Name;
-			if( string.IsNullOrEmpty( szObjectID ) ) {
-				CADEditErrorEvent?.Invoke( CADEditErrorCode.NoSelectedObject );
-				return;
-			}
-
-			// remove main tube
-			if( szObjectID == MAIN_TUBE_ID ) {
-				if( m_CADFeatureParamMap.FeatureMap.Count != 0 ) {
-					CADEditErrorEvent?.Invoke( CADEditErrorCode.CanNotRemoveMainTube );
-					return;
-				}
-				RemoveMainTubeCommand command = new RemoveMainTubeCommand( MAIN_TUBE_ID, m_CADFeatureParamMap );
-				DoCommand( command );
-			}
-
-			// remove cad feature
-			else {
-				RemoveCadFeatureCommand command = new RemoveCadFeatureCommand( szObjectID, m_CADFeatureParamMap );
-				DoCommand( command );
-			}
-		}
-
 		public gp_Dir GetEditObjectDir()
 		{
 			// data protection
@@ -413,6 +338,81 @@ namespace MyCADEditor
 		public void ZoomToFit()
 		{
 			m_Viewer.ZoomAllView();
+		}
+
+		void ModifyCADFeature()
+		{
+			// data protection
+			if( m_treeObjBrowser.SelectedNode == null ) {
+				CADEditErrorEvent?.Invoke( CADEditErrorCode.NoSelectedObject );
+				return;
+			}
+			string szObjecID = m_treeObjBrowser.SelectedNode.Name;
+			if( string.IsNullOrEmpty( szObjecID ) ) {
+				CADEditErrorEvent?.Invoke( CADEditErrorCode.NoSelectedObject );
+				return;
+			}
+			if( m_propgrdPropertyBar.SelectedObject == null ) {
+				CADEditErrorEvent?.Invoke( CADEditErrorCode.NoSelectedObject );
+				return;
+			}
+			ICADFeatureParam editingParam = m_propgrdPropertyBar.SelectedObject as ICADFeatureParam;
+			if( editingParam == null ) {
+				CADEditErrorEvent?.Invoke( CADEditErrorCode.NoSelectedObject );
+				return;
+			}
+			if( editingParam.IsValid() == false ) {
+				CADEditErrorEvent?.Invoke( CADEditErrorCode.InvalidParam );
+
+				// show original property when modify failed
+				ShowObjectProperty( szObjecID );
+				return;
+			}
+
+			// main tube
+			if( szObjecID == MAIN_TUBE_ID ) {
+				ModifyMainTubeCommand command = new ModifyMainTubeCommand( MAIN_TUBE_ID, CloneHelper.Clone( editingParam ), m_CADFeatureParamMap );
+				DoCommand( command );
+			}
+
+			// cad feature
+			else {
+
+				// check special case if feature type is bending notch
+				CheckFeatureSpecialCase( editingParam );
+				ModifyCadFeatureCommand command = new ModifyCadFeatureCommand( szObjecID, CloneHelper.Clone( editingParam ), m_CADFeatureParamMap );
+				DoCommand( command );
+			}
+		}
+
+		void RemoveCADFeature()
+		{
+			// data protection
+			if( m_treeObjBrowser.SelectedNode == null ) {
+				CADEditErrorEvent?.Invoke( CADEditErrorCode.NoSelectedObject );
+				return;
+			}
+			string szObjectID = m_treeObjBrowser.SelectedNode.Name;
+			if( string.IsNullOrEmpty( szObjectID ) ) {
+				CADEditErrorEvent?.Invoke( CADEditErrorCode.NoSelectedObject );
+				return;
+			}
+
+			// remove main tube
+			if( szObjectID == MAIN_TUBE_ID ) {
+				if( m_CADFeatureParamMap.FeatureMap.Count != 0 ) {
+					CADEditErrorEvent?.Invoke( CADEditErrorCode.CanNotRemoveMainTube );
+					return;
+				}
+				RemoveMainTubeCommand command = new RemoveMainTubeCommand( MAIN_TUBE_ID, m_CADFeatureParamMap );
+				DoCommand( command );
+			}
+
+			// remove cad feature
+			else {
+				RemoveCadFeatureCommand command = new RemoveCadFeatureCommand( szObjectID, m_CADFeatureParamMap );
+				DoCommand( command );
+			}
 		}
 
 		bool CheckFeatureSpecialCase( ICADFeatureParam cadFeatureParam )
