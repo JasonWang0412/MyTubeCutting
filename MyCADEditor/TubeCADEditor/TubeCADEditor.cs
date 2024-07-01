@@ -349,11 +349,29 @@ namespace MyCADEditor
 		}
 
 		// layout property
-		public Panel ViewerPanel => m_panViewer;
+		public Panel ViewerPanel
+		{
+			get
+			{
+				return m_panViewer;
+			}
+		}
 
-		public Panel ObjectBrowserPanel => m_panObjBrowser;
+		public Panel ObjectBrowserPanel
+		{
+			get
+			{
+				return m_panObjBrowser;
+			}
+		}
 
-		public Panel PropertyBarPanel => m_panPropertyBar;
+		public Panel PropertyBarPanel
+		{
+			get
+			{
+				return m_panPropertyBar;
+			}
+		}
 
 		// view direction
 		public void SetViewDir( ViewDir dir )
