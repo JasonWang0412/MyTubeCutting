@@ -1,13 +1,13 @@
 ﻿using MyCADCore;
 using MyCADEditor;
 using MyLanguageManager;
-using OCC.STEPControl;
 using OCC.TopoDS;
-using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Windows.Forms;
 using WeifenLuo.WinFormsUI.Docking;
+using OCC.STEPControl;
+using System.IO;
+using System;
 
 namespace MyCADUI
 {
@@ -19,15 +19,15 @@ namespace MyCADUI
 			m_dockPanel.DocumentStyle = DocumentStyle.DockingWindow;
 			m_dockPanel.Dock = DockStyle.Fill;
 			Controls.Add( m_dockPanel );
-			m_dockPanel.DockRightPortion = 0.3;
+			m_dockPanel.DockLeftPortion = 0.3;
 
 			// initalize component
 			InitializeComponent();
-			m_tsmiEndCutter.Enabled = false;
-			m_tsmiBranchTube.Enabled = false;
-			m_tsmiBendingNotch.Enabled = false;
-			m_tsmiUndo.Enabled = false;
-			m_tsmiRedo.Enabled = false;
+
+			m_tsCADFeature.Enabled = false;
+			m_tsbtnUndo.Enabled = false;
+			m_tsbtnRedo.Enabled = false;
+			m_tsbtnExport.Enabled = false;
 
 			// editor
 			m_TubeCADEditor = new TubeCADEditor();
@@ -35,15 +35,12 @@ namespace MyCADUI
 			// editor layout
 			m_panViewer.Controls.Add( m_TubeCADEditor.ViewerPanel );
 			m_panViewer.Show( m_dockPanel, DockState.Document );
-			m_panViewer.FormClosing += DockContentClosing;
 
 			m_panObjBrowser.Controls.Add( m_TubeCADEditor.ObjectBrowserPanel );
-			m_panObjBrowser.Show( m_dockPanel, DockState.DockRight );
-			m_panObjBrowser.FormClosing += DockContentClosing;
+			m_panObjBrowser.Show( m_dockPanel, DockState.DockLeft );
 
 			m_panPropertyBar.Controls.Add( m_TubeCADEditor.PropertyBarPanel );
 			m_panPropertyBar.Show( m_panObjBrowser.Pane, DockAlignment.Bottom, 0.5 );
-			m_panPropertyBar.FormClosing += DockContentClosing;
 
 			// initialize tube editor
 			m_TubeCADEditor.MainTubeStatusChanged += MainTubeStatusChanged;
@@ -51,8 +48,8 @@ namespace MyCADUI
 			m_TubeCADEditor.CADEditSuccessEvent += CADEditSuccess;
 			m_TubeCADEditor.CommandStatusChanged += ( bUndo, bRedo ) =>
 			{
-				m_tsmiUndo.Enabled = bUndo;
-				m_tsmiRedo.Enabled = bRedo;
+				m_tsbtnUndo.Enabled = bUndo;
+				m_tsbtnRedo.Enabled = bRedo;
 			};
 
 			// set language zh-TW
@@ -61,27 +58,27 @@ namespace MyCADUI
 		}
 
 		// main tube
-		void m_tsmiMainTube_Circle_Click( object sender, System.EventArgs e )
+		void m_tsbtnMainTube_Circle_Click( object sender, System.EventArgs e )
 		{
 			MainTubeTypeSelected( MainTubeType.Circle );
 		}
 
-		void m_tsmiMainTube_Rectangle_Click( object sender, System.EventArgs e )
+		void m_tsbtnMainTube_Rectangle_Click( object sender, System.EventArgs e )
 		{
 			MainTubeTypeSelected( MainTubeType.Rectangle );
 		}
 
-		void m_tsmiMainTube_Oval_Click( object sender, System.EventArgs e )
+		void m_tsbtnMainTube_Oval_Click( object sender, System.EventArgs e )
 		{
 			MainTubeTypeSelected( MainTubeType.Oval );
 		}
 
-		void m_tsmiMainTube_FlatOval_Click( object sender, System.EventArgs e )
+		void m_tsbtnMainTube_FlatOval_Click( object sender, System.EventArgs e )
 		{
 			MainTubeTypeSelected( MainTubeType.FlatOval );
 		}
 
-		void m_tsmiMainTube_DShape_Click( object sender, System.EventArgs e )
+		void m_tsbtnMainTube_DShape_Click( object sender, System.EventArgs e )
 		{
 			MainTubeTypeSelected( MainTubeType.DShape );
 		}
@@ -135,7 +132,7 @@ namespace MyCADUI
 		}
 
 		// end cutter
-		void m_tsmiEndCutter_Click( object sender, System.EventArgs e )
+		void m_tsbtnEndCutter_Click( object sender, System.EventArgs e )
 		{
 			// set end cutter parameter
 			CADft_EndCutterParam endCutterParam = new CADft_EndCutterParam( 0, 0, 0, EEndSide.Left );
@@ -143,27 +140,27 @@ namespace MyCADUI
 		}
 
 		// branch tube
-		void m_tsmiBranchTube_Circle_Click( object sender, System.EventArgs e )
+		void m_tsbtnBranchTube_Circle_Click( object sender, System.EventArgs e )
 		{
 			BranchTubeTypeSelected( BranchTubeType.Circle );
 		}
 
-		void m_tsmiBranchTube_Rectangle_Click( object sender, System.EventArgs e )
+		void m_tsbtnBranchTube_Rectangle_Click( object sender, System.EventArgs e )
 		{
 			BranchTubeTypeSelected( BranchTubeType.Rectangle );
 		}
 
-		void m_tsmiBranchTube_Oval_Click( object sender, System.EventArgs e )
+		void m_tsbtnBranchTube_Oval_Click( object sender, System.EventArgs e )
 		{
 			BranchTubeTypeSelected( BranchTubeType.Oval );
 		}
 
-		void m_tsmiBranchTube_FlatOval_Click( object sender, System.EventArgs e )
+		void m_tsbtnBranchTube_FlatOval_Click( object sender, System.EventArgs e )
 		{
 			BranchTubeTypeSelected( BranchTubeType.FlatOval );
 		}
 
-		void m_tsmiBranchTube_DShape_Click( object sender, System.EventArgs e )
+		void m_tsbtnBranchTube_DShape_Click( object sender, System.EventArgs e )
 		{
 			BranchTubeTypeSelected( BranchTubeType.DShape );
 		}
@@ -218,17 +215,17 @@ namespace MyCADUI
 		}
 
 		// bending notch
-		void m_tsmiBendingNotch_VShape_Click( object sender, System.EventArgs e )
+		void m_tsbtnBendingNotch_VShape_Click( object sender, System.EventArgs e )
 		{
 			BendingNotchTypeSelected( BendingNotchType.VShape );
 		}
 
-		void m_tsmiBendingNotch_BothSide_Click( object sender, System.EventArgs e )
+		void m_tsbtnBendingNotch_BothSide_Click( object sender, System.EventArgs e )
 		{
 			BendingNotchTypeSelected( BendingNotchType.BothSide );
 		}
 
-		void m_tsmiBendingNotch_OneSide_Click( object sender, System.EventArgs e )
+		void m_tsbtnBendingNotch_OneSide_Click( object sender, System.EventArgs e )
 		{
 			BendingNotchTypeSelected( BendingNotchType.OneSide );
 		}
@@ -267,8 +264,17 @@ namespace MyCADUI
 		}
 
 		// tube editor action
+		void m_tsbtnUndo_Click( object sender, System.EventArgs e )
+		{
+			m_TubeCADEditor.Undo();
+		}
 
-		void m_tsmiExport_Click( object sender, System.EventArgs e )
+		void m_tsbtnRedo_Click( object sender, System.EventArgs e )
+		{
+			m_TubeCADEditor.Redo();
+		}
+
+		void m_tsbtnExport_Click( object sender, System.EventArgs e )
 		{
 			TopoDS_Shape resultTube = m_TubeCADEditor.GetResultTube();
 			if( resultTube == null ) {
@@ -286,35 +292,18 @@ namespace MyCADUI
 			writer.Write( szStepFilePath );
 		}
 
-		void m_tsmiOpen_Click( object sender, System.EventArgs e )
-		{
-			m_TubeCADEditor.OpenMapFile();
-		}
-
-		void m_tsmiUndo_Click( object sender, System.EventArgs e )
-		{
-			m_TubeCADEditor.Undo();
-		}
-
-		void m_tsmiRedo_Click( object sender, System.EventArgs e )
-		{
-			m_TubeCADEditor.Redo();
-		}
-
 		void MainTubeStatusChanged( bool bExistMainTube )
 		{
 			// set button status
 			if( bExistMainTube == true ) {
-				m_tsmiEndCutter.Enabled = true;
-				m_tsmiBranchTube.Enabled = true;
-				m_tsmiBendingNotch.Enabled = true;
-				m_tsmiMainTube.Enabled = false;
+				m_tsCADFeature.Enabled = true;
+				m_tsMainTube.Enabled = false;
+				m_tsbtnExport.Enabled = true;
 			}
 			else {
-				m_tsmiEndCutter.Enabled = false;
-				m_tsmiBranchTube.Enabled = false;
-				m_tsmiBendingNotch.Enabled = false;
-				m_tsmiMainTube.Enabled = true;
+				m_tsCADFeature.Enabled = false;
+				m_tsMainTube.Enabled = true;
+				m_tsbtnExport.Enabled = false;
 			}
 		}
 
@@ -335,52 +324,52 @@ namespace MyCADUI
 		}
 
 		// view action
-		void m_tsmiX_Pos_Click( object sender, System.EventArgs e )
+		void m_tsbtnX_Pos_Click( object sender, System.EventArgs e )
 		{
 			m_TubeCADEditor.SetViewDir( ViewDir.Right );
 		}
 
-		void m_tsmiX_Neg_Click( object sender, System.EventArgs e )
+		void m_tsbtnX_Neg_Click( object sender, System.EventArgs e )
 		{
 			m_TubeCADEditor.SetViewDir( ViewDir.Left );
 		}
 
-		void m_tsmiY_Pos_Click( object sender, System.EventArgs e )
+		void m_tsbtnY_Pos_Click( object sender, System.EventArgs e )
 		{
 			m_TubeCADEditor.SetViewDir( ViewDir.Front );
 		}
 
-		void m_tsmiY_Neg_Click( object sender, System.EventArgs e )
+		void m_tsbtnY_Neg_Click( object sender, System.EventArgs e )
 		{
 			m_TubeCADEditor.SetViewDir( ViewDir.Back );
 		}
 
-		void m_tsmiZ_Pos_Click( object sender, System.EventArgs e )
+		void m_tsbtnZ_Pos_Click( object sender, System.EventArgs e )
 		{
 			m_TubeCADEditor.SetViewDir( ViewDir.Top );
 		}
 
-		void m_tsmiZ_Neg_Click( object sender, System.EventArgs e )
+		void m_tsbtnZ_Neg_Click( object sender, System.EventArgs e )
 		{
 			m_TubeCADEditor.SetViewDir( ViewDir.Bottom );
 		}
 
-		void m_tsmiDir_Pos_Click( object sender, System.EventArgs e )
+		void m_tsbtnDir_Pos_Click( object sender, System.EventArgs e )
 		{
 			m_TubeCADEditor.SetViewDir( ViewDir.Dir_Pos );
 		}
 
-		void m_tsmiDir_Neg_Click( object sender, System.EventArgs e )
+		void m_tsbtnDir_Neg_Click( object sender, System.EventArgs e )
 		{
 			m_TubeCADEditor.SetViewDir( ViewDir.Dir_Neg );
 		}
 
-		void m_tsmiISO_Click( object sender, System.EventArgs e )
+		void m_tsbtnISO_Click( object sender, System.EventArgs e )
 		{
 			m_TubeCADEditor.SetViewDir( ViewDir.Isometric );
 		}
 
-		void m_tsmiZoomToFit_Click( object sender, System.EventArgs e )
+		void m_tsbtnZoomToFit_Click( object sender, System.EventArgs e )
 		{
 			m_TubeCADEditor.ZoomToFit();
 		}
@@ -393,11 +382,6 @@ namespace MyCADUI
 		}
 
 		// language action
-		void m_tsmiAbout_Click( object sender, System.EventArgs e )
-		{
-			MessageBox.Show( "My CAD V2" );
-		}
-
 		// this is temporary function
 		void SetLanguage()
 		{
@@ -407,22 +391,25 @@ namespace MyCADUI
 
 		void ApplyComponentResource()
 		{
-			List<ToolStripMenuItem> menuItems = FindAllToolStripItems( m_msMainMenu.Items );
-			foreach( ToolStripMenuItem item in menuItems ) {
-				string szText = m_LanguageManager.GetString( item.Name );
+			List<ToolStripButton> menuItems = new List<ToolStripButton>();
+			menuItems.AddRange( FindAllToolStripItems( m_tsMainTube.Items ) );
+			menuItems.AddRange( FindAllToolStripItems( m_tsCADFeature.Items ) );
+			menuItems.AddRange( FindAllToolStripItems( m_tsView.Items ) );
+			menuItems.AddRange( FindAllToolStripItems( m_tsEdit.Items ) );
+			foreach( ToolStripButton button in menuItems ) {
+				string szText = m_LanguageManager.GetString( button.Name );
 				if( string.IsNullOrEmpty( szText ) == false ) {
-					item.Text = szText;
+					button.Text = szText;
 				}
 			}
 		}
 
-		List<ToolStripMenuItem> FindAllToolStripItems( ToolStripItemCollection items )
+		List<ToolStripButton> FindAllToolStripItems( ToolStripItemCollection items )
 		{
-			List<ToolStripMenuItem> list = new List<ToolStripMenuItem>();
+			List<ToolStripButton> list = new List<ToolStripButton>();
 			foreach( ToolStripItem item in items ) {
-				if( item is ToolStripMenuItem ) {
-					list.Add( item as ToolStripMenuItem );
-					list.AddRange( FindAllToolStripItems( ( item as ToolStripMenuItem ).DropDownItems ) );
+				if( item is ToolStripButton button ) {
+					list.Add( button );
 				}
 			}
 			return list;
