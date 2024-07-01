@@ -1,4 +1,4 @@
-﻿using MyUIDisplayModel;
+﻿using MyParamDisplayHelper;
 using System;
 
 namespace MyCADCore

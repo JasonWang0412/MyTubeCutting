@@ -79,9 +79,9 @@
     <Compile Include="CADMaker\GeomMaker.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\MyUIDisplayModel\MyUIDisplayModel.csproj">
+    <ProjectReference Include="..\MyParamDisplayHelper\MyParamDisplayHelper.csproj">
       <Project>{50c11367-5719-4246-a006-6998837ab54e}</Project>
-      <Name>MyUIDisplayModel</Name>
+      <Name>MyParamDisplayHelper</Name>
     </ProjectReference>
     <ProjectReference Include="..\MyUtility\MyUtility.csproj">
       <Project>{e3e8855e-f88f-42b6-9f5f-bb02d8221353}</Project>

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 
-namespace MyUIDisplayModel
+namespace MyParamDisplayHelper
 {
 	public class MyDisplayNameAttribute : DisplayNameAttribute
 	{

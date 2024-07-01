@@ -2,7 +2,7 @@
 using System.ComponentModel;
 using System.Globalization;
 
-namespace MyUIDisplayModel
+namespace MyParamDisplayHelper
 {
 	public class MyObjectConverter : ExpandableObjectConverter
 	{

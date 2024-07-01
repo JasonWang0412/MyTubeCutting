@@ -7,8 +7,8 @@
     <ProjectGuid>{50C11367-5719-4246-A006-6998837AB54E}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MyUIDisplayModel</RootNamespace>
-    <AssemblyName>MyUIDisplayModel</AssemblyName>
+    <RootNamespace>MyParamDisplayHelper</RootNamespace>
+    <AssemblyName>MyParamDisplayHelper</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
