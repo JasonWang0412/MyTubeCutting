@@ -1,13 +1,13 @@
 ﻿using MyCADCore;
 using MyCADEditor;
 using MyLanguageManager;
+using OCC.STEPControl;
 using OCC.TopoDS;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Windows.Forms;
 using WeifenLuo.WinFormsUI.Docking;
-using OCC.STEPControl;
-using System.IO;
-using System;
 
 namespace MyCADUI
 {
@@ -42,10 +42,11 @@ namespace MyCADUI
 			m_panPropertyBar.Controls.Add( m_TubeCADEditor.PropertyBarPanel );
 			m_panPropertyBar.Show( m_panObjBrowser.Pane, DockAlignment.Bottom, 0.5 );
 
+			m_panHint.Controls.Add( m_TubeCADEditor.HintLabelPanel );
+			m_panHint.Show( m_panPropertyBar.Pane, DockAlignment.Bottom, 0.2 );
+
 			// initialize tube editor
 			m_TubeCADEditor.MainTubeStatusChanged += MainTubeStatusChanged;
-			m_TubeCADEditor.CADEditErrorEvent += CADEditError;
-			m_TubeCADEditor.CADEditSuccessEvent += CADEditSuccess;
 			m_TubeCADEditor.CommandStatusChanged += ( bUndo, bRedo ) =>
 			{
 				m_tsbtnUndo.Enabled = bUndo;
@@ -307,22 +308,6 @@ namespace MyCADUI
 			}
 		}
 
-		void CADEditError( CADEditErrorCode errorCode )
-		{
-			// TODO: magic number
-			if( (int)errorCode < 100 ) {
-				MessageBox.Show( errorCode.ToString() );
-			}
-			else {
-				// TODO: m_lblWarnning.Text = errorCode.ToString();
-			}
-		}
-
-		void CADEditSuccess()
-		{
-			// TODO: m_lblWarnning.Text = string.Empty;
-		}
-
 		// view action
 		void m_tsbtnX_Pos_Click( object sender, System.EventArgs e )
 		{
@@ -420,6 +405,7 @@ namespace MyCADUI
 		DockContent m_panViewer = new DockContent();
 		DockContent m_panObjBrowser = new DockContent();
 		DockContent m_panPropertyBar = new DockContent();
+		DockContent m_panHint = new DockContent();
 
 		// tube editor property
 		TubeCADEditor m_TubeCADEditor;

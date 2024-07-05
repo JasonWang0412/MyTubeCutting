@@ -12,4 +12,11 @@
   <Message ID="EndCutter" Content="切斷" />
   <Message ID="BranchTube" Content="支管" />
   <Message ID="BendingNotch" Content="V槽" />
+  <Message ID="ErrorCode_OK" Content="完成" />
+  <Message ID="ErrorCode_NullParam" Content="流程錯誤 - 參數為 null" />
+  <Message ID="ErrorCode_NoMainTube" Content="流程錯誤 - 主管為 null" />
+  <Message ID="ErrorCode_NoSelectedObject" Content="流程錯誤 - 特徵為 null" />
+  <Message ID="ErrorCode_InvalidParam" Content="不合理的參數" />
+  <Message ID="ErrorCode_MakeShapeFailed" Content="無法生成特徵" />
+  <Message ID="ErrorCode_CanNotRemoveMainTube" Content="不可移除主管" />
 </ResMap>

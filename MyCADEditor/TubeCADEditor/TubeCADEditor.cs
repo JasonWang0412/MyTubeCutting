@@ -8,6 +8,7 @@ using OCC.Graphic3d;
 using OCC.TopoDS;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
@@ -34,9 +35,11 @@ namespace MyCADEditor
 		Panel m_panViewer = new Panel();
 		Panel m_panObjBrowser = new Panel();
 		Panel m_panPropertyBar = new Panel();
+		Panel m_panHintLabel = new Panel();
 		OCCViewer m_Viewer = new OCCViewer();
 		TreeView m_treeObjBrowser = new TreeView();
 		PropertyGrid m_propgrdPropertyBar = new PropertyGrid();
+		Label m_lblHint = new Label();
 		bool m_bSupressBrowserSelectEvent = false;
 
 		// viewer
@@ -92,9 +95,14 @@ namespace MyCADEditor
 			m_panObjBrowser.Controls.Add( m_treeObjBrowser );
 			m_panObjBrowser.Dock = DockStyle.Fill;
 
+			m_propgrdPropertyBar.HelpVisible = false;
 			m_propgrdPropertyBar.Dock = DockStyle.Fill;
 			m_panPropertyBar.Controls.Add( m_propgrdPropertyBar );
 			m_panPropertyBar.Dock = DockStyle.Fill;
+
+			m_lblHint.Dock = DockStyle.Fill;
+			m_panHintLabel.Controls.Add( m_lblHint );
+			m_panHintLabel.Dock = DockStyle.Fill;
 
 			// action
 			m_panViewer.Paint += m_panViewer_Paint;
@@ -106,6 +114,10 @@ namespace MyCADEditor
 			m_treeObjBrowser.AfterSelect += m_treeObjBrowser_AfterSelect;
 
 			m_propgrdPropertyBar.PropertyValueChanged += m_propgrdPropertyBar_PropertyValueChanged;
+
+			// cad edit action
+			CADEditErrorEvent += CADEditError;
+			CADEditSuccessEvent += CADEditSuccess;
 		}
 
 		public void AddMainTube( CADft_MainTubeParam mainTubeParam )
@@ -295,6 +307,14 @@ namespace MyCADEditor
 			get
 			{
 				return m_panPropertyBar;
+			}
+		}
+
+		public Panel HintLabelPanel
+		{
+			get
+			{
+				return m_panHintLabel;
 			}
 		}
 
@@ -869,6 +889,19 @@ namespace MyCADEditor
 		void m_propgrdPropertyBar_PropertyValueChanged( object s, PropertyValueChangedEventArgs e )
 		{
 			ModifyCADFeature();
+		}
+
+		// cad edit action
+		void CADEditError( CADEditErrorCode errorCode )
+		{
+			m_lblHint.ForeColor = Color.Red;
+			m_lblHint.Text = m_LanguageManager.GetString( "ErrorCode_" + errorCode.ToString() );
+		}
+
+		void CADEditSuccess()
+		{
+			m_lblHint.ForeColor = Color.Black;
+			m_lblHint.Text = m_LanguageManager.GetString( "ErrorCode_" + CADEditErrorCode.OK.ToString() );
 		}
 	}
 }

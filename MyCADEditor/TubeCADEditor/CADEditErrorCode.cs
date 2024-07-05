@@ -2,10 +2,13 @@
 {
 	public enum CADEditErrorCode
 	{
+		// OK
+		OK = 0,
+
 		// process error
-		NullParam = 0,
-		NoMainTube = 1,
-		NoSelectedObject = 2,
+		NullParam = 1,
+		NoMainTube = 2,
+		NoSelectedObject = 3,
 
 		// operation error
 		InvalidParam = 100,
