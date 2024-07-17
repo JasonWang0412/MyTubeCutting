@@ -32,7 +32,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="OCCCSharp">
-      <HintPath>D:\ISSUE\ISSUE-Tube\synteclasertubecutting\reference\OCCCSharp.dll</HintPath>
+      <HintPath>..\reference\OCCCSharp.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />

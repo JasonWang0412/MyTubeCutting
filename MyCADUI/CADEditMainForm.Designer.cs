@@ -79,7 +79,7 @@
             this.m_tsbtnMainTube_DShape});
 			this.m_tsMainTube.Location = new System.Drawing.Point(0, 0);
 			this.m_tsMainTube.Name = "m_tsMainTube";
-			this.m_tsMainTube.Size = new System.Drawing.Size(801, 25);
+			this.m_tsMainTube.Size = new System.Drawing.Size(1184, 25);
 			this.m_tsMainTube.TabIndex = 1;
 			this.m_tsMainTube.Text = "toolStrip1";
 			// 
@@ -155,7 +155,7 @@
             this.m_tsbtnBendingNotch_OneSide});
 			this.m_tsCADFeature.Location = new System.Drawing.Point(0, 25);
 			this.m_tsCADFeature.Name = "m_tsCADFeature";
-			this.m_tsCADFeature.Size = new System.Drawing.Size(801, 25);
+			this.m_tsCADFeature.Size = new System.Drawing.Size(1184, 25);
 			this.m_tsCADFeature.TabIndex = 3;
 			this.m_tsCADFeature.Text = "toolStrip1";
 			// 
@@ -274,7 +274,7 @@
             this.m_tsbtnZoomToFit});
 			this.m_tsView.Location = new System.Drawing.Point(0, 50);
 			this.m_tsView.Name = "m_tsView";
-			this.m_tsView.Size = new System.Drawing.Size(801, 25);
+			this.m_tsView.Size = new System.Drawing.Size(1184, 25);
 			this.m_tsView.TabIndex = 4;
 			this.m_tsView.Text = "toolStrip2";
 			// 
@@ -386,7 +386,7 @@
             this.m_tsbtnExport});
 			this.m_tsEdit.Location = new System.Drawing.Point(0, 75);
 			this.m_tsEdit.Name = "m_tsEdit";
-			this.m_tsEdit.Size = new System.Drawing.Size(801, 25);
+			this.m_tsEdit.Size = new System.Drawing.Size(1184, 25);
 			this.m_tsEdit.TabIndex = 5;
 			this.m_tsEdit.Text = "toolStrip3";
 			// 
@@ -425,7 +425,7 @@
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.AutoSize = true;
-			this.ClientSize = new System.Drawing.Size(801, 624);
+			this.ClientSize = new System.Drawing.Size(1184, 861);
 			this.Controls.Add(this.m_tsEdit);
 			this.Controls.Add(this.m_tsView);
 			this.Controls.Add(this.m_tsCADFeature);
