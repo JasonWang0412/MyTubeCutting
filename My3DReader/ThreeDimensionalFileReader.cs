@@ -12,16 +12,12 @@ using OCC.Geom;
 using OCC.GeomAPI;
 using OCC.gp;
 using OCC.GProp;
-using OCC.IFSelect;
 using OCC.IGESControl;
 using OCC.ShapeAnalysis;
-using OCC.STEPControl;
 using OCC.TopAbs;
 using OCC.TopExp;
-using OCC.TopLoc;
 using OCC.TopoDS;
 using OCC.TopTools;
-using OCC.XSControl;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -39,7 +35,7 @@ namespace TubeCuttingUI
 				// sew original shape to avoid edge not common
 				oneShape = OCCHelper.SewShape( oneShape );
 				BoundingBox boundingBox = OCCHelper.GetBoundingBox( oneShape );
-				
+
 				// get all faces from shape
 				List<TopoDS_Shape> shapeList = GetFaceListFromShape( oneShape );
 
@@ -471,7 +467,7 @@ namespace TubeCuttingUI
 			faceShapeOtherList = new List<TopoDS_Shape>();
 
 			for( int i = 0; i < cutPlaneNormalVectorList.Count; i++ ) {
-				TopoDS_Face cutPlane = CreateFace( cutPlaneNormalVectorList[ i ], new gp_Pnt( 0, 0, 0 ) );
+				TopoDS_Face cutPlane = MakeFace( cutPlaneNormalVectorList[ i ], new gp_Pnt( 0, 0, 0 ) );
 				List<TopoDS_Shape> tempOuterFaceShapeList = FindOuterOrInnerFaceByCutPlane( shapeList, cutPlane, cutPlaneNormalVectorList[ i ], true );
 				List<TopoDS_Shape> tempInnerFaceShapeList = FindOuterOrInnerFaceByCutPlane( shapeList, cutPlane, cutPlaneNormalVectorList[ i ], false );
 
@@ -483,10 +479,6 @@ namespace TubeCuttingUI
 			// remove repeat face
 			faceShapeOuterList = faceShapeOuterList.Distinct().ToList();
 			faceShapeInnerList = faceShapeInnerList.Distinct().ToList();
-
-			// filter shape for DShape
-			FilterDShapeUsefulShape( shapeList, boundingBoxParameter, ref faceShapeOuterList, true );
-			FilterDShapeUsefulShape( shapeList, boundingBoxParameter, ref faceShapeInnerList, false );
 
 			for( int i = 0; i < shapeList.Count; i++ ) {
 
@@ -502,83 +494,22 @@ namespace TubeCuttingUI
 			}
 		}
 
-		void FilterDShapeUsefulShape( List<TopoDS_Shape> shapeList, BoundingBox boundingBoxParameter, ref List<TopoDS_Shape> filteredShapeList, bool isFindOuter = true )
-		{
-			// tolerance must be added to accurately find the plane, otherwise it may not be found
-			double tolerance = 0.1;
-
-			List<TopoDS_Shape> tempShapeList = new List<TopoDS_Shape>();
-
-			// Up U
-			gp_Vec vector = ( new gp_Vec( 0, 0, boundingBoxParameter.ZLength ) );
-			TopoDS_Face cutPlane = CreateFace( vector, new gp_Pnt( 0, 0, -boundingBoxParameter.ZLength / 2 + boundingBoxParameter.XLength / 2 + tolerance ) );
-			tempShapeList.AddRange( FindOuterOrInnerFaceByCutPlane( shapeList, cutPlane, vector, isFindOuter ) );
-
-			// Down U
-			vector = ( new gp_Vec( 0, 0, boundingBoxParameter.ZLength ) );
-			cutPlane = CreateFace( vector, new gp_Pnt( 0, 0, boundingBoxParameter.ZLength / 2 - boundingBoxParameter.XLength / 2 - tolerance ) );
-			tempShapeList.AddRange( FindOuterOrInnerFaceByCutPlane( shapeList, cutPlane, vector, isFindOuter ) );
-
-			// Left U
-			vector = ( new gp_Vec( boundingBoxParameter.XLength, 0, 0 ) );
-			cutPlane = CreateFace( vector, new gp_Pnt( boundingBoxParameter.XLength / 2 - boundingBoxParameter.ZLength / 2 - tolerance, 0, 0 ) );
-			tempShapeList.AddRange( FindOuterOrInnerFaceByCutPlane( shapeList, cutPlane, vector, isFindOuter ) );
-
-			// Right U
-			vector = ( new gp_Vec( boundingBoxParameter.XLength, 0, 0 ) );
-			cutPlane = CreateFace( vector, new gp_Pnt( boundingBoxParameter.ZLength / 2 - boundingBoxParameter.XLength / 2 + tolerance, 0, 0 ) );
-			tempShapeList.AddRange( FindOuterOrInnerFaceByCutPlane( shapeList, cutPlane, vector, isFindOuter ) );
-
-
-			// Right Top
-			vector = ( new gp_Vec( -boundingBoxParameter.ZLength / 2, 0, boundingBoxParameter.XLength / 2 ) );
-			cutPlane = CreateHalfFaceParallelYAxis( vector, new gp_Pnt( boundingBoxParameter.XCenter, 0, boundingBoxParameter.ZCenter ), boundingBoxParameter, tolerance );
-			if( cutPlane.IsNull() == false ) {
-				tempShapeList.AddRange( FindOuterOrInnerFaceByCutPlane( shapeList, cutPlane, vector, isFindOuter ) );
-			}
-
-			// Left Top
-			vector = ( new gp_Vec( -boundingBoxParameter.ZLength / 2, 0, -boundingBoxParameter.XLength / 2 ) );
-			cutPlane = CreateHalfFaceParallelYAxis( vector, new gp_Pnt( boundingBoxParameter.XCenter, 0, boundingBoxParameter.ZCenter ), boundingBoxParameter, tolerance );
-			if( cutPlane.IsNull() == false ) {
-				tempShapeList.AddRange( FindOuterOrInnerFaceByCutPlane( shapeList, cutPlane, vector, isFindOuter ) );
-			}
-
-			// Right Bot
-			vector = ( new gp_Vec( boundingBoxParameter.ZLength / 2, 0, boundingBoxParameter.XLength / 2 ) );
-			cutPlane = CreateHalfFaceParallelYAxis( vector, new gp_Pnt( boundingBoxParameter.XCenter, 0, boundingBoxParameter.ZCenter ), boundingBoxParameter, tolerance );
-			if( cutPlane.IsNull() == false ) {
-				tempShapeList.AddRange( FindOuterOrInnerFaceByCutPlane( shapeList, cutPlane, vector, isFindOuter ) );
-			}
-
-			// Left Bot
-			vector = ( new gp_Vec( boundingBoxParameter.ZLength / 2, 0, -boundingBoxParameter.XLength / 2 ) );
-			cutPlane = CreateHalfFaceParallelYAxis( vector, new gp_Pnt( boundingBoxParameter.XCenter, 0, boundingBoxParameter.ZCenter ), boundingBoxParameter, tolerance );
-			if( cutPlane.IsNull() == false ) {
-				tempShapeList.AddRange( FindOuterOrInnerFaceByCutPlane( shapeList, cutPlane, vector, isFindOuter ) );
-			}
-
-			for( int j = 0; j < tempShapeList.Count; j++ ) {
-				if( filteredShapeList.Contains( tempShapeList[ j ] ) == true ) {
-					continue;
-				}
-				filteredShapeList.Add( tempShapeList[ j ] );
-			}
-		}
-
-		List<gp_Vec> CreateCutPlaneNormalVector( BoundingBox BoundingBoxParameter )
+		List<gp_Vec> CreateCutPlaneNormalVector( BoundingBox boundingBox )
 		{
 			List<gp_Vec> ResultList = new List<gp_Vec>();
 
-			ResultList.Add( new gp_Vec( 0, 0, BoundingBoxParameter.XLength ) );
-			ResultList.Add( new gp_Vec( BoundingBoxParameter.ZLength, 0, BoundingBoxParameter.XLength ) );
-			ResultList.Add( new gp_Vec( BoundingBoxParameter.ZLength, 0, 0 ) );
-			ResultList.Add( new gp_Vec( BoundingBoxParameter.ZLength, 0, -BoundingBoxParameter.XLength ) );
+			double vecX = boundingBox.MaxX - boundingBox.MinX;
+			double vecZ = boundingBox.MaxZ - boundingBox.MinZ;
+
+			ResultList.Add( new gp_Vec( 0, 0, vecX ) );
+			ResultList.Add( new gp_Vec( vecZ, 0, vecX ) );
+			ResultList.Add( new gp_Vec( vecZ, 0, 0 ) );
+			ResultList.Add( new gp_Vec( vecZ, 0, -vecX ) );
 
 			return ResultList;
 		}
 
-		List<TopoDS_Shape> FindOuterOrInnerFaceByCutPlane( List<TopoDS_Shape> shapeList, TopoDS_Face cutPlane, gp_Vec cutPlaneNormalVector, bool isFindOuter = true )
+		List<TopoDS_Shape> FindOuterOrInnerFaceByCutPlane( List<TopoDS_Shape> shapeList, TopoDS_Face cutPlane, gp_Vec cutPlaneNormalVector, bool isFindOuter )
 		{
 			List<Geom_Curve> intersectLineList = new List<Geom_Curve>();
 			List<TopoDS_Shape> shapesHaveYDirectionIntersectionList = new List<TopoDS_Shape>();
@@ -1026,13 +957,12 @@ namespace TubeCuttingUI
 		}
 
 		// create a face without boundary. Can't use on projection.
-		TopoDS_Face CreateFace( gp_Vec NormalVector, gp_Pnt PointOnFace )
+		TopoDS_Face MakeFace( gp_Vec normalVec, gp_Pnt pointOnFace )
 		{
-			gp_Dir UnitNormalVector = new gp_Dir( NormalVector );
-			gp_Pln aPlane = new gp_Pln( PointOnFace, UnitNormalVector );
+			gp_Dir UnitNormalVector = new gp_Dir( normalVec );
+			gp_Pln aPlane = new gp_Pln( pointOnFace, UnitNormalVector );
 			BRepBuilderAPI_MakeFace FaceMaker = new BRepBuilderAPI_MakeFace( aPlane );
-			TopoDS_Face Face = FaceMaker.Face();
-			return Face;
+			return FaceMaker.Face();
 		}
 
 		// create a face parallel to the Y-axis with boundary
@@ -1100,7 +1030,7 @@ namespace TubeCuttingUI
 		// CAUTION : 可能會有超出面範圍的交點
 		List<Point3D> GetPlaneIntersectionPoint( List<Geom_Curve> CurveList, gp_Vec NormalVector )
 		{
-			TopoDS_Face Face = CreateFace( NormalVector, new gp_Pnt( 0, 0, 0 ) );
+			TopoDS_Face Face = MakeFace( NormalVector, new gp_Pnt( 0, 0, 0 ) );
 
 			Geom_Surface Surface = BRep_Tool.Surface( Face );
 
