@@ -298,9 +298,7 @@ namespace MyCADCore
 			Geom_Surface originalSurface = BRep_Tool.Surface( thePlane );
 			GetMainTubeBoundingBox( mainTubeParam, out double dParam );
 			Geom_RectangularTrimmedSurface refinedSurface = new Geom_RectangularTrimmedSurface( originalSurface, -dParam, dParam, -dParam, dParam );
-
-			// TODO: magic number 0.001
-			BRepBuilderAPI_MakeFace refinedFaceMaker = new BRepBuilderAPI_MakeFace( refinedSurface, 0.001 );
+			BRepBuilderAPI_MakeFace refinedFaceMaker = new BRepBuilderAPI_MakeFace( refinedSurface, OCCHelper.ERROR_VALUE );
 			if( refinedFaceMaker.IsDone() == false ) {
 				return null;
 			}

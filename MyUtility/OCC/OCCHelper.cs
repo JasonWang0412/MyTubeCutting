@@ -17,6 +17,10 @@ namespace MyUtility.MyOCC
 
 	public class OCCHelper
 	{
+		// value define
+		public const double LARGE_VALUE = 999999;
+		public const double ERROR_VALUE = 0.001;
+
 		// make compound
 		public static TopoDS_Shape MakeCompound( List<TopoDS_Shape> shapeList )
 		{
@@ -69,9 +73,23 @@ namespace MyUtility.MyOCC
 			return BoundingBox;
 		}
 
+		// sew shape
+		public static TopoDS_Shape SewShape( TopoDS_Shape shape, double dPrecision = ERROR_VALUE )
+		{
+			try {
+				BRepBuilderAPI_Sewing sewing = new BRepBuilderAPI_Sewing();
+				sewing.Add( shape );
+				sewing.SetTolerance( dPrecision );
+				sewing.Perform();
+				return sewing.SewedShape();
+			}
+			catch {
+				return shape;
+			}
+		}
+
 		// get bounding box
 		// u'll meet some bug if u use double.MaxValue or double.MinValue directly
-		const double MAX_VALUE = 999999;
 
 		static double GetBoundaryValue( TopoDS_Shape Shape, BoundaryType type )
 		{
@@ -86,10 +104,10 @@ namespace MyUtility.MyOCC
 			double dis = dss.Value();
 
 			if( type == BoundaryType.MinX || type == BoundaryType.MinY || type == BoundaryType.MinZ ) {
-				return -MAX_VALUE + dis;
+				return -LARGE_VALUE + dis;
 			}
 			else {
-				return MAX_VALUE - dis;
+				return LARGE_VALUE - dis;
 			}
 		}
 
@@ -98,27 +116,27 @@ namespace MyUtility.MyOCC
 			gp_Pnt center;
 			gp_Dir dir;
 			if( type == BoundaryType.MinX ) {
-				center = new gp_Pnt( -MAX_VALUE, 0, 0 );
+				center = new gp_Pnt( -LARGE_VALUE, 0, 0 );
 				dir = new gp_Dir( 1, 0, 0 );
 			}
 			else if( type == BoundaryType.MaxX ) {
-				center = new gp_Pnt( MAX_VALUE, 0, 0 );
+				center = new gp_Pnt( LARGE_VALUE, 0, 0 );
 				dir = new gp_Dir( -1, 0, 0 );
 			}
 			else if( type == BoundaryType.MinY ) {
-				center = new gp_Pnt( 0, -MAX_VALUE, 0 );
+				center = new gp_Pnt( 0, -LARGE_VALUE, 0 );
 				dir = new gp_Dir( 0, 1, 0 );
 			}
 			else if( type == BoundaryType.MaxY ) {
-				center = new gp_Pnt( 0, MAX_VALUE, 0 );
+				center = new gp_Pnt( 0, LARGE_VALUE, 0 );
 				dir = new gp_Dir( 0, -1, 0 );
 			}
 			else if( type == BoundaryType.MinZ ) {
-				center = new gp_Pnt( 0, 0, -MAX_VALUE );
+				center = new gp_Pnt( 0, 0, -LARGE_VALUE );
 				dir = new gp_Dir( 0, 0, 1 );
 			}
 			else if( type == BoundaryType.MaxZ ) {
-				center = new gp_Pnt( 0, 0, MAX_VALUE );
+				center = new gp_Pnt( 0, 0, LARGE_VALUE );
 				dir = new gp_Dir( 0, 0, -1 );
 			}
 			else {

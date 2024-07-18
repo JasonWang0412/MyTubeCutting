@@ -47,5 +47,11 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ThreeDimensionalFileReader.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MyUtility\MyUtility.csproj">
+      <Project>{e3e8855e-f88f-42b6-9f5f-bb02d8221353}</Project>
+      <Name>MyUtility</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -1,4 +1,5 @@
-﻿using OCC.Bnd;
+﻿using MyUtility.MyOCC;
+using OCC.Bnd;
 using OCC.BRep;
 using OCC.BRepAdaptor;
 using OCC.BRepBndLib;
@@ -23,77 +24,26 @@ using OCC.TopTools;
 using OCC.XSControl;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Windows.Forms;
-using TubeCuttingCore;
 
 namespace TubeCuttingUI
 {
 	// public functions and variables
 	public partial class ThreeDimensionalFileReader
 	{
-		public AxisDirection tubeDirection
-		{
-			set
-			{
-				m_Direction = value;
-			}
-		}
-
-		public TubeData GetTubeData()
-		{
-			return m_TubeData;
-		}
-
-		public bool ReadSuccess
-		{
-			get
-			{
-				return m_isReadSuccess;
-			}
-		}
-
-		public TopoDS_Shape GetThreeDimensionalTopoDS_Shape( string szFileName, FileType fileType )
-		{
-			XSControl_Reader Reader;
-
-			if( fileType == FileType.IGS ) {
-				Reader = new IGESControl_Reader();
-			}
-			else if( fileType == FileType.STEP ) {
-				Reader = new STEPControl_Reader();
-			}
-			else {
-				Reader = new XSControl_Reader();
-			}
-
-			szFileName = CheckAndResetFilePath( szFileName );
-			IFSelect_ReturnStatus Status = Reader.ReadFile( szFileName );
-			if( Status != IFSelect_ReturnStatus.IFSelect_RetDone ) {
-				m_isReadSuccess = false;
-				return null;
-			}
-			m_isReadSuccess = true;
-			Reader.TransferRoots();
-			return Reader.OneShape();
-		}
-
 		public void ReadTubeInformation( TopoDS_Shape oneShape, out TopoDS_Shape oneShapeAfterOffSet, out double dCrossSectionRotateAngle )
 		{
 			try {
 				// sew original shape to avoid edge not common
-				oneShape = OCCTranslator.SewShape( oneShape );
+				oneShape = OCCHelper.SewShape( oneShape );
+				BoundingBox boundingBox = OCCHelper.GetBoundingBox( oneShape );
+				
+				// get all faces from shape
+				List<TopoDS_Shape> shapeList = GetFaceListFromShape( oneShape );
 
-				// check and change tube direction if needed
-				BoundingBox boundingBox = GetBoundingBox( oneShape );
-				ArrangeTubeDirection( ref oneShape, ref boundingBox );
-				MoveShapeToOrigin( ref oneShape, ref boundingBox );
-				oneShapeAfterOffSet = oneShape;
-
-				List<TopoDS_Shape> shapeList = GetFaceShapeList( oneShape );
+				// get all outer, inner and other faces
 				FilterShape( shapeList, boundingBox, out List<TopoDS_Shape> faceShapeOuterList, out List<TopoDS_Shape> faceShapeInnerList, out List<TopoDS_Shape> faceShapeOtherList );
 
 				// get all edges on the inner and outer
@@ -114,8 +64,6 @@ namespace TubeCuttingUI
 				m_TubeData.YMinPosition = boundingBox.Ymin;
 				List<int> nCutOffEdgeList = FindAllCutOffWiresOnEdge( edgeOuterList, nHeadCutOffEdgeListIndex, nTailCutOffEdgeListIndex, shapeBoxList, m_TubeData.Tube );
 
-				m_TubeData.PathList.AddRange( GetPathListFromEdgeList( edgeOuterList, edgeInnerList, m_TubeData.Tube, nCutOffEdgeList, nEdgeNotCloseList ) );
-
 				// Get the tube thickness by inner and outer face
 				bool isGetTubeThickess = GetTubeThickess( faceShapeOuterList, faceShapeInnerList, out double dThickness );
 				if( isGetTubeThickess ) {
@@ -130,43 +78,6 @@ namespace TubeCuttingUI
 			}
 
 			m_isReadSuccess = true;
-		}
-
-		public void ReadThreeDimensionalInformation( string szFileName, FileType fileType, out TopoDS_Shape oneShapeWithOffSet )
-		{
-			TopoDS_Shape topoDS_Shape = GetThreeDimensionalTopoDS_Shape( szFileName, fileType );
-			double dRotateAngle;
-			ReadTubeInformation( topoDS_Shape, out oneShapeWithOffSet, out dRotateAngle );
-			oneShapeWithOffSet = OCCTranslator.RotateShapeByAngle( oneShapeWithOffSet, dRotateAngle );
-		}
-
-		public AxisDirection GetTubeDirection( TopoDS_Shape topoDS_Shape )
-		{
-			BoundingBox boundBox = GetRoughBox( topoDS_Shape );
-
-			// get all edges
-			List<TopoDS_Edge> AllEdgeList = GetEdgeShapeList( topoDS_Shape );
-
-			bool isAllEdgeInOval = false;
-
-			// project to XOZ plane
-			isAllEdgeInOval = checkAllEdgeInOval_XOZ( AllEdgeList, boundBox );
-			if( isAllEdgeInOval ) {
-				return AxisDirection.YAxis;
-			}
-
-			// project to YOZ plane
-			isAllEdgeInOval = checkAllEdgeInOval_ZOY( AllEdgeList, boundBox );
-			if( isAllEdgeInOval ) {
-				return AxisDirection.XAxis;
-			}
-
-			// project to XOY plane
-			isAllEdgeInOval = checkAllEdgeInOval_YOX( AllEdgeList, boundBox );
-			if( isAllEdgeInOval ) {
-				return AxisDirection.ZAxis;
-			}
-			return GetBoxLongestDirection( boundBox );
 		}
 
 		public TopoDS_Shape RotateTopoDSShape( TopoDS_Shape topoDS_Shape, AxisDirection tubeDirection )
@@ -210,154 +121,12 @@ namespace TubeCuttingUI
 			}
 			return newTopoDSShape;
 		}
-
-		public List<IPath> GetPathListFromPolyLineList( List<Geom2d_PolyLine> PolyLineList, List<Geom2d_Geometry> GeoInnerList, ITube Tube, List<double> XPositionList, List<double> YPositionList, List<int> nCutOffEdgeList )
-		{
-			List<IPath> PathList = new List<IPath>();
-			bool isStartPointYLeast = EnvParameter.IsStartPointYLeast;
-
-			// the left cutoff path outertype is inside which will be used for side line and tool offset
-
-			if( nCutOffEdgeList != null ) {
-				for( int i = 0; i < nCutOffEdgeList.Count; i++ ) {
-					int nIndex = nCutOffEdgeList[ i ];
-					Geom2d_Geometry innerGeom = GeoInnerList?[ nIndex ];
-					if( GeoInnerList != null && nIndex >= GeoInnerList.Count ) {
-						innerGeom = null;
-					}
-					CutOffPath path;
-					if( i == 0 ) {
-						path = new CutOffPath( YPositionList[ nIndex ], 0, PolyLineList[ nIndex ], OuterType.Inside, 0, innerGeom );
-						path.cutOffLocation = CutOffLocation.Left;
-					}
-					else if( i == 1 ) {
-						path = new CutOffPath( YPositionList[ nIndex ], 0, PolyLineList[ nIndex ], OuterType.Outside, 0, innerGeom );
-						path.cutOffLocation = CutOffLocation.Right;
-					}
-					else {
-						path = new CutOffPath( YPositionList[ nIndex ], 0, PolyLineList[ nIndex ], OuterType.Outside, 0, innerGeom );
-						path.cutOffLocation = CutOffLocation.Middle;
-					}
-					path.IsEditable = false;
-					PathList.Add( path );
-				}
-			}
-
-			switch( Tube.Type ) {
-				case CrossSectionType.Rectangle:
-					for( int i = 0; i < PolyLineList.Count; i++ ) {
-						if( nCutOffEdgeList != null && nCutOffEdgeList.Contains( i ) ) {
-							continue;
-						}
-						RectangularCrossSection rectangularCrossSection = (RectangularCrossSection)Tube.CrossSection;
-						Point3D center3D = CoordinateConversion.EqualArcLengthConversion( new Point2D( XPositionList[ i ], YPositionList[ i ] ), rectangularCrossSection, Tube.Type );
-						RectangularRegionType regionType = ConverterTo2D.GetRegionType( rectangularCrossSection, center3D );
-						double eccentricDistanceOrAngleDegree = 0;
-						double centerAngle = CoordinateConversion.GetAnglePositionDegree( center3D, rectangularCrossSection, regionType, out eccentricDistanceOrAngleDegree );
-						IProjection projection = CuttingPathUtility.MakeRectangularTubeProjection( rectangularCrossSection, ProjectionType.EqualArcLength, centerAngle, regionType, eccentricDistanceOrAngleDegree );
-
-						CuttingPath cuttingPath = new CuttingPath( PolyLineList[ i ], projection, XPositionList[ i ], YPositionList[ i ] );
-						cuttingPath.AnglePositionDegree = centerAngle;
-						Point2D cuttingStartPoint = OriginalPathFactory.GetCuttingStartPoint( PolyLineList[ i ], isStartPointYLeast );
-						cuttingPath.StartPoint = cuttingStartPoint.Point2DArray;
-						cuttingPath.Outer = OuterType.Inside;
-						cuttingPath.HoleType = HoleType.CAD;
-						cuttingPath.PathGenerationMethod = PathGenerationMethod.None;
-						PathList.Add( cuttingPath );
-					}
-					break;
-
-				case CrossSectionType.DShape:
-					for( int i = 0; i < PolyLineList.Count; i++ ) {
-						if( nCutOffEdgeList != null && nCutOffEdgeList.Contains( i ) ) {
-							continue;
-						}
-						DShapeCrossSection dShapeCrossSection = (DShapeCrossSection)Tube.CrossSection;
-						Point3D center3D = CoordinateConversion.EqualArcLengthConversion( new Point2D( XPositionList[ i ], YPositionList[ i ] ), dShapeCrossSection, Tube.Type );
-						DShapeRegionType regionType = ConverterTo2D.GetRegionType( dShapeCrossSection, center3D );
-						double eccentricDistanceOrAngleDegree = 0;
-						double centerAngle = CoordinateConversion.GetAnglePositionDegree( center3D, dShapeCrossSection, regionType, out eccentricDistanceOrAngleDegree );
-						IProjection projection = CuttingPathUtility.MakeDShapeTubeProjection( dShapeCrossSection, ProjectionType.EqualArcLength, centerAngle, regionType, eccentricDistanceOrAngleDegree );
-
-						CuttingPath cuttingPath = new CuttingPath( PolyLineList[ i ], projection, XPositionList[ i ], YPositionList[ i ] );
-						cuttingPath.AnglePositionDegree = centerAngle;
-						Point2D cuttingStartPoint = OriginalPathFactory.GetCuttingStartPoint( PolyLineList[ i ], isStartPointYLeast );
-						cuttingPath.StartPoint = cuttingStartPoint.Point2DArray;
-						cuttingPath.Outer = OuterType.Inside;
-						cuttingPath.HoleType = HoleType.CAD;
-						cuttingPath.PathGenerationMethod = PathGenerationMethod.None;
-						PathList.Add( cuttingPath );
-					}
-					break;
-
-				case CrossSectionType.FlatOval:
-					for( int i = 0; i < PolyLineList.Count; i++ ) {
-						if( nCutOffEdgeList != null && nCutOffEdgeList.Contains( i ) ) {
-							continue;
-						}
-						FlatOvalCrossSection flatOvalCrossSection = (FlatOvalCrossSection)Tube.CrossSection;
-						Point3D center3D = CoordinateConversion.EqualArcLengthConversion( new Point2D( XPositionList[ i ], YPositionList[ i ] ), flatOvalCrossSection, Tube.Type );
-						FlatOvalRegionType regionType = ConverterTo2D.GetRegionType( flatOvalCrossSection, center3D );
-						double eccentricDistanceOrAngleDegree = 0;
-						double centerAngle = CoordinateConversion.GetAnglePositionDegree( center3D, flatOvalCrossSection, regionType, out eccentricDistanceOrAngleDegree );
-						IProjection projection = CuttingPathUtility.MakeFlatOvalTubeProjection( flatOvalCrossSection, ProjectionType.EqualArcLength, centerAngle, regionType, eccentricDistanceOrAngleDegree );
-
-						CuttingPath cuttingPath = new CuttingPath( PolyLineList[ i ], projection, XPositionList[ i ], YPositionList[ i ] );
-						cuttingPath.AnglePositionDegree = centerAngle;
-						Point2D cuttingStartPoint = OriginalPathFactory.GetCuttingStartPoint( PolyLineList[ i ], isStartPointYLeast );
-						cuttingPath.StartPoint = cuttingStartPoint.Point2DArray;
-						cuttingPath.Outer = OuterType.Inside;
-						cuttingPath.HoleType = HoleType.CAD;
-						cuttingPath.PathGenerationMethod = PathGenerationMethod.None;
-						PathList.Add( cuttingPath );
-					}
-					break;
-
-				case CrossSectionType.Oval:
-					for( int i = 0; i < PolyLineList.Count; i++ ) {
-						if( nCutOffEdgeList != null && nCutOffEdgeList.Contains( i ) ) {
-							continue;
-						}
-						Point3D point3D = CoordinateConversion.EqualArcLengthConversion( new Point2D( XPositionList[ i ], YPositionList[ i ] ), Tube.CrossSection, Tube.Type );
-						double anglePosition = Math_Utility.ToDegree( Math_Utility.ATanFrom0To2pi( point3D.X, point3D.Z ) );
-						CuttingPath cuttingPath = new CuttingPath( PolyLineList[ i ], YPositionList[ i ], anglePosition, new EqualArcLengthProjection( 0 ) );
-						Point2D cuttingStartPoint = OriginalPathFactory.GetCuttingStartPoint( PolyLineList[ i ], isStartPointYLeast );
-						cuttingPath.StartPoint = cuttingStartPoint.Point2DArray;
-						cuttingPath.Outer = OuterType.Inside;
-						cuttingPath.HoleType = HoleType.CAD;
-						cuttingPath.PathGenerationMethod = PathGenerationMethod.None;
-						PathList.Add( cuttingPath );
-					}
-					break;
-
-				case CrossSectionType.Circle:
-				default:
-					double Radius = ( (CircularCrossSection)Tube.CrossSection ).Radius;
-					for( int i = 0; i < PolyLineList.Count; i++ ) {
-						if( nCutOffEdgeList != null && nCutOffEdgeList.Contains( i ) ) {
-							continue;
-						}
-						CuttingPath cuttingPath = new CuttingPath( PolyLineList[ i ], YPositionList[ i ], Math_Utility.ToDegree( XPositionList[ i ] / Radius ), new EqualArcLengthProjection( 0 ) );
-						Point2D cuttingStartPoint = OriginalPathFactory.GetCuttingStartPoint( PolyLineList[ i ], isStartPointYLeast );
-						cuttingPath.StartPoint = cuttingStartPoint.Point2DArray;
-						cuttingPath.Outer = OuterType.Inside;
-						cuttingPath.HoleType = HoleType.CAD;
-						cuttingPath.PathGenerationMethod = PathGenerationMethod.None;
-						PathList.Add( cuttingPath );
-					}
-					break;
-			}
-			return PathList;
-		}
-
 	}
 
 	// private functions and variables
 	public partial class ThreeDimensionalFileReader
 	{
 		bool m_isReadSuccess = false;
-		AxisDirection m_Direction = AxisDirection.YAxis;
-		TubeData m_TubeData;
 
 		string CheckAndResetFilePath( string szOriginalPath )
 		{
@@ -381,50 +150,6 @@ namespace TubeCuttingUI
 			// chinese characters of the Unicode encoding between u4e00 and u9fa5
 			Regex re = new Regex( @"[\u4e00-\u9fa5]+" );
 			return re.IsMatch( szSource );
-		}
-
-		void MoveEdgeListToOrigin( ref List<TopoDS_Shape> ShapeList, ref BoundingBox boundingBox )
-		{
-			double XOffset = boundingBox.XCenter;
-			double YOffset = boundingBox.Ymin;
-			double ZOffset = boundingBox.ZCenter;
-
-			gp_Trsf m_translationTransformer = new gp_Trsf();
-			gp_Pnt originalPoint = new gp_Pnt( 0, 0, 0 );
-
-			// move shapes one at a time
-			for( int i = 0; i < ShapeList.Count; i++ ) {
-				gp_XYZ Position = ShapeList[ i ].Location().Transformation().TranslationPart();
-
-				gp_Pnt newPoint = new gp_Pnt( Position.X() - XOffset, Position.Y() - YOffset, Position.Z() - ZOffset );
-				m_translationTransformer.SetTranslation( originalPoint, newPoint );
-				TopLoc_Location translationLocation = new TopLoc_Location( m_translationTransformer );
-
-				ShapeList[ i ].Move( translationLocation );
-			}
-
-			// move bounding box
-			boundingBox.OffsetBox( -XOffset, -YOffset, -ZOffset );
-		}
-
-		void MoveShapeToOrigin( ref TopoDS_Shape topoDS_Shape, ref BoundingBox boundingBox )
-		{
-			double XOffset = boundingBox.XCenter;
-			double YOffset = boundingBox.Ymin;
-			double ZOffset = boundingBox.ZCenter;
-
-			gp_Trsf m_translationTransformer = new gp_Trsf();
-			gp_Pnt originalPoint = new gp_Pnt( 0, 0, 0 );
-
-			// move shapes one at a time
-			gp_XYZ Position = topoDS_Shape.Location().Transformation().TranslationPart();
-			gp_Pnt newPoint = new gp_Pnt( Position.X() - XOffset, Position.Y() - YOffset, Position.Z() - ZOffset );
-			m_translationTransformer.SetTranslation( originalPoint, newPoint );
-			TopLoc_Location translationLocation = new TopLoc_Location( m_translationTransformer );
-			topoDS_Shape.Move( translationLocation );
-
-			// move bounding box
-			boundingBox.OffsetBox( -XOffset, -YOffset, -ZOffset );
 		}
 
 		BRepBuilderAPI_Sewing SewFace( List<TopoDS_Shape> ShapeList )
@@ -569,12 +294,10 @@ namespace TubeCuttingUI
 			return ShapeList;
 		}
 
-		List<TopoDS_Shape> GetFaceShapeList( TopoDS_Shape shape )
+		List<TopoDS_Shape> GetFaceListFromShape( TopoDS_Shape shape )
 		{
 			List<TopoDS_Shape> faceList = new List<TopoDS_Shape>();
-			TopExp_Explorer faceExplorer = new TopExp_Explorer();
-
-			faceExplorer.Init( shape, TopAbs_ShapeEnum.TopAbs_FACE );
+			TopExp_Explorer faceExplorer = new TopExp_Explorer( shape, TopAbs_ShapeEnum.TopAbs_FACE );
 			while( faceExplorer.More() ) {
 				faceList.Add( faceExplorer.Current() );
 				faceExplorer.Next();
@@ -1047,90 +770,6 @@ namespace TubeCuttingUI
 			return FurthestShapeIndexList;
 		}
 
-		List<IPath> GetPathListFromEdgeList( List<List<TopoDS_Edge>> EdgeOuterList, List<List<TopoDS_Edge>> EdgeInnerList, ITube Tube, List<int> nCutOffEdgeList, List<int> nEdgeNotCloseList )
-		{
-			// get point3D list from EdgeList by IGS definition
-			List<List<Point3D>> PathPoint3DList = GetPathPoint3D( EdgeOuterList, nEdgeNotCloseList );
-
-			// Adjust CuttingOff path orient
-			AdjustCutOffPathOri( nCutOffEdgeList, ref PathPoint3DList );
-
-			// convert to polyline vertex
-			List<List<PolyLineVertex>> PathVertexPointList = CuttingPathUtility.GetPathVertexPoint( PathPoint3DList, Tube );
-
-			List<double> XPositionList, YPositionList;
-			SeperateGeomAndXYPosition( PathVertexPointList, out XPositionList, out YPositionList, nCutOffEdgeList );
-
-			// convert to geom polyline
-			List<Geom2d_PolyLine> PolyLineList = CuttingPathUtility.GetPolyLineList( PathVertexPointList );
-
-			// convert CutOff path Edge list to Geometry
-			List<Geom2d_Geometry> GeometryInnerList = GetCutOffPathInnerGoemetry( PolyLineList, nCutOffEdgeList, EdgeInnerList, Tube, YPositionList );
-
-			// create cutting path list
-			List<IPath> PathList = GetPathListFromPolyLineList( PolyLineList, GeometryInnerList, Tube, XPositionList, YPositionList, nCutOffEdgeList );
-
-			return PathList;
-		}
-
-		void SeperateGeomAndXYPosition( List<List<PolyLineVertex>> CuttingPathVertexPointList, out List<double> XPositionList, out List<double> YPositionList, List<int> nCutOffEdgeList )
-		{
-			XPositionList = new List<double>();
-			YPositionList = new List<double>();
-
-			for( int i = 0; i < CuttingPathVertexPointList.Count; i++ ) {
-				double xMin = double.MaxValue;
-				double xMax = double.MinValue;
-				double yMin = double.MaxValue;
-				double yMax = double.MinValue;
-
-				// cut off path only need to move y position
-				if( nCutOffEdgeList.Contains( i ) ) {
-
-					// get Y Position
-					for( int j = 0; j < CuttingPathVertexPointList[ i ].Count; j++ ) {
-						if( CuttingPathVertexPointList[ i ][ j ].VertexPoint.Y < yMin ) {
-							yMin = CuttingPathVertexPointList[ i ][ j ].VertexPoint.Y;
-						}
-						else if( CuttingPathVertexPointList[ i ][ j ].VertexPoint.Y > yMax ) {
-							yMax = CuttingPathVertexPointList[ i ][ j ].VertexPoint.Y;
-						}
-					}
-
-					XPositionList.Add( 0 );
-					YPositionList.Add( ( yMin + yMax ) * 0.5 );
-				}
-				else {
-
-					// get XY Position
-					for( int j = 0; j < CuttingPathVertexPointList[ i ].Count; j++ ) {
-						if( CuttingPathVertexPointList[ i ][ j ].VertexPoint.X < xMin ) {
-							xMin = CuttingPathVertexPointList[ i ][ j ].VertexPoint.X;
-						}
-						if( CuttingPathVertexPointList[ i ][ j ].VertexPoint.X > xMax ) {
-							xMax = CuttingPathVertexPointList[ i ][ j ].VertexPoint.X;
-						}
-
-						if( CuttingPathVertexPointList[ i ][ j ].VertexPoint.Y < yMin ) {
-							yMin = CuttingPathVertexPointList[ i ][ j ].VertexPoint.Y;
-						}
-						if( CuttingPathVertexPointList[ i ][ j ].VertexPoint.Y > yMax ) {
-							yMax = CuttingPathVertexPointList[ i ][ j ].VertexPoint.Y;
-						}
-					}
-
-					XPositionList.Add( ( xMin + xMax ) * 0.5 );
-					YPositionList.Add( ( yMin + yMax ) * 0.5 );
-				}
-
-				// move geom position to (0,0)
-				for( int j = 0; j < CuttingPathVertexPointList[ i ].Count; j++ ) {
-					PointF OriginalPoint = CuttingPathVertexPointList[ i ][ j ].VertexPoint;
-					CuttingPathVertexPointList[ i ][ j ].VertexPoint = new PointF( OriginalPoint.X - (float)XPositionList[ i ], OriginalPoint.Y - (float)YPositionList[ i ] );
-				}
-			}
-		}
-
 		// CAUTION : need rearrange
 		List<List<Point3D>> GetPathPoint3D( List<List<TopoDS_Edge>> EdgeList, List<int> nEdgeNotCloseList )
 		{
@@ -1214,15 +853,6 @@ namespace TubeCuttingUI
 				CutOffPathList.Add( i );
 			}
 			return CutOffPathList;
-		}
-
-		List<TopoDS_Shape> EdgeListToShapeList( List<TopoDS_Edge> EdgeList )
-		{
-			List<TopoDS_Shape> ShapeList = new List<TopoDS_Shape>();
-			for( int i = 0; i < EdgeList.Count; i++ ) {
-				ShapeList.Add( EdgeList[ i ] );
-			}
-			return ShapeList;
 		}
 
 		void FindIndexOfWiresOnEdge( List<List<TopoDS_Edge>> EdgeList, out int nHeadCutOffEdgeListIndex, out int nTailCutOffEdgeListIndex, out List<BoundingBox> shapeBoxList )
