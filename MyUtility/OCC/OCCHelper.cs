@@ -1,5 +1,4 @@
 ﻿using OCC.BRep;
-using OCC.BRepAdaptor;
 using OCC.BRepBuilderAPI;
 using OCC.BRepExtrema;
 using OCC.gp;
@@ -95,7 +94,7 @@ namespace MyUtility.MyOCC
 			return false;
 		}
 
-		
+
 
 		// get bounding box
 		// u'll meet some bug if u use double.MaxValue or double.MinValue directly
