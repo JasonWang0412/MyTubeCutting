@@ -1,4 +1,5 @@
 ﻿using OCC.BRep;
+using OCC.BRepAdaptor;
 using OCC.BRepBuilderAPI;
 using OCC.BRepExtrema;
 using OCC.gp;
@@ -18,10 +19,10 @@ namespace MyUtility.MyOCC
 	public class OCCHelper
 	{
 		// value define
+		// TODO: move to math helper
 		public const double LARGE_VALUE = 999999;
 		public const double ERROR_VALUE = 0.001;
 
-		// make compound
 		public static TopoDS_Shape MakeCompound( List<TopoDS_Shape> shapeList )
 		{
 			// data protection
@@ -53,7 +54,6 @@ namespace MyUtility.MyOCC
 			}
 		}
 
-		// get bounding box
 		public static BoundingBox GetBoundingBox( TopoDS_Shape shape )
 		{
 			// data protection
@@ -73,7 +73,6 @@ namespace MyUtility.MyOCC
 			return BoundingBox;
 		}
 
-		// sew shape
 		public static TopoDS_Shape SewShape( TopoDS_Shape shape, double dPrecision = ERROR_VALUE )
 		{
 			try {
@@ -87,6 +86,16 @@ namespace MyUtility.MyOCC
 				return shape;
 			}
 		}
+
+		public static bool IsZeroVector( gp_Vec vector )
+		{
+			if( vector.X() == 0 && vector.Y() == 0 && vector.Z() == 0 ) {
+				return true;
+			}
+			return false;
+		}
+
+		
 
 		// get bounding box
 		// u'll meet some bug if u use double.MaxValue or double.MinValue directly

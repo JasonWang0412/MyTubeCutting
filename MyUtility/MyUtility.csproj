@@ -45,6 +45,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="General\CloneHelper.cs" />
+    <Compile Include="General\MathHelper.cs" />
     <Compile Include="OCC\BoundingBox.cs" />
     <Compile Include="OCC\ExportHelper.cs" />
     <Compile Include="OCC\OCCHelper.cs" />

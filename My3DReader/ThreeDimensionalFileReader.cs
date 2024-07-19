@@ -1,4 +1,5 @@
-﻿using MyUtility.MyOCC;
+﻿using MyUtility.General;
+using MyUtility.MyOCC;
 using OCC.Bnd;
 using OCC.BRep;
 using OCC.BRepAdaptor;
@@ -19,6 +20,7 @@ using OCC.TopExp;
 using OCC.TopoDS;
 using OCC.TopTools;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -123,6 +125,259 @@ namespace TubeCuttingUI
 	public partial class ThreeDimensionalFileReader
 	{
 		bool m_isReadSuccess = false;
+
+		List<TopoDS_Shape> GetFaceListFromShape( TopoDS_Shape shape )
+		{
+			List<TopoDS_Shape> faceList = new List<TopoDS_Shape>();
+			TopExp_Explorer faceExplorer = new TopExp_Explorer( shape, TopAbs_ShapeEnum.TopAbs_FACE );
+			while( faceExplorer.More() ) {
+				faceList.Add( faceExplorer.Current() );
+				faceExplorer.Next();
+			}
+			return faceList;
+		}
+
+		void FilterShape( List<TopoDS_Shape> shapeList, BoundingBox boundingBoxParameter, out List<TopoDS_Shape> faceShapeOuterList, out List<TopoDS_Shape> faceShapeInnerList, out List<TopoDS_Shape> faceShapeOtherList )
+		{
+			List<gp_Vec> cutPlaneNormalVectorList = CreateCutPlaneNormalVector( boundingBoxParameter );
+
+			faceShapeOuterList = new List<TopoDS_Shape>();
+			faceShapeInnerList = new List<TopoDS_Shape>();
+			faceShapeOtherList = new List<TopoDS_Shape>();
+
+			for( int i = 0; i < cutPlaneNormalVectorList.Count; i++ ) {
+				TopoDS_Face cutPlane = MakePlaneFace( cutPlaneNormalVectorList[ i ], new gp_Pnt( 0, 0, 0 ) );
+				List<TopoDS_Shape> tempOuterFaceShapeList = FindOuterOrInnerFaceByCutPlane( shapeList, cutPlane, cutPlaneNormalVectorList[ i ], true );
+				List<TopoDS_Shape> tempInnerFaceShapeList = FindOuterOrInnerFaceByCutPlane( shapeList, cutPlane, cutPlaneNormalVectorList[ i ], false );
+
+				// Collect InnerFaceShapeList and OuterFaceShapeList
+				faceShapeOuterList.AddRange( tempOuterFaceShapeList );
+				faceShapeInnerList.AddRange( tempInnerFaceShapeList );
+			}
+
+			// remove repeat face
+			faceShapeOuterList = faceShapeOuterList.Distinct().ToList();
+			faceShapeInnerList = faceShapeInnerList.Distinct().ToList();
+
+			for( int i = 0; i < shapeList.Count; i++ ) {
+
+				if( faceShapeOuterList.Contains( shapeList[ i ] ) ) {
+					continue;
+				}
+
+				if( faceShapeInnerList.Contains( shapeList[ i ] ) ) {
+					continue;
+				}
+
+				faceShapeOtherList.Add( shapeList[ i ] );
+			}
+		}
+
+		List<gp_Vec> CreateCutPlaneNormalVector( BoundingBox boundingBox )
+		{
+			List<gp_Vec> ResultList = new List<gp_Vec>();
+
+			double vecX = boundingBox.MaxX - boundingBox.MinX;
+			double vecZ = boundingBox.MaxZ - boundingBox.MinZ;
+
+			ResultList.Add( new gp_Vec( 0, 0, vecX ) );
+			ResultList.Add( new gp_Vec( vecZ, 0, vecX ) );
+			ResultList.Add( new gp_Vec( vecZ, 0, 0 ) );
+			ResultList.Add( new gp_Vec( vecZ, 0, -vecX ) );
+
+			return ResultList;
+		}
+
+		TopoDS_Face MakePlaneFace( gp_Vec normalVec, gp_Pnt pointOnPlane )
+		{
+			gp_Dir unitNormalVector = new gp_Dir( normalVec );
+			gp_Pln aPlane = new gp_Pln( pointOnPlane, unitNormalVector );
+			BRepBuilderAPI_MakeFace FaceMaker = new BRepBuilderAPI_MakeFace( aPlane );
+			return FaceMaker.Face();
+		}
+
+		List<TopoDS_Shape> FindOuterOrInnerFaceByCutPlane( List<TopoDS_Shape> allFaceList, TopoDS_Face cutPlane, gp_Vec cutPlaneNormalVector, bool isFindOuter )
+		{
+			List<Geom_Curve> intersectLineList = new List<Geom_Curve>();
+			List<TopoDS_Shape> possibleTubeWallFaceList = new List<TopoDS_Shape>();
+			List<TopoDS_Shape> tubeWallFaceList = new List<TopoDS_Shape>();
+
+			for( int i = 0; i < allFaceList.Count; i++ ) {
+				TopoDS_Face oneFace = TopoDS.ToFace( allFaceList[ i ] );
+
+				// create intersector list for all shapes
+				GeomAPI_IntSS intersector = GetIntSS( oneFace, cutPlane );
+				if( intersector == null ) {
+					continue;
+				}
+
+				// check if the face is possible tube wall
+				if( CheckPossibleTubeWall( intersector, cutPlaneNormalVector, oneFace ) == false ) {
+					continue;
+				}
+				intersectLineList.Add( intersector.Line( 1 ) );
+				possibleTubeWallFaceList.Add( allFaceList[ i ] );
+			}
+
+			if( intersectLineList.Count == 0 ) {
+				return tubeWallFaceList;
+			}
+
+			// keep intersection line that is furthest/nearest from y axis
+			List<int> OuterShapeIndexList = GetExtremaIntSSDisIndex( intersectLineList, isFindOuter );
+
+			foreach( int Index in OuterShapeIndexList ) {
+				tubeWallFaceList.Add( possibleTubeWallFaceList[ Index ] );
+			}
+
+			return tubeWallFaceList;
+		}
+
+		GeomAPI_IntSS GetIntSS( TopoDS_Face theFace, TopoDS_Face cutPlane )
+		{
+			Geom_Surface theFaceSurface = BRep_Tool.Surface( theFace );
+			Geom_Surface cutPlaneSurface = BRep_Tool.Surface( cutPlane );
+			GeomAPI_IntSS intersector;
+
+			try {
+				double Umin = 0;
+				double Umax = 0;
+				double Vmin = 0;
+				double Vmax = 0;
+				BRepTools.UVBounds( theFace, ref Umin, ref Umax, ref Vmin, ref Vmax );
+				Geom_RectangularTrimmedSurface trimmedFaceSurface = new Geom_RectangularTrimmedSurface( theFaceSurface, Umin, Umax, Vmin, Vmax );
+
+				BRepTools.UVBounds( cutPlane, ref Umin, ref Umax, ref Vmin, ref Vmax );
+				Geom_RectangularTrimmedSurface trimmedCutPlaneSurface = new Geom_RectangularTrimmedSurface( cutPlaneSurface, Umin, Umax, Vmin, Vmax );
+
+				intersector = new GeomAPI_IntSS( trimmedFaceSurface, trimmedCutPlaneSurface, OCCHelper.ERROR_VALUE );
+			}
+			catch {
+				intersector = null;
+			}
+			return intersector;
+		}
+
+		bool CheckPossibleTubeWall( GeomAPI_IntSS intersector, gp_Vec cutPlaneNormalVector, TopoDS_Face theFace )
+		{
+			if( intersector == null ) {
+				return false;
+			}
+
+			// keep shapes that have intersection with cut plane
+			if( intersector.NbLines() == 0 ) {
+				return false;
+			}
+
+			// check the intersection property
+			Geom_Curve IntersectLine = intersector.Line( 1 );
+			gp_Pnt startPoint = IntersectLine.Value( IntersectLine.FirstParameter() );
+			gp_Pnt endPoint = IntersectLine.Value( IntersectLine.LastParameter() );
+			gp_Vec intersectVec = new gp_Vec( startPoint, endPoint );
+			if( OCCHelper.IsZeroVector( intersectVec ) ) {
+				return false;
+			}
+
+			// keep intersection line with direction vector contains only y direction
+			if( intersectVec.IsParallel( new gp_Vec( 0, 1, 0 ), OCCHelper.ERROR_VALUE ) == false ) {
+				return false;
+			}
+
+			// if the face is intersected with the cut palne and also parallel to the cut plane, it is not what we want
+			if( IsFaceParallelToPlane( theFace, cutPlaneNormalVector ) ) {
+				return false;
+			}
+			return true;
+		}
+
+		// the method will kick out all face satisfied the criteria
+		// including the face that is not parallel to the cut plane, but not general case
+		bool IsFaceParallelToPlane( TopoDS_Face theFace, gp_Vec cutPlaneNormalVector )
+		{
+			BRepAdaptor_Surface ShapeFaceGeomFace = new BRepAdaptor_Surface( theFace );
+
+			double FirstUParam = ShapeFaceGeomFace.FirstUParameter();
+			double LastUParam = ShapeFaceGeomFace.LastUParameter();
+			double FirstVParam = ShapeFaceGeomFace.FirstVParameter();
+			double LastVParam = ShapeFaceGeomFace.LastVParameter();
+
+			// make a 5x5 grid on Shape. Get normal vector of each grid point and compare to CutPlaneNormalVector.
+			int nSegments = 4;
+
+			double CurrentUParam = FirstUParam;
+			double CurrentVParam = FirstVParam;
+			double UParamIncrement = ( LastUParam - FirstUParam ) / nSegments;
+			double VParamIncrement = ( LastVParam - FirstVParam ) / nSegments;
+
+			for( int i = 0; i <= nSegments; i++ ) {
+				for( int j = 0; j <= nSegments; j++ ) {
+					gp_Pnt CurrentPoint = new gp_Pnt();
+					gp_Vec CurrentUVector = new gp_Vec();
+					gp_Vec CurrentVVector = new gp_Vec();
+
+					ShapeFaceGeomFace.D1( CurrentUParam, CurrentVParam, ref CurrentPoint, ref CurrentUVector, ref CurrentVVector );
+					gp_Vec NormalDirection = CurrentUVector ^ CurrentVVector;
+					if( NormalDirection.IsParallel( cutPlaneNormalVector, OCCHelper.ERROR_VALUE ) == false ) {
+						return false;
+					}
+					CurrentVParam += VParamIncrement;
+				}
+				CurrentUParam += UParamIncrement;
+			}
+			return true;
+		}
+
+		List<int> GetExtremaIntSSDisIndex( List<Geom_Curve> IntersectLineList, bool isFindOuter = true )
+		{
+			gp_Pnt StartPoint = new gp_Pnt( 0, 0, 0 );
+			gp_Pnt EndPoint = new gp_Pnt( 0, 10000, 0 );
+			BRepBuilderAPI_MakeEdge edgeMakerYAxis = new BRepBuilderAPI_MakeEdge( StartPoint, EndPoint );
+			TopoDS_Shape YAxisShape = edgeMakerYAxis.Shape();
+
+			double extremaDistance = isFindOuter ? 0 : double.MaxValue;
+			int extremaIntSSDisIndex = 0;
+			List<int> extremaIntSSDisIndexList = new List<int>();
+
+			for( int i = 0; i < IntersectLineList.Count; i++ ) {
+				BRepBuilderAPI_MakeEdge edgeMakerIntSS = new BRepBuilderAPI_MakeEdge( IntersectLineList[ i ] );
+				TopoDS_Shape IntSSShape = edgeMakerIntSS.Shape();
+				BRepExtrema_DistShapeShape DistanceCalculator = new BRepExtrema_DistShapeShape( IntSSShape, YAxisShape );
+				DistanceCalculator.Perform();
+				double CalculatedDistance = DistanceCalculator.Value();
+
+				if( isFindOuter ) {
+					if( CalculatedDistance > extremaDistance ) {
+						extremaDistance = CalculatedDistance;
+						extremaIntSSDisIndex = i;
+					}
+				}
+				else {
+					if( CalculatedDistance < extremaDistance ) {
+						extremaDistance = CalculatedDistance;
+						extremaIntSSDisIndex = i;
+					}
+				}
+			}
+			extremaIntSSDisIndexList.Add( extremaIntSSDisIndex );
+
+			// find same distance IntSS
+			for( int i = 0; i < IntersectLineList.Count; i++ ) {
+				if( i == extremaIntSSDisIndex ) {
+					continue;
+				}
+
+				BRepBuilderAPI_MakeEdge edgeMakerIntSS = new BRepBuilderAPI_MakeEdge( IntersectLineList[ i ] );
+				TopoDS_Shape IntSSShape = edgeMakerIntSS.Shape();
+				BRepExtrema_DistShapeShape DistanceCalculator = new BRepExtrema_DistShapeShape( IntSSShape, YAxisShape );
+				DistanceCalculator.Perform();
+				double CalculatedDistance = DistanceCalculator.Value();
+
+				if( MathHelper.IsSameValue( CalculatedDistance, extremaDistance ) ) {
+					extremaIntSSDisIndexList.Add( i );
+				}
+			}
+			return extremaIntSSDisIndexList;
+		}
 
 		string CheckAndResetFilePath( string szOriginalPath )
 		{
@@ -290,16 +545,7 @@ namespace TubeCuttingUI
 			return ShapeList;
 		}
 
-		List<TopoDS_Shape> GetFaceListFromShape( TopoDS_Shape shape )
-		{
-			List<TopoDS_Shape> faceList = new List<TopoDS_Shape>();
-			TopExp_Explorer faceExplorer = new TopExp_Explorer( shape, TopAbs_ShapeEnum.TopAbs_FACE );
-			while( faceExplorer.More() ) {
-				faceList.Add( faceExplorer.Current() );
-				faceExplorer.Next();
-			}
-			return faceList;
-		}
+
 
 		List<List<TopoDS_Edge>> SeperateEdgesOfWires( BRepBuilderAPI_Sewing sewer )
 		{
@@ -456,249 +702,6 @@ namespace TubeCuttingUI
 			BRepBuilderAPI_Sewing sewer = SewFace( ShapeList );
 
 			return SeperateEdgesOfWires( sewer );
-		}
-
-		void FilterShape( List<TopoDS_Shape> shapeList, BoundingBox boundingBoxParameter, out List<TopoDS_Shape> faceShapeOuterList, out List<TopoDS_Shape> faceShapeInnerList, out List<TopoDS_Shape> faceShapeOtherList )
-		{
-			List<gp_Vec> cutPlaneNormalVectorList = CreateCutPlaneNormalVector( boundingBoxParameter );
-
-			faceShapeOuterList = new List<TopoDS_Shape>();
-			faceShapeInnerList = new List<TopoDS_Shape>();
-			faceShapeOtherList = new List<TopoDS_Shape>();
-
-			for( int i = 0; i < cutPlaneNormalVectorList.Count; i++ ) {
-				TopoDS_Face cutPlane = MakeFace( cutPlaneNormalVectorList[ i ], new gp_Pnt( 0, 0, 0 ) );
-				List<TopoDS_Shape> tempOuterFaceShapeList = FindOuterOrInnerFaceByCutPlane( shapeList, cutPlane, cutPlaneNormalVectorList[ i ], true );
-				List<TopoDS_Shape> tempInnerFaceShapeList = FindOuterOrInnerFaceByCutPlane( shapeList, cutPlane, cutPlaneNormalVectorList[ i ], false );
-
-				// Collect InnerFaceShapeList and OuterFaceShapeList
-				faceShapeOuterList.AddRange( tempOuterFaceShapeList );
-				faceShapeInnerList.AddRange( tempInnerFaceShapeList );
-			}
-
-			// remove repeat face
-			faceShapeOuterList = faceShapeOuterList.Distinct().ToList();
-			faceShapeInnerList = faceShapeInnerList.Distinct().ToList();
-
-			for( int i = 0; i < shapeList.Count; i++ ) {
-
-				if( faceShapeOuterList.Contains( shapeList[ i ] ) ) {
-					continue;
-				}
-
-				if( faceShapeInnerList.Contains( shapeList[ i ] ) ) {
-					continue;
-				}
-
-				faceShapeOtherList.Add( shapeList[ i ] );
-			}
-		}
-
-		List<gp_Vec> CreateCutPlaneNormalVector( BoundingBox boundingBox )
-		{
-			List<gp_Vec> ResultList = new List<gp_Vec>();
-
-			double vecX = boundingBox.MaxX - boundingBox.MinX;
-			double vecZ = boundingBox.MaxZ - boundingBox.MinZ;
-
-			ResultList.Add( new gp_Vec( 0, 0, vecX ) );
-			ResultList.Add( new gp_Vec( vecZ, 0, vecX ) );
-			ResultList.Add( new gp_Vec( vecZ, 0, 0 ) );
-			ResultList.Add( new gp_Vec( vecZ, 0, -vecX ) );
-
-			return ResultList;
-		}
-
-		List<TopoDS_Shape> FindOuterOrInnerFaceByCutPlane( List<TopoDS_Shape> shapeList, TopoDS_Face cutPlane, gp_Vec cutPlaneNormalVector, bool isFindOuter )
-		{
-			List<Geom_Curve> intersectLineList = new List<Geom_Curve>();
-			List<TopoDS_Shape> shapesHaveYDirectionIntersectionList = new List<TopoDS_Shape>();
-			List<TopoDS_Shape> outerFaceList = new List<TopoDS_Shape>();
-
-			for( int i = 0; i < shapeList.Count; i++ ) {
-
-				if( shapeList[ i ].ShapeType() != TopAbs_ShapeEnum.TopAbs_FACE ) {
-					continue;
-				}
-				TopoDS_Face targetTopoFace = TopoDS.ToFace( shapeList[ i ] );
-
-				// create intersector list for all shapes
-				GeomAPI_IntSS intersector = GetIntersector( targetTopoFace, cutPlane );
-
-				// shapes "with no intersections", "with intersection line vector is not (0,1,0)", "parallel to cut plane"
-				// can't be outer shapes
-				if( CheckPossibleOuterShape( intersector, cutPlaneNormalVector, targetTopoFace ) == false ) {
-					continue;
-				}
-				intersectLineList.Add( intersector.Line( 1 ) );
-				shapesHaveYDirectionIntersectionList.Add( shapeList[ i ] );
-			}
-
-			if( intersectLineList.Count == 0 ) {
-				return outerFaceList;
-			}
-
-			// keep intersection line that is furthest/nearest from y axis
-			List<int> OuterShapeIndexList = GetFurthestOrNearestShapeIndex( intersectLineList, isFindOuter );
-
-			foreach( int Index in OuterShapeIndexList ) {
-				outerFaceList.Add( shapesHaveYDirectionIntersectionList[ Index ] );
-			}
-
-			return outerFaceList;
-		}
-
-		bool CheckPossibleOuterShape( GeomAPI_IntSS Intersector, gp_Vec CutPlaneNormalVector, TopoDS_Face TargetTopoFace )
-		{
-			if( Intersector == null ) {
-				return false;
-			}
-
-			// keep shapes that have intersection with cut plane
-			if( Intersector.NbLines() == 0 ) {
-				return false;
-			}
-
-			Geom_Curve IntersectLine = Intersector.Line( 1 );
-
-			double FirstParameter = IntersectLine.FirstParameter();
-			gp_Pnt StartPoint = new gp_Pnt();
-			gp_Vec Direction = new gp_Vec();
-			IntersectLine.D1( FirstParameter, ref StartPoint, ref Direction );
-
-			if( isZeroVector( Direction ) ) {
-				return false;
-			}
-
-			// keep intersection line with direction vector contains only y direction
-			if( Direction.IsParallel( new gp_Vec( 0, 1, 0 ), ValueConstrain.ACCURACY ) == false ) {
-				return false;
-			}
-
-			// if cutplane contains target surface, don't use it for further calculation
-			if( IsVectorParallelToShape( CutPlaneNormalVector, TargetTopoFace ) ) {
-				return false;
-			}
-			return true;
-		}
-
-		GeomAPI_IntSS GetIntersector( TopoDS_Face TargetTopoFace, TopoDS_Face CutPlane )
-		{
-			Geom_Surface TargetSurface = BRep_Tool.Surface( TargetTopoFace );
-			Geom_Surface CutPlaneSurface = BRep_Tool.Surface( CutPlane );
-			GeomAPI_IntSS Intersector;
-
-			try {
-				double Umin = 0;
-				double Umax = 0;
-				double Vmin = 0;
-				double Vmax = 0;
-				BRepTools.UVBounds( TargetTopoFace, ref Umin, ref Umax, ref Vmin, ref Vmax );
-				Geom_RectangularTrimmedSurface TrimmedSurface = new Geom_RectangularTrimmedSurface( TargetSurface, Umin, Umax, Vmin, Vmax );
-
-				BRepTools.UVBounds( CutPlane, ref Umin, ref Umax, ref Vmin, ref Vmax );
-				Geom_RectangularTrimmedSurface TrimmedSurfaceCutPlane = new Geom_RectangularTrimmedSurface( CutPlaneSurface, Umin, Umax, Vmin, Vmax );
-
-				Intersector = new GeomAPI_IntSS( TrimmedSurface, TrimmedSurfaceCutPlane, ValueConstrain.ACCURACY );
-			}
-			catch {
-				Intersector = null;
-			}
-
-			return Intersector;
-		}
-
-		bool IsVectorParallelToShape( gp_Vec CutPlaneNormalVector, TopoDS_Face Face )
-		{
-			BRepAdaptor_Surface ShapeFaceGeomFace = new BRepAdaptor_Surface( Face );
-
-			double FirstUParam = ShapeFaceGeomFace.FirstUParameter();
-			double LastUParam = ShapeFaceGeomFace.LastUParameter();
-			double FirstVParam = ShapeFaceGeomFace.FirstVParameter();
-			double LastVParam = ShapeFaceGeomFace.LastVParameter();
-
-			// make a 5x5 grid on Shape. Get normal vector of each grid point and compare to CutPlaneNormalVector.
-			int nSegments = 4;
-
-			double CurrentUParam = FirstUParam;
-			double CurrentVParam = FirstVParam;
-			double UParamIncrement = ( LastUParam - FirstUParam ) / nSegments;
-			double VParamIncrement = ( LastVParam - FirstVParam ) / nSegments;
-
-			for( int i = 0; i <= nSegments; i++ ) {
-				for( int j = 0; j <= nSegments; j++ ) {
-					gp_Pnt CurrentPoint = new gp_Pnt();
-					gp_Vec CurrentUVector = new gp_Vec();
-					gp_Vec CurrentVVector = new gp_Vec();
-
-					ShapeFaceGeomFace.D1( CurrentUParam, CurrentVParam, ref CurrentPoint, ref CurrentUVector, ref CurrentVVector );
-					gp_Vec NormalDirection = CurrentUVector ^ CurrentVVector;
-
-					if( NormalDirection.IsParallel( CutPlaneNormalVector, ValueConstrain.ACCURACY ) == false ) {
-						return false;
-					}
-					CurrentVParam += VParamIncrement;
-				}
-				CurrentUParam += UParamIncrement;
-			}
-			return true;
-		}
-
-		// get furthest/nearest shape from Y axis, and the shape has same distance from Y axis as the furthest/nearest
-		// Look on the outer wall, and you will be searching for the farthest; look on the inner wall, and you will be searching for the nearest.
-		List<int> GetFurthestOrNearestShapeIndex( List<Geom_Curve> IntersectLineList, bool isFindOuter = true )
-		{
-			gp_Pnt StartPoint = OCCTranslator.ConvertPoint3DToGPPoint( new Point3D( 0, 0, 0 ) );
-			gp_Pnt EndPoint = OCCTranslator.ConvertPoint3DToGPPoint( new Point3D( 0, 10000, 0 ) );
-
-			TopoDS_Shape YAxisShape = OCCTranslator.MakeEdge( StartPoint, EndPoint );
-			double Distance = isFindOuter ? 0 : double.MaxValue;
-			List<int> FurthestShapeIndexList = new List<int>();
-			int FurthestShapeIndex = 0;
-
-			BRepExtrema_DistShapeShape DistanceCalculator;
-
-			// find furthest shape
-			for( int i = 0; i < IntersectLineList.Count; i++ ) {
-				BRepBuilderAPI_MakeEdge ShapeMaker = new BRepBuilderAPI_MakeEdge( IntersectLineList[ i ] );
-				TopoDS_Shape LineShape = ShapeMaker.Shape();
-				DistanceCalculator = new BRepExtrema_DistShapeShape( LineShape, YAxisShape );
-				DistanceCalculator.Perform();
-				double CalculatedDistance = DistanceCalculator.Value();
-
-				if( isFindOuter ) {
-					if( CalculatedDistance > Distance ) {
-						Distance = CalculatedDistance;
-						FurthestShapeIndex = i;
-					}
-				}
-				else {
-					if( CalculatedDistance < Distance ) {
-						Distance = CalculatedDistance;
-						FurthestShapeIndex = i;
-					}
-				}
-			}
-			FurthestShapeIndexList.Add( FurthestShapeIndex );
-
-			// find shape with same distance as the furthest
-			for( int i = 0; i < IntersectLineList.Count; i++ ) {
-				if( i == FurthestShapeIndex ) {
-					continue;
-				}
-
-				BRepBuilderAPI_MakeEdge ShapeMaker = new BRepBuilderAPI_MakeEdge( IntersectLineList[ i ] );
-				TopoDS_Shape LineShape = ShapeMaker.Shape();
-				DistanceCalculator = new BRepExtrema_DistShapeShape( LineShape, YAxisShape );
-				DistanceCalculator.Perform();
-				double CalculatedDistance = DistanceCalculator.Value();
-
-				if( Comparer.IsSameValue( CalculatedDistance, Distance ) ) {
-					FurthestShapeIndexList.Add( i );
-				}
-			}
-
-			return FurthestShapeIndexList;
 		}
 
 		// CAUTION : need rearrange
@@ -956,15 +959,6 @@ namespace TubeCuttingUI
 			return CurveList;
 		}
 
-		// create a face without boundary. Can't use on projection.
-		TopoDS_Face MakeFace( gp_Vec normalVec, gp_Pnt pointOnFace )
-		{
-			gp_Dir UnitNormalVector = new gp_Dir( normalVec );
-			gp_Pln aPlane = new gp_Pln( pointOnFace, UnitNormalVector );
-			BRepBuilderAPI_MakeFace FaceMaker = new BRepBuilderAPI_MakeFace( aPlane );
-			return FaceMaker.Face();
-		}
-
 		// create a face parallel to the Y-axis with boundary
 		TopoDS_Face CreateHalfFaceParallelYAxis( gp_Vec vecNormal, gp_Pnt ptOnFace, BoundingBox boundingBoxParameter, double dTolerance )
 		{
@@ -1030,7 +1024,7 @@ namespace TubeCuttingUI
 		// CAUTION : 可能會有超出面範圍的交點
 		List<Point3D> GetPlaneIntersectionPoint( List<Geom_Curve> CurveList, gp_Vec NormalVector )
 		{
-			TopoDS_Face Face = MakeFace( NormalVector, new gp_Pnt( 0, 0, 0 ) );
+			TopoDS_Face Face = MakePlaneFace( NormalVector, new gp_Pnt( 0, 0, 0 ) );
 
 			Geom_Surface Surface = BRep_Tool.Surface( Face );
 
@@ -1287,14 +1281,6 @@ namespace TubeCuttingUI
 				Paths.Add( Path );
 			}
 			return Paths;
-		}
-
-		static bool isZeroVector( gp_Vec Vector )
-		{
-			if( Vector.X() == 0 && Vector.Y() == 0 && Vector.Z() == 0 ) {
-				return true;
-			}
-			return false;
 		}
 
 		// tell which one is circular or oval
