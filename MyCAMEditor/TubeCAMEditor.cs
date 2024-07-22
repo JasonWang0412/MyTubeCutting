@@ -73,10 +73,6 @@ namespace MyCAMEditor
 		public delegate void CommandStatusChangedEventHandler( bool bUndo, bool bRedo );
 		public event CommandStatusChangedEventHandler CommandStatusChanged;
 
-		// main tube status changed event
-		public delegate void MainTubeStatusChangedEventHandler( bool bExistMainTube );
-		public event MainTubeStatusChangedEventHandler MainTubeStatusChanged;
-
 		// cam edit error event
 		public delegate void CAMEditErrorEventHandler( CAMEditErrorCode errorCode );
 		public event CAMEditErrorEventHandler CAMEditErrorEvent;
