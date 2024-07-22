@@ -1,6 +1,12 @@
-﻿using MyLanguageManager;
+﻿using My3DReader;
+using MyCAMCore;
+using MyLanguageManager;
 using MyOCCViewer;
+using MyUtility.MyOCC;
+using OCC.AIS;
 using OCC.gp;
+using OCC.Graphic3d;
+using OCC.Quantity;
 using OCC.TopoDS;
 using System;
 using System.Collections.Generic;
@@ -55,7 +61,11 @@ namespace MyCAMEditor
 		bool m_bSupressBrowserSelectEvent = false;
 
 		// tube shape
-		TopoDS_Shape m_RawTubeShape;
+		AIS_Shape m_RawTubeAISShape;
+
+		// cad feature map
+		Dictionary<string, CADFeatureData> m_CADFeatureDataMap = new Dictionary<string, CADFeatureData>();
+		Dictionary<string, AIS_Shape> m_CADFeatureRawAISMap = new Dictionary<string, AIS_Shape>();
 
 		// viewer
 		int m_nXMousePosition = 0;
@@ -122,11 +132,43 @@ namespace MyCAMEditor
 			// cam edit action
 			CAMEditErrorEvent += CAMEditError;
 			CAMEditSuccessEvent += CAMEditSuccess;
+
+			// init object browser
+			m_RootNode = m_treeObjBrowser.Nodes.Add( "ROOT", "ROOT_DISLAY" );
 		}
 
 		public void SetTube( TopoDS_Shape tubeShape )
 		{
-			m_RawTubeShape = tubeShape;
+			// read tube cad feature data
+			TubeReader tubeReader = new TubeReader();
+			bool bRead = tubeReader.ReadTubeInformation( tubeShape,
+				out CADFeatureData head, out CADFeatureData tail, out List<CADFeatureData> features );
+			if( bRead == false ) {
+				return;
+			}
+
+			// update cad feature data map
+			m_CADFeatureDataMap.Clear();
+			m_CADFeatureDataMap.Add( "HEAD", head );
+			m_CADFeatureDataMap.Add( "TAIL", tail );
+			for( int i = 0; i < features.Count; i++ ) {
+				m_CADFeatureDataMap.Add( "FEATURE" + i.ToString( "00" ), features[ i ] );
+			}
+
+			// update object browser
+			ReconstructObjectBrowser( "HEAD" );
+
+			// create tube AIS shape
+			UpdateCADFeatureRawAISMap();
+
+			// display tube
+			m_RawTubeAISShape = new AIS_Shape( tubeShape );
+			Graphic3d_MaterialAspect aspect = new Graphic3d_MaterialAspect( Graphic3d_NameOfMaterial.Graphic3d_NOM_STEEL );
+			m_RawTubeAISShape.SetMaterial( aspect );
+			m_RawTubeAISShape.SetDisplayMode( 1 );
+			m_Viewer.GetAISContext().Display( m_RawTubeAISShape, false );
+			DisplayObjectShape( "HEAD" );
+			m_Viewer.ZoomAllView();
 		}
 
 		public gp_Dir GetEditObjectDir()
@@ -252,6 +294,21 @@ namespace MyCAMEditor
 			m_Viewer.ZoomAllView();
 		}
 
+		void UpdateCADFeatureRawAISMap()
+		{
+			m_CADFeatureRawAISMap.Clear();
+			foreach( var pair in m_CADFeatureDataMap ) {
+				TopoDS_Shape oneFeatureWire = OCCHelper.MakeCompound( pair.Value.OuterWire );
+				if( oneFeatureWire == null ) {
+					continue;
+				}
+				AIS_Shape oneAIS = new AIS_Shape( oneFeatureWire );
+				oneAIS.SetColor( new Quantity_Color( Quantity_NameOfColor.Quantity_NOC_RED ) );
+				oneAIS.SetWidth( 2 );
+				m_CADFeatureRawAISMap.Add( pair.Key, oneAIS );
+			}
+		}
+
 		void ModifyCAMFeature()
 		{
 			// TODO: complete the implementation
@@ -269,7 +326,23 @@ namespace MyCAMEditor
 
 		void ReconstructObjectBrowser( string szSelectNodeName )
 		{
-			// TODO: complete the implementation
+			m_RootNode.Nodes.Clear();
+			m_bSupressBrowserSelectEvent = true;
+
+			// add head
+			m_RootNode.Nodes.Add( "HEAD", "HEAD_DISPLAY" );
+
+			// add tail
+			m_RootNode.Nodes.Add( "TAIL", "TAIL_DISPLAY" );
+
+			// add features
+			for( int i = 0; i < m_CADFeatureDataMap.Count - 2; i++ ) {
+				m_RootNode.Nodes.Add( "FEATURE" + i.ToString( "00" ), "FEATURE" + i.ToString( "00" ) + "_DISPLAY" );
+			}
+
+			// select node
+			m_treeObjBrowser.SelectedNode = m_RootNode.Nodes[ szSelectNodeName ];
+			m_bSupressBrowserSelectEvent = false;
 		}
 
 		void UpdateAndRedrawResultTube( out bool isSucess )
@@ -286,12 +359,21 @@ namespace MyCAMEditor
 
 		void DisplayObjectShape( string szObjectID )
 		{
-			// TODO: complete the implementation
+			HideAllShapeExceptMainTube();
+			m_Viewer.GetAISContext().Display( m_CADFeatureRawAISMap[ szObjectID ], true );
 		}
 
 		void ShowObjectProperty( string szObjectID )
 		{
 			// TODO: complete the implementation
+		}
+
+		void HideAllShapeExceptMainTube()
+		{
+			foreach( var pair in m_CADFeatureRawAISMap ) {
+				m_Viewer.GetAISContext().Erase( pair.Value, false );
+			}
+			m_Viewer.UpdateView();
 		}
 
 		void DoCommand( ICAMEditCommand command )

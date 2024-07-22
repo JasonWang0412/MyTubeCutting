@@ -21,7 +21,7 @@ namespace My3DReader
 {
 	public class TubeReader
 	{
-		public void ReadTubeInformation( TopoDS_Shape oneShape,
+		public bool ReadTubeInformation( TopoDS_Shape oneShape,
 			out CADFeatureData head, out CADFeatureData tail, out List<CADFeatureData> features )
 		{
 			head = null;
@@ -59,9 +59,10 @@ namespace My3DReader
 					}
 					features.Add( new CADFeatureData( wireOuterList[ i ], wireInnerList[ i ], fearureShellList[ i ] ) );
 				}
+				return true;
 			}
 			catch {
-				return;
+				return false;
 			}
 		}
 
