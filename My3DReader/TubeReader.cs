@@ -44,7 +44,7 @@ namespace TubeCuttingUI
 		}
 	}
 
-	public class ThreeDimensionalFileReader
+	public class TubeReader
 	{
 		public void ReadTubeInformation( TopoDS_Shape oneShape,
 			out FeatureData head, out FeatureData tail, out List<FeatureData> features )
