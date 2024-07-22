@@ -98,6 +98,10 @@
       <Project>{3978a70e-1c4f-44e2-8e0a-f9689c8c9807}</Project>
       <Name>MyCADEditor</Name>
     </ProjectReference>
+    <ProjectReference Include="..\MyCAMUI\MyCAMUI.csproj">
+      <Project>{0be66b21-7d05-40b3-a149-2efe681ead60}</Project>
+      <Name>MyCAMUI</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MyLanguageManager\MyLanguageManager.csproj">
       <Project>{04fcc0ce-27d3-4262-b609-d776490124ee}</Project>
       <Name>MyLanguageManager</Name>

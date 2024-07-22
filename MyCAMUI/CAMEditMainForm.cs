@@ -1,5 +1,6 @@
 ﻿using MyCAMEditor;
 using MyLanguageManager;
+using OCC.TopoDS;
 using System.Collections.Generic;
 using System.Windows.Forms;
 using WeifenLuo.WinFormsUI.Docking;
@@ -49,6 +50,11 @@ namespace MyCAMUI
 			// set language zh-TW
 			// TODO: any language
 			SetLanguage();
+		}
+
+		public void SetTube( TopoDS_Shape tubeShape )
+		{
+			m_TubeCAMEditor.SetTube( tubeShape );
 		}
 
 		// tube editor action

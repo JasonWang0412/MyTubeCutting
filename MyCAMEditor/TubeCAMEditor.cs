@@ -1,6 +1,7 @@
 ﻿using MyLanguageManager;
 using MyOCCViewer;
 using OCC.gp;
+using OCC.TopoDS;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -52,6 +53,9 @@ namespace MyCAMEditor
 		PropertyGrid m_propgrdPropertyBar = new PropertyGrid();
 		Label m_lblHint = new Label();
 		bool m_bSupressBrowserSelectEvent = false;
+
+		// tube shape
+		TopoDS_Shape m_RawTubeShape;
 
 		// viewer
 		int m_nXMousePosition = 0;
@@ -118,6 +122,11 @@ namespace MyCAMEditor
 			// cam edit action
 			CAMEditErrorEvent += CAMEditError;
 			CAMEditSuccessEvent += CAMEditSuccess;
+		}
+
+		public void SetTube( TopoDS_Shape tubeShape )
+		{
+			m_RawTubeShape = tubeShape;
 		}
 
 		public gp_Dir GetEditObjectDir()

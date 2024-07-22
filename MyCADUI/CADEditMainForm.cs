@@ -1,5 +1,6 @@
 ﻿using MyCADCore;
 using MyCADEditor;
+using MyCAMUI;
 using MyLanguageManager;
 using OCC.STEPControl;
 using OCC.TopoDS;
@@ -291,6 +292,13 @@ namespace MyCADUI
 			STEPControl_Writer writer = new STEPControl_Writer();
 			writer.Transfer( resultTube, STEPControl_StepModelType.STEPControl_AsIs );
 			writer.Write( szStepFilePath );
+
+			// open cam edit form
+			CAMEditMainForm camEditMainForm = new CAMEditMainForm();
+			camEditMainForm.FormClosed += ( senderFC, eFC ) => Close();
+			camEditMainForm.SetTube( resultTube );
+			camEditMainForm.Show();
+			Hide();
 		}
 
 		void MainTubeStatusChanged( bool bExistMainTube )
