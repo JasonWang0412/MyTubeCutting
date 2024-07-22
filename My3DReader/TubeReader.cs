@@ -1,4 +1,5 @@
-﻿using MyUtility.General;
+﻿using MyCAMCore;
+using MyUtility.General;
 using MyUtility.MyOCC;
 using OCC.BRep;
 using OCC.BRepAdaptor;
@@ -16,38 +17,12 @@ using OCC.TopTools;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace TubeCuttingUI
+namespace My3DReader
 {
-	// TODO: move to someother place
-	public class FeatureData
-	{
-		public FeatureData( List<TopoDS_Edge> outerWire, List<TopoDS_Edge> innerWire, List<TopoDS_Shape> featureShell )
-		{
-			OuterWire = outerWire;
-			InnerWire = innerWire;
-			FeatureShell = featureShell;
-		}
-
-		public List<TopoDS_Edge> OuterWire
-		{
-			get;
-		}
-
-		public List<TopoDS_Edge> InnerWire
-		{
-			get;
-		}
-
-		public List<TopoDS_Shape> FeatureShell
-		{
-			get;
-		}
-	}
-
 	public class TubeReader
 	{
 		public void ReadTubeInformation( TopoDS_Shape oneShape,
-			out FeatureData head, out FeatureData tail, out List<FeatureData> features )
+			out CADFeatureData head, out CADFeatureData tail, out List<CADFeatureData> features )
 		{
 			head = null;
 			tail = null;
@@ -73,16 +48,16 @@ namespace TubeCuttingUI
 				FindIndexOfHeadAndTail( fearureShellList, out int nHeadIndex, out int nTailIndex, out List<BoundingBox> shapeBoxList );
 
 				// get head and tail feature
-				head = new FeatureData( wireOuterList[ nHeadIndex ], wireInnerList[ nHeadIndex ], fearureShellList[ nHeadIndex ] );
-				tail = new FeatureData( wireOuterList[ nTailIndex ], wireInnerList[ nTailIndex ], fearureShellList[ nTailIndex ] );
+				head = new CADFeatureData( wireOuterList[ nHeadIndex ], wireInnerList[ nHeadIndex ], fearureShellList[ nHeadIndex ] );
+				tail = new CADFeatureData( wireOuterList[ nTailIndex ], wireInnerList[ nTailIndex ], fearureShellList[ nTailIndex ] );
 
 				// get all feature
-				features = new List<FeatureData>();
+				features = new List<CADFeatureData>();
 				for( int i = 0; i < fearureShellList.Count; i++ ) {
 					if( i == nHeadIndex || i == nTailIndex ) {
 						continue;
 					}
-					features.Add( new FeatureData( wireOuterList[ i ], wireInnerList[ i ], fearureShellList[ i ] ) );
+					features.Add( new CADFeatureData( wireOuterList[ i ], wireInnerList[ i ], fearureShellList[ i ] ) );
 				}
 			}
 			catch {

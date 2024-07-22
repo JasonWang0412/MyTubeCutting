@@ -48,6 +48,10 @@
     <Compile Include="TubeReader.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\MyCAMCore\MyCAMCore.csproj">
+      <Project>{54e41802-f097-4ec6-83fb-27689f18f18d}</Project>
+      <Name>MyCAMCore</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MyUtility\MyUtility.csproj">
       <Project>{e3e8855e-f88f-42b6-9f5f-bb02d8221353}</Project>
       <Name>MyUtility</Name>

@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{DEEFC561-2699-4F34-B6A6-AC56C1BDD181}</ProjectGuid>
+    <ProjectGuid>{54E41802-F097-4EC6-83FB-27689F18F18D}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MyCAMEditor</RootNamespace>
-    <AssemblyName>MyCAMEditor</AssemblyName>
+    <RootNamespace>MyCAMCore</RootNamespace>
+    <AssemblyName>MyCAMCore</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -36,7 +36,6 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -45,26 +44,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CADFeatureData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TubeCAMEditor.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\My3DReader\My3DReader.csproj">
-      <Project>{fe1e1c02-8a3f-436a-861f-0f4674b50129}</Project>
-      <Name>My3DReader</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\MyCAMCore\MyCAMCore.csproj">
-      <Project>{54e41802-f097-4ec6-83fb-27689f18f18d}</Project>
-      <Name>MyCAMCore</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\MyLanguageManager\MyLanguageManager.csproj">
-      <Project>{04fcc0ce-27d3-4262-b609-d776490124ee}</Project>
-      <Name>MyLanguageManager</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\MyOCCViwer\MyOCCViwer.csproj">
-      <Project>{d53b3d86-2889-47c5-a868-eea858805227}</Project>
-      <Name>MyOCCViwer</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
