@@ -3,7 +3,6 @@ using OCC.BRepBuilderAPI;
 using OCC.BRepExtrema;
 using OCC.gp;
 using OCC.TopoDS;
-using System;
 using System.Collections.Generic;
 
 namespace MyUtility.MyOCC
@@ -48,7 +47,38 @@ namespace MyUtility.MyOCC
 				}
 				return compound;
 			}
-			catch( Exception e ) {
+			catch {
+				return null;
+			}
+		}
+
+		public static TopoDS_Shape MakeShell( List<TopoDS_Shape> faceList )
+		{
+			// data protection
+			if( faceList == null || faceList.Count == 0 ) {
+				return null;
+			}
+
+			try {
+				// create shell
+				TopoDS_Shell shell = new TopoDS_Shell();
+				TopoDS_Shape shellShape = shell;
+				BRep_Builder builder = new BRep_Builder();
+				builder.MakeShell( ref shell );
+
+				// add all shapes to shell
+				foreach( TopoDS_Shape oneFace in faceList ) {
+					if( oneFace == null ) {
+						continue;
+					}
+					builder.Add( ref shellShape, oneFace );
+				}
+				if( shell.elementsAsList.Count == 0 ) {
+					return null;
+				}
+				return shell;
+			}
+			catch {
 				return null;
 			}
 		}

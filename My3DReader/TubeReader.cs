@@ -21,28 +21,49 @@ namespace My3DReader
 {
 	public class TubeReader
 	{
-		public bool ReadTubeInformation( TopoDS_Shape oneShape,
+		public bool ReadTubeInformation( TopoDS_Shape rawShape,
 			out CADFeatureData head, out CADFeatureData tail, out List<CADFeatureData> features )
 		{
 			head = null;
 			tail = null;
 			features = null;
 
+			// data protection
+			if( rawShape == null ) {
+				return false;
+			}
+
 			try {
 				// sew original shape to avoid edge not common
-				oneShape = OCCHelper.SewShape( oneShape );
-				BoundingBox boundingBox = OCCHelper.GetBoundingBox( oneShape );
+				rawShape = OCCHelper.SewShape( rawShape );
+				BoundingBox boundingBox = OCCHelper.GetBoundingBox( rawShape );
+				if( boundingBox == null ) {
+					return false;
+				}
 
 				// get all faces from shape
-				List<TopoDS_Shape> shapeList = GetFaceListFromShape( oneShape );
+				List<TopoDS_Shape> allFaceList = GetFaceListFromShape( rawShape );
+				if( allFaceList == null || allFaceList.Count == 0 ) {
+					return false;
+				}
 
 				// get all outer, inner and feature faces
-				FilterShape( shapeList, boundingBox,
-					out List<TopoDS_Shape> faceShapeOuterWallList, out List<TopoDS_Shape> faceShapeInnerWallList, out List<TopoDS_Shape> faceShapeFeatureList );
+				FilterShape( allFaceList, boundingBox,
+					out List<TopoDS_Shape> faceOuterWallList, out List<TopoDS_Shape> faceInnerWallList, out List<TopoDS_Shape> faceFeatureList );
 
-				// get all edges on the inner and outer
-				GetFeatureWireList( faceShapeFeatureList, faceShapeOuterWallList, faceShapeInnerWallList,
-					out List<List<TopoDS_Edge>> wireOuterList, out List<List<TopoDS_Edge>> wireInnerList, out List<List<TopoDS_Shape>> fearureShellList );
+				// we need at least one outer wall
+				if( faceOuterWallList.Count == 0 ) {
+					return false;
+				}
+
+				// get all feature wire (path) and shell
+				GetFeatureWireList( faceFeatureList, faceOuterWallList, faceInnerWallList,
+					out List<TopoDS_Wire> wireOuterList, out List<TopoDS_Wire> wireInnerList, out List<TopoDS_Shell> fearureShellList );
+
+				// we need at least two outer wire
+				if( wireOuterList.Count < 2 ) {
+					return false;
+				}
 
 				// find the head and tail end index
 				FindIndexOfHeadAndTail( fearureShellList, out int nHeadIndex, out int nTailIndex, out List<BoundingBox> shapeBoxList );
@@ -68,49 +89,52 @@ namespace My3DReader
 
 		List<TopoDS_Shape> GetFaceListFromShape( TopoDS_Shape shape )
 		{
-			List<TopoDS_Shape> faceList = new List<TopoDS_Shape>();
+			List<TopoDS_Shape> allFaceList = new List<TopoDS_Shape>();
 			TopExp_Explorer faceExplorer = new TopExp_Explorer( shape, TopAbs_ShapeEnum.TopAbs_FACE );
 			while( faceExplorer.More() ) {
-				faceList.Add( faceExplorer.Current() );
+				allFaceList.Add( faceExplorer.Current() );
 				faceExplorer.Next();
 			}
-			return faceList;
+			return allFaceList;
 		}
 
-		void FilterShape( List<TopoDS_Shape> shapeList, BoundingBox boundingBoxParameter,
-			out List<TopoDS_Shape> faceShapeOuterWallList, out List<TopoDS_Shape> faceShapeInnerWallList, out List<TopoDS_Shape> faceShapeFeatureList )
+		void FilterShape( List<TopoDS_Shape> allFaceList, BoundingBox boundingBoxParameter,
+			out List<TopoDS_Shape> faceOuterWallList, out List<TopoDS_Shape> faceInnerWallList, out List<TopoDS_Shape> faceFeatureList )
 		{
 			List<gp_Vec> cutPlaneNormalVectorList = CreateCutPlaneNormalVector( boundingBoxParameter );
 
-			faceShapeOuterWallList = new List<TopoDS_Shape>();
-			faceShapeInnerWallList = new List<TopoDS_Shape>();
-			faceShapeFeatureList = new List<TopoDS_Shape>();
+			faceOuterWallList = new List<TopoDS_Shape>();
+			faceInnerWallList = new List<TopoDS_Shape>();
+			faceFeatureList = new List<TopoDS_Shape>();
 
 			for( int i = 0; i < cutPlaneNormalVectorList.Count; i++ ) {
 				TopoDS_Face cutPlane = MakePlaneFace( cutPlaneNormalVectorList[ i ], new gp_Pnt( 0, 0, 0 ) );
-				List<TopoDS_Shape> tempOuterFaceShapeList = FindOuterOrInnerFaceByCutPlane( shapeList, cutPlane, cutPlaneNormalVectorList[ i ], true );
-				List<TopoDS_Shape> tempInnerFaceShapeList = FindOuterOrInnerFaceByCutPlane( shapeList, cutPlane, cutPlaneNormalVectorList[ i ], false );
+				if( cutPlane == null ) {
+					continue;
+				}
+				List<TopoDS_Shape> tempOuterFaceList = FindWallFaceByCutPlane( allFaceList, cutPlane, cutPlaneNormalVectorList[ i ], true );
+				List<TopoDS_Shape> tempInnerFaceList = FindWallFaceByCutPlane( allFaceList, cutPlane, cutPlaneNormalVectorList[ i ], false );
 
 				// Collect InnerFaceShapeList and OuterFaceShapeList
-				faceShapeOuterWallList.AddRange( tempOuterFaceShapeList );
-				faceShapeInnerWallList.AddRange( tempInnerFaceShapeList );
+				faceOuterWallList.AddRange( tempOuterFaceList );
+				faceInnerWallList.AddRange( tempInnerFaceList );
 			}
 
 			// remove repeat face
-			faceShapeOuterWallList = faceShapeOuterWallList.Distinct().ToList();
-			faceShapeInnerWallList = faceShapeInnerWallList.Distinct().ToList();
+			faceOuterWallList = faceOuterWallList.Distinct().ToList();
+			faceInnerWallList = faceInnerWallList.Distinct().ToList();
 
-			for( int i = 0; i < shapeList.Count; i++ ) {
+			for( int i = 0; i < allFaceList.Count; i++ ) {
 
-				if( faceShapeOuterWallList.Contains( shapeList[ i ] ) ) {
+				if( faceOuterWallList.Contains( allFaceList[ i ] ) ) {
 					continue;
 				}
 
-				if( faceShapeInnerWallList.Contains( shapeList[ i ] ) ) {
+				if( faceInnerWallList.Contains( allFaceList[ i ] ) ) {
 					continue;
 				}
 
-				faceShapeFeatureList.Add( shapeList[ i ] );
+				faceFeatureList.Add( allFaceList[ i ] );
 			}
 		}
 
@@ -134,30 +158,36 @@ namespace My3DReader
 			gp_Dir unitNormalVector = new gp_Dir( normalVec );
 			gp_Pln aPlane = new gp_Pln( pointOnPlane, unitNormalVector );
 			BRepBuilderAPI_MakeFace FaceMaker = new BRepBuilderAPI_MakeFace( aPlane );
+			if( FaceMaker.IsDone() == false ) {
+				return null;
+			}
 			return FaceMaker.Face();
 		}
 
-		List<TopoDS_Shape> FindOuterOrInnerFaceByCutPlane( List<TopoDS_Shape> allFaceList, TopoDS_Face cutPlane, gp_Vec cutPlaneNormalVector, bool isFindOuter )
+		List<TopoDS_Shape> FindWallFaceByCutPlane( List<TopoDS_Shape> allFaceList, TopoDS_Face cutPlane, gp_Vec cutPlaneNormalVector, bool isFindOuter )
 		{
 			List<Geom_Curve> intersectLineList = new List<Geom_Curve>();
-			List<TopoDS_Shape> possibleTubeWallFaceList = new List<TopoDS_Shape>();
+			List<TopoDS_Shape> possibleWallFaceList = new List<TopoDS_Shape>();
 			List<TopoDS_Shape> tubeWallFaceList = new List<TopoDS_Shape>();
 
 			for( int i = 0; i < allFaceList.Count; i++ ) {
+				if( allFaceList[ i ].ShapeType() != TopAbs_ShapeEnum.TopAbs_FACE ) {
+					continue;
+				}
 				TopoDS_Face oneFace = TopoDS.ToFace( allFaceList[ i ] );
 
 				// create intersector list for all shapes
-				GeomAPI_IntSS intersector = GetIntSS( oneFace, cutPlane );
-				if( intersector == null ) {
+				GeomAPI_IntSS intSS = GetIntSS( oneFace, cutPlane );
+				if( intSS == null ) {
 					continue;
 				}
 
 				// check if the face is possible tube wall
-				if( CheckPossibleTubeWall( intersector, cutPlaneNormalVector, oneFace ) == false ) {
+				if( IsFacePossibleTubeWall( intSS, cutPlaneNormalVector, oneFace ) == false ) {
 					continue;
 				}
-				intersectLineList.Add( intersector.Line( 1 ) );
-				possibleTubeWallFaceList.Add( allFaceList[ i ] );
+				intersectLineList.Add( intSS.Line( 1 ) );
+				possibleWallFaceList.Add( allFaceList[ i ] );
 			}
 
 			if( intersectLineList.Count == 0 ) {
@@ -168,7 +198,7 @@ namespace My3DReader
 			List<int> OuterShapeIndexList = GetExtremaIntSSDisIndex( intersectLineList, isFindOuter );
 
 			foreach( int Index in OuterShapeIndexList ) {
-				tubeWallFaceList.Add( possibleTubeWallFaceList[ Index ] );
+				tubeWallFaceList.Add( possibleWallFaceList[ Index ] );
 			}
 
 			return tubeWallFaceList;
@@ -178,7 +208,10 @@ namespace My3DReader
 		{
 			Geom_Surface theFaceSurface = BRep_Tool.Surface( theFace );
 			Geom_Surface cutPlaneSurface = BRep_Tool.Surface( cutPlane );
-			GeomAPI_IntSS intersector;
+			if( theFaceSurface == null || cutPlaneSurface == null ) {
+				return null;
+			}
+			GeomAPI_IntSS intSS;
 
 			try {
 				double Umin = 0;
@@ -191,27 +224,27 @@ namespace My3DReader
 				BRepTools.UVBounds( cutPlane, ref Umin, ref Umax, ref Vmin, ref Vmax );
 				Geom_RectangularTrimmedSurface trimmedCutPlaneSurface = new Geom_RectangularTrimmedSurface( cutPlaneSurface, Umin, Umax, Vmin, Vmax );
 
-				intersector = new GeomAPI_IntSS( trimmedFaceSurface, trimmedCutPlaneSurface, OCCHelper.ERROR_VALUE );
+				intSS = new GeomAPI_IntSS( trimmedFaceSurface, trimmedCutPlaneSurface, OCCHelper.ERROR_VALUE );
 			}
 			catch {
-				intersector = null;
+				intSS = null;
 			}
-			return intersector;
+			return intSS;
 		}
 
-		bool CheckPossibleTubeWall( GeomAPI_IntSS intersector, gp_Vec cutPlaneNormalVector, TopoDS_Face theFace )
+		bool IsFacePossibleTubeWall( GeomAPI_IntSS intSS, gp_Vec cutPlaneNormalVector, TopoDS_Face theFace )
 		{
-			if( intersector == null ) {
+			if( intSS == null ) {
 				return false;
 			}
 
 			// keep shapes that have intersection with cut plane
-			if( intersector.NbLines() == 0 ) {
+			if( intSS.NbLines() == 0 ) {
 				return false;
 			}
 
 			// check the intersection property
-			Geom_Curve IntersectLine = intersector.Line( 1 );
+			Geom_Curve IntersectLine = intSS.Line( 1 );
 			gp_Pnt startPoint = IntersectLine.Value( IntersectLine.FirstParameter() );
 			gp_Pnt endPoint = IntersectLine.Value( IntersectLine.LastParameter() );
 			gp_Vec intersectVec = new gp_Vec( startPoint, endPoint );
@@ -280,6 +313,9 @@ namespace My3DReader
 
 			for( int i = 0; i < IntersectLineList.Count; i++ ) {
 				BRepBuilderAPI_MakeEdge edgeMakerIntSS = new BRepBuilderAPI_MakeEdge( IntersectLineList[ i ] );
+				if( edgeMakerIntSS.IsDone() == false ) {
+					continue;
+				}
 				TopoDS_Shape IntSSShape = edgeMakerIntSS.Shape();
 				BRepExtrema_DistShapeShape DistanceCalculator = new BRepExtrema_DistShapeShape( IntSSShape, YAxisShape );
 				DistanceCalculator.Perform();
@@ -307,6 +343,9 @@ namespace My3DReader
 				}
 
 				BRepBuilderAPI_MakeEdge edgeMakerIntSS = new BRepBuilderAPI_MakeEdge( IntersectLineList[ i ] );
+				if( edgeMakerIntSS.IsDone() == false ) {
+					continue;
+				}
 				TopoDS_Shape IntSSShape = edgeMakerIntSS.Shape();
 				BRepExtrema_DistShapeShape DistanceCalculator = new BRepExtrema_DistShapeShape( IntSSShape, YAxisShape );
 				DistanceCalculator.Perform();
@@ -319,188 +358,128 @@ namespace My3DReader
 			return extremaIntSSDisIndexList;
 		}
 
-		void GetFeatureWireList( List<TopoDS_Shape> faceShapeFeature, List<TopoDS_Shape> faceShapeOuterWallList, List<TopoDS_Shape> faceShapeInnerWallList,
-			out List<List<TopoDS_Edge>> featureWireOuterList, out List<List<TopoDS_Edge>> featureWireInnerList, out List<List<TopoDS_Shape>> featureShellList )
+		void GetFeatureWireList( List<TopoDS_Shape> faceFeatureList, List<TopoDS_Shape> faceOuterWallList, List<TopoDS_Shape> faceInnerWallList,
+			out List<TopoDS_Wire> featureWireOuterList, out List<TopoDS_Wire> featureWireInnerList, out List<TopoDS_Shell> featureShellList )
 		{
-			featureWireOuterList = new List<List<TopoDS_Edge>>();
-			featureWireInnerList = new List<List<TopoDS_Edge>>();
-			featureShellList = new List<List<TopoDS_Shape>>();
+			featureWireOuterList = GetWiresFromShell( faceOuterWallList );
+			featureWireInnerList = new List<TopoDS_Wire>();
+			featureShellList = new List<TopoDS_Shell>();
 
-			// Get mapping between edge and the corresponding face in the sew shape
-			// TODO: dont know shit here
-			BRepBuilderAPI_Sewing bRepBuilderAPI_Sewing = SewFace( faceShapeFeature );
+			// make list have the same count
+			for( int i = 0; i < featureWireOuterList.Count; i++ ) {
+				featureWireInnerList.Add( null );
+				featureShellList.Add( null );
+			}
+
+			// if there is no inner dace or feature face
+			if( faceInnerWallList.Count == 0 || faceFeatureList.Count == 0 ) {
+				return;
+			}
+
+			// get all inner wires
+			List<TopoDS_Wire> tempFeatureWireInnerList = GetWiresFromShell( faceInnerWallList );
+			if( tempFeatureWireInnerList.Count == 0 ) {
+				return;
+			}
+
+			// get mapping between edge and the corresponding face in the sew shape
 			TopTools_IndexedDataMapOfShapeListOfShape edgeFaceMap = new TopTools_IndexedDataMapOfShapeListOfShape();
-			TopExp.MapShapesAndAncestors( bRepBuilderAPI_Sewing.SewedShape(), TopAbs_ShapeEnum.TopAbs_EDGE, TopAbs_ShapeEnum.TopAbs_FACE, ref edgeFaceMap );
-
-			// get all outer edges
-			featureWireOuterList = GetWiresFromShell( faceShapeOuterWallList );
-			List<List<TopoDS_Edge>> tempFeatureWireInnerList = GetWiresFromShell( faceShapeInnerWallList );
+			TopoDS_Shape shellCompound = SewFaceToShells( faceFeatureList );
+			if( shellCompound == null ) {
+				return;
+			}
+			TopExp.MapShapesAndAncestors( shellCompound, TopAbs_ShapeEnum.TopAbs_EDGE, TopAbs_ShapeEnum.TopAbs_FACE, ref edgeFaceMap );
 
 			// find the all inner edges and inner/outer common Face
 			for( int i = 0; i < featureWireOuterList.Count; i++ ) {
-				bool isSuccess = false;
 				for( int j = 0; j < tempFeatureWireInnerList.Count; j++ ) {
 					if( featureWireInnerList.Contains( tempFeatureWireInnerList[ j ] ) ) {
 						continue;
 					}
-
-					isSuccess = IsWireOnSameShell( featureWireOuterList[ i ], tempFeatureWireInnerList[ j ], edgeFaceMap, out List<TopoDS_Shape> featureShell );
-					if( isSuccess == false ) {
+					bool isSuccess = IsWireOnSameShell( featureWireOuterList[ i ], tempFeatureWireInnerList[ j ], edgeFaceMap, out TopoDS_Shell featureShell );
+					if( isSuccess == false || featureShell == null ) {
 						continue;
 					}
-
-					featureWireInnerList.Add( tempFeatureWireInnerList[ j ] );
-					featureShellList.Add( featureShell );
-					break;
-				}
-				if( isSuccess == false ) {
-
-					// to make sure all lists have the same index
-					featureWireInnerList.Add( new List<TopoDS_Edge>() );
-					featureShellList.Add( new List<TopoDS_Shape>() );
-				}
-			}
-		}
-
-		BRepBuilderAPI_Sewing SewFace( List<TopoDS_Shape> ShapeList )
-		{
-			BRepBuilderAPI_Sewing sewer = new BRepBuilderAPI_Sewing( OCCHelper.ERROR_VALUE );
-			for( int i = 0; i < ShapeList.Count; i++ ) {
-				sewer.Add( ShapeList[ i ] );
-			}
-			sewer.Perform();
-			return sewer;
-		}
-
-		// TODO: this is a find wire from edge algorithm
-		List<List<TopoDS_Edge>> GetWiresFromShell( List<TopoDS_Shape> ShapeList )
-		{
-			// sew to shell
-			BRepBuilderAPI_Sewing sewer = SewFace( ShapeList );
-			List<List<TopoDS_Edge>> EdgeList = new List<List<TopoDS_Edge>>();
-			int nNumOfSegments = sewer.NbFreeEdges();
-
-			EdgeList.Add( new List<TopoDS_Edge>() );
-
-			// get total edges
-			for( int i = 1; i <= nNumOfSegments; i++ ) {
-				TopoDS_Shape oneTopoShape = sewer.FreeEdge( i );
-				TopoDS_Edge oneTopoEdge = TopoDS.ToEdge( oneTopoShape );
-				EdgeList[ 0 ].Add( oneTopoEdge );
-			}
-
-			bool bCanFitInWire = false;
-			int nLastIndex = 0;
-
-			// add edges in same wire to other list
-			for( int i = 0; i < nNumOfSegments; i++ ) {
-
-				if( bCanFitInWire == false ) {
-					EdgeList.Add( new List<TopoDS_Edge>() );
-					EdgeList[ nLastIndex + 1 ].Add( EdgeList[ 0 ][ 0 ] );
-					EdgeList[ 0 ].RemoveAt( 0 );
-					nLastIndex = EdgeList.Count - 1;
-				}
-
-				for( int j = 0; j < EdgeList[ 0 ].Count; j++ ) {
-					List<TopoDS_Edge> wire = EdgeList[ nLastIndex ];
-					TopoDS_Edge edge = EdgeList[ 0 ][ j ];
-					bCanFitInWire = CheckEdgeCanFitInWire( ref wire, ref edge );
-					if( bCanFitInWire ) {
-						EdgeList[ 0 ].RemoveAt( j );
-						j--;
-						break;
-					}
-				}
-				if( EdgeList[ 0 ].Count == 0 ) {
+					featureWireInnerList[ i ] = tempFeatureWireInnerList[ j ];
+					featureShellList[ i ] = featureShell;
 					break;
 				}
 			}
-			EdgeList.RemoveAt( 0 );
-
-			return EdgeList;
 		}
 
-		bool CheckEdgeCanFitInWire( ref List<TopoDS_Edge> EdgeList, ref TopoDS_Edge TargetEdge )
+		TopoDS_Shape SewFaceToShells( List<TopoDS_Shape> faceList )
 		{
-			int nLastIndex = EdgeList.Count - 1;
-
-			// get start end vertex of target edge
-			TopoDS_Vertex TargetEdgeStartVertex = new TopoDS_Vertex();
-			TopoDS_Vertex TargetEdgeEndVertex = new TopoDS_Vertex();
-			ShapeAnalysis.FindBounds( TargetEdge, ref TargetEdgeStartVertex, ref TargetEdgeEndVertex );
-
-			// get start end vertex of start edge
-			TopoDS_Edge FirstEdge = EdgeList[ 0 ];
-			TopoDS_Vertex FirstEdgeStartVertex = new TopoDS_Vertex();
-			TopoDS_Vertex FirstEdgeEndVertex = new TopoDS_Vertex();
-			ShapeAnalysis.FindBounds( FirstEdge, ref FirstEdgeStartVertex, ref FirstEdgeEndVertex );
-
-			// get start end vertex of end edge
-			TopoDS_Edge LastEdge = EdgeList[ nLastIndex ];
-			TopoDS_Vertex LastEdgeStartVertex = new TopoDS_Vertex();
-			TopoDS_Vertex LastEdgeEndVertex = new TopoDS_Vertex();
-			ShapeAnalysis.FindBounds( LastEdge, ref LastEdgeStartVertex, ref LastEdgeEndVertex );
-
-			if( FirstEdgeStartVertex.IsSame( TargetEdgeEndVertex ) ) {
-				EdgeList.Insert( 0, TargetEdge );
-				return true;
+			try {
+				BRepBuilderAPI_Sewing sewer = new BRepBuilderAPI_Sewing( OCCHelper.ERROR_VALUE );
+				for( int i = 0; i < faceList.Count; i++ ) {
+					sewer.Add( faceList[ i ] );
+				}
+				sewer.Perform();
+				return sewer.SewedShape();
 			}
-
-			if( LastEdgeEndVertex.IsSame( TargetEdgeStartVertex ) ) {
-				EdgeList.Add( TargetEdge );
-				return true;
+			catch {
+				return null;
 			}
-
-			// change the direction of edge for wrong direction
-			if( FirstEdgeStartVertex.IsSame( TargetEdgeStartVertex ) ) {
-				TargetEdge.Reverse();
-				EdgeList.Insert( 0, TargetEdge );
-				return true;
-			}
-
-			if( LastEdgeEndVertex.IsSame( TargetEdgeEndVertex ) ) {
-				TargetEdge.Reverse();
-				EdgeList.Add( TargetEdge );
-				return true;
-			}
-
-			return false;
 		}
 
-		bool IsWireOnSameShell( List<TopoDS_Edge> wireOuter, List<TopoDS_Edge> wireInner, TopTools_IndexedDataMapOfShapeListOfShape edgeFaceMap,
-			out List<TopoDS_Shape> featureShell )
+		List<TopoDS_Wire> GetWiresFromShell( List<TopoDS_Shape> shellFaceList )
 		{
-			featureShell = new List<TopoDS_Shape>();
+			// make a compound
+			TopoDS_Shape shell = OCCHelper.MakeCompound( shellFaceList );
 
+			// get all closed wires on the shell
+			ShapeAnalysis_FreeBounds freeBounds = new ShapeAnalysis_FreeBounds( shell, OCCHelper.ERROR_VALUE );
+			TopoDS_Compound closedWires = freeBounds.GetClosedWires();
+
+			// extract wires from compound
+			List<TopoDS_Wire> wireList = new List<TopoDS_Wire>();
+			TopExp_Explorer wireExplorer = new TopExp_Explorer( closedWires, TopAbs_ShapeEnum.TopAbs_WIRE );
+			while( wireExplorer.More() ) {
+				wireList.Add( TopoDS.ToWire( wireExplorer.Current() ) );
+				wireExplorer.Next();
+			}
+			return wireList;
+		}
+
+		bool IsWireOnSameShell( TopoDS_Wire wireOuter, TopoDS_Wire wireInner, TopTools_IndexedDataMapOfShapeListOfShape edgeFaceMap,
+			out TopoDS_Shell featureShell )
+		{
 			List<TopoDS_Shape> faceConnectedOuterWire = FindConnectedFaceList( wireOuter, edgeFaceMap );
 			List<TopoDS_Shape> faceConnectedInnerWire = FindConnectedFaceList( wireInner, edgeFaceMap );
-
 			bool isSuccess = faceConnectedOuterWire.Any( faceFormOuterWire => faceConnectedInnerWire.Any( faceFromInnerWire => faceFormOuterWire.IsEqual( faceFromInnerWire ) ) );
-			featureShell.AddRange( faceConnectedOuterWire );
-			return isSuccess;
+			if( isSuccess == false ) {
+				featureShell = null;
+				return false;
+			}
+
+			// build the shell if the wire is on the same shell
+			featureShell = TopoDS.ToShell( OCCHelper.MakeShell( faceConnectedOuterWire ) );
+			if( featureShell == null ) {
+				return false;
+			}
+			return true;
 		}
 
-		List<TopoDS_Shape> FindConnectedFaceList( List<TopoDS_Edge> wire, TopTools_IndexedDataMapOfShapeListOfShape edgeFaceMap )
+		List<TopoDS_Shape> FindConnectedFaceList( TopoDS_Wire wire, TopTools_IndexedDataMapOfShapeListOfShape edgeFaceMap )
 		{
-			// Traverse wire
-			return wire
+			// extract edges from wire
+			return wire.elementsAsList
 
-				// Check if the map contains the current outer edge
-				.Where( oneOuterEdge => edgeFaceMap.Contains( oneOuterEdge ) )
+				// check if the map contains the current outer edge
+				.Where( oneEdge => edgeFaceMap.Contains( oneEdge ) )
 
-				// Get the list of faces connected to the outer edge
+				// get the list of faces connected to the outer edge
 				.SelectMany( oneFeatureOuterEdge => edgeFaceMap.FindFromKey( oneFeatureOuterEdge ).elementsAsList )
 
 				// remove the repeat face
 				.Distinct().ToList();
 		}
 
-		void FindIndexOfHeadAndTail( List<List<TopoDS_Shape>> featureShellList, out int nHeadIndex, out int nTailIndex, out List<BoundingBox> shapeBoxList )
+		void FindIndexOfHeadAndTail( List<TopoDS_Shell> featureShellList, out int nHeadIndex, out int nTailIndex, out List<BoundingBox> shapeBoxList )
 		{
 			shapeBoxList = new List<BoundingBox>();
 			for( int i = 0; i < featureShellList.Count; i++ ) {
-				shapeBoxList.Add( GetBoundingBox( featureShellList[ i ] ) );
+				shapeBoxList.Add( OCCHelper.GetBoundingBox( featureShellList[ i ] ) );
 			}
 
 			double MinY = double.MaxValue;
@@ -518,12 +497,6 @@ namespace My3DReader
 					nTailIndex = i;
 				}
 			}
-		}
-
-		BoundingBox GetBoundingBox( List<TopoDS_Shape> ShapeList )
-		{
-			TopoDS_Shape compound = OCCHelper.MakeCompound( ShapeList );
-			return OCCHelper.GetBoundingBox( compound );
 		}
 	}
 }

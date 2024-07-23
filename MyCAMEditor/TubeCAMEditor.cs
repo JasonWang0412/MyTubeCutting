@@ -2,7 +2,6 @@
 using MyCAMCore;
 using MyLanguageManager;
 using MyOCCViewer;
-using MyUtility.MyOCC;
 using OCC.AIS;
 using OCC.gp;
 using OCC.Graphic3d;
@@ -298,7 +297,7 @@ namespace MyCAMEditor
 		{
 			m_CADFeatureRawAISMap.Clear();
 			foreach( var pair in m_CADFeatureDataMap ) {
-				TopoDS_Shape oneFeatureWire = OCCHelper.MakeCompound( pair.Value.OuterWire );
+				TopoDS_Shape oneFeatureWire = pair.Value.OuterWire;
 				if( oneFeatureWire == null ) {
 					continue;
 				}
