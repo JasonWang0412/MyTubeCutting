@@ -28,8 +28,11 @@ namespace MyCAMUI
 			m_TubeCAMEditor = new TubeCAMEditor();
 
 			// editor layout
-			m_panViewer.Controls.Add( m_TubeCAMEditor.ViewerPanel );
-			m_panViewer.Show( m_dockPanel, DockState.Document );
+			m_pan3DViewer.Controls.Add( m_TubeCAMEditor.Viewer3DPanel );
+			m_pan3DViewer.Show( m_dockPanel, DockState.Document );
+
+			m_pan2DViewer.Controls.Add( m_TubeCAMEditor.Viewer2DPanel );
+			m_pan2DViewer.Show( m_pan3DViewer.Pane, DockAlignment.Bottom, 0.5 );
 
 			m_panObjBrowser.Controls.Add( m_TubeCAMEditor.ObjectBrowserPanel );
 			m_panObjBrowser.Show( m_dockPanel, DockState.DockLeft );
@@ -165,7 +168,8 @@ namespace MyCAMUI
 
 		// layout
 		DockPanel m_dockPanel = new DockPanel();
-		DockContent m_panViewer = new DockContent();
+		DockContent m_pan3DViewer = new DockContent();
+		DockContent m_pan2DViewer = new DockContent();
 		DockContent m_panObjBrowser = new DockContent();
 		DockContent m_panPropertyBar = new DockContent();
 		DockContent m_panHint = new DockContent();

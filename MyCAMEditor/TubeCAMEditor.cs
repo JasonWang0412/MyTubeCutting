@@ -3,7 +3,11 @@ using MyCAMCore;
 using MyLanguageManager;
 using MyOCCViewer;
 using OCC.AIS;
+using OCC.BRepBuilderAPI;
+using OCC.BRepGProp;
+using OCC.BRepProj;
 using OCC.gp;
+using OCC.GProp;
 using OCC.Graphic3d;
 using OCC.Quantity;
 using OCC.TopoDS;
@@ -49,11 +53,13 @@ namespace MyCAMEditor
 	public class TubeCAMEditor
 	{
 		// GUI
-		Panel m_panViewer = new Panel();
+		Panel m_pan3DViewer = new Panel();
+		Panel m_pan2DViewer = new Panel();
 		Panel m_panObjBrowser = new Panel();
 		Panel m_panPropertyBar = new Panel();
 		Panel m_panHintLabel = new Panel();
-		OCCViewer m_Viewer = new OCCViewer();
+		OCCViewer m_3DViewer = new OCCViewer();
+		OCCViewer m_2DViewer = new OCCViewer();
 		TreeView m_treeObjBrowser = new TreeView();
 		PropertyGrid m_propgrdPropertyBar = new PropertyGrid();
 		Label m_lblHint = new Label();
@@ -70,12 +76,9 @@ namespace MyCAMEditor
 		int m_nXMousePosition = 0;
 		int m_nYMousePosition = 0;
 
-		// parameter map
-
-		// display shape map
-
 		// object browser map
 		TreeNode m_RootNode;
+		const string ROOT_NODE_NAME = "ROOT";
 
 		// feature ID
 		LanguageManager m_LanguageManager = new LanguageManager( "TubeCAMEditor" );
@@ -96,13 +99,21 @@ namespace MyCAMEditor
 
 		public TubeCAMEditor()
 		{
-			bool isSuccess = m_Viewer.InitViewer( m_panViewer.Handle );
-			if( isSuccess == false ) {
-				MessageBox.Show( "init failed" );
+			bool is3DSuccess = m_3DViewer.InitViewer( m_pan3DViewer.Handle );
+			if( is3DSuccess == false ) {
+				MessageBox.Show( "init 3D failed" );
 			}
-			m_Viewer.SetBackgroundColor( 0, 0, 0 );
-			m_Viewer.IsometricView();
-			m_panViewer.Dock = DockStyle.Fill;
+			m_3DViewer.SetBackgroundColor( 0, 0, 0 );
+			m_3DViewer.IsometricView();
+			m_pan3DViewer.Dock = DockStyle.Fill;
+
+			bool is2DSuccess = m_2DViewer.InitViewer( m_pan2DViewer.Handle );
+			if( is2DSuccess == false ) {
+				MessageBox.Show( "init 2D failed" );
+			}
+			m_2DViewer.SetBackgroundColor( 0, 0, 0 );
+			m_2DViewer.TopView();
+			m_pan2DViewer.Dock = DockStyle.Fill;
 
 			m_treeObjBrowser.Dock = DockStyle.Fill;
 			m_panObjBrowser.Controls.Add( m_treeObjBrowser );
@@ -118,10 +129,12 @@ namespace MyCAMEditor
 			m_panHintLabel.Dock = DockStyle.Fill;
 
 			// action
-			m_panViewer.Paint += m_panViewer_Paint;
-			m_panViewer.MouseDown += m_panViewer_MouseDown;
-			m_panViewer.MouseMove += m_panViewer_MouseMove;
-			m_panViewer.MouseWheel += m_panViewer_MouseWheel;
+			m_pan3DViewer.Paint += m_pan3DViewer_Paint;
+			m_pan3DViewer.MouseDown += m_pan3DViewer_MouseDown;
+			m_pan3DViewer.MouseMove += m_pan3DViewer_MouseMove;
+			m_pan3DViewer.MouseWheel += m_pan3DViewer_MouseWheel;
+
+			m_pan2DViewer.Paint += m_pan2DViewer_Paint;
 
 			m_treeObjBrowser.KeyDown += m_treeObjBrowser_KeyDown;
 			m_treeObjBrowser.AfterSelect += m_treeObjBrowser_AfterSelect;
@@ -165,9 +178,9 @@ namespace MyCAMEditor
 			Graphic3d_MaterialAspect aspect = new Graphic3d_MaterialAspect( Graphic3d_NameOfMaterial.Graphic3d_NOM_STEEL );
 			m_RawTubeAISShape.SetMaterial( aspect );
 			m_RawTubeAISShape.SetDisplayMode( 1 );
-			m_Viewer.GetAISContext().Display( m_RawTubeAISShape, false );
+			m_3DViewer.GetAISContext().Display( m_RawTubeAISShape, false );
 			DisplayObjectShape( "HEAD" );
-			m_Viewer.ZoomAllView();
+			m_3DViewer.ZoomAllView();
 		}
 
 		public gp_Dir GetEditObjectDir()
@@ -219,11 +232,19 @@ namespace MyCAMEditor
 		}
 
 		// layout property
-		public Panel ViewerPanel
+		public Panel Viewer3DPanel
 		{
 			get
 			{
-				return m_panViewer;
+				return m_pan3DViewer;
+			}
+		}
+
+		public Panel Viewer2DPanel
+		{
+			get
+			{
+				return m_pan2DViewer;
 			}
 		}
 
@@ -256,41 +277,41 @@ namespace MyCAMEditor
 		{
 			switch( dir ) {
 				case ViewDir.Top:
-					m_Viewer.TopView();
+					m_3DViewer.TopView();
 					break;
 				case ViewDir.Bottom:
-					m_Viewer.BottomView();
+					m_3DViewer.BottomView();
 					break;
 				case ViewDir.Left:
-					m_Viewer.LeftView();
+					m_3DViewer.LeftView();
 					break;
 				case ViewDir.Right:
-					m_Viewer.RightView();
+					m_3DViewer.RightView();
 					break;
 				case ViewDir.Front:
-					m_Viewer.FrontView();
+					m_3DViewer.FrontView();
 					break;
 				case ViewDir.Back:
-					m_Viewer.BackView();
+					m_3DViewer.BackView();
 					break;
 				case ViewDir.Isometric:
-					m_Viewer.IsometricView();
+					m_3DViewer.IsometricView();
 					break;
 				case ViewDir.Dir_Pos:
-					m_Viewer.SetViewDir( GetEditObjectDir() );
+					m_3DViewer.SetViewDir( GetEditObjectDir() );
 					break;
 				case ViewDir.Dir_Neg:
-					m_Viewer.SetViewDir( GetEditObjectDir().Reversed() );
+					m_3DViewer.SetViewDir( GetEditObjectDir().Reversed() );
 					break;
 				default:
 					break;
 			}
-			m_Viewer.ZoomAllView();
+			m_3DViewer.ZoomAllView();
 		}
 
 		public void ZoomToFit()
 		{
-			m_Viewer.ZoomAllView();
+			m_3DViewer.ZoomAllView();
 		}
 
 		void UpdateCADFeatureRawAISMap()
@@ -307,6 +328,48 @@ namespace MyCAMEditor
 				m_CADFeatureRawAISMap.Add( pair.Key, oneAIS );
 			}
 		}
+
+		void Make2DView()
+		{
+			// get axial projection of head wire
+			TopoDS_Shape headOutWire = m_CADFeatureDataMap[ "HEAD" ].OuterWire;
+			TopoDS_Shape headOutWire2D = GetAxialProjectionOfWire( headOutWire );
+
+			// get 2D wire length
+			double dPerimeter = Get2DWireLength( headOutWire2D );
+
+			foreach( var pair in m_CADFeatureDataMap ) {
+
+				// get radial projection of wire
+			}
+		}
+
+		TopoDS_Shape GetAxialProjectionOfWire( TopoDS_Shape wire )
+		{
+			// make a face represent XZ plane
+			gp_Pln pln_XZ = new gp_Pln( new gp_Pnt( 0, 0, 0 ), new gp_Dir( 0, 1, 0 ) );
+			BRepBuilderAPI_MakeFace mf = new BRepBuilderAPI_MakeFace( pln_XZ );
+			if( mf.IsDone() == false ) {
+				return null;
+			}
+			TopoDS_Face face_XZ = mf.Face();
+
+			// project the wire onto the XZ plane
+			BRepProj_Projection proj = new BRepProj_Projection( wire, face_XZ, new gp_Dir( 0, 1, 0 ) );
+			if( proj.IsDone() == false ) {
+				return null;
+			}
+			return proj.Shape();
+		}
+
+		double Get2DWireLength( TopoDS_Shape wire )
+		{
+			GProp_GProps props = new GProp_GProps();
+			BRepGProp.LinearProperties( wire, ref props );
+			return props.Mass();
+		}
+
+		TopoDS_Shape GetRa
 
 		void ModifyCAMFeature()
 		{
@@ -359,7 +422,7 @@ namespace MyCAMEditor
 		void DisplayObjectShape( string szObjectID )
 		{
 			HideAllShapeExceptMainTube();
-			m_Viewer.GetAISContext().Display( m_CADFeatureRawAISMap[ szObjectID ], true );
+			m_3DViewer.GetAISContext().Display( m_CADFeatureRawAISMap[ szObjectID ], true );
 		}
 
 		void ShowObjectProperty( string szObjectID )
@@ -370,9 +433,9 @@ namespace MyCAMEditor
 		void HideAllShapeExceptMainTube()
 		{
 			foreach( var pair in m_CADFeatureRawAISMap ) {
-				m_Viewer.GetAISContext().Erase( pair.Value, false );
+				m_3DViewer.GetAISContext().Erase( pair.Value, false );
 			}
-			m_Viewer.UpdateView();
+			m_3DViewer.UpdateView();
 		}
 
 		void DoCommand( ICAMEditCommand command )
@@ -384,25 +447,31 @@ namespace MyCAMEditor
 			CommandStatusChanged?.Invoke( true, false );
 		}
 
-		// viewer action
-		void m_panViewer_MouseDown( object sender, MouseEventArgs e )
+		// viewer 3D action
+		void m_pan3DViewer_MouseDown( object sender, MouseEventArgs e )
 		{
-			ViewerMouseAction.MouseDown( e, m_Viewer, ref m_nXMousePosition, ref m_nYMousePosition );
+			ViewerMouseAction.MouseDown( e, m_3DViewer, ref m_nXMousePosition, ref m_nYMousePosition );
 		}
 
-		void m_panViewer_MouseMove( object sender, MouseEventArgs e )
+		void m_pan3DViewer_MouseMove( object sender, MouseEventArgs e )
 		{
-			ViewerMouseAction.MouseMove( e, m_Viewer, ref m_nXMousePosition, ref m_nYMousePosition );
+			ViewerMouseAction.MouseMove( e, m_3DViewer, ref m_nXMousePosition, ref m_nYMousePosition );
 		}
 
-		void m_panViewer_MouseWheel( object sender, MouseEventArgs e )
+		void m_pan3DViewer_MouseWheel( object sender, MouseEventArgs e )
 		{
-			ViewerMouseAction.MouseWheel( e, m_Viewer );
+			ViewerMouseAction.MouseWheel( e, m_3DViewer );
 		}
 
-		void m_panViewer_Paint( object sender, PaintEventArgs e )
+		void m_pan3DViewer_Paint( object sender, PaintEventArgs e )
 		{
-			m_Viewer.UpdateView();
+			m_3DViewer.UpdateView();
+		}
+
+		// viewer 2D action
+		void m_pan2DViewer_Paint( object sender, PaintEventArgs e )
+		{
+			m_2DViewer.UpdateView();
 		}
 
 		// object browser action
@@ -434,7 +503,7 @@ namespace MyCAMEditor
 			string szObjectID = e.Node.Name;
 
 			// data protection
-			if( string.IsNullOrEmpty( szObjectID ) ) {
+			if( string.IsNullOrEmpty( szObjectID ) || szObjectID == ROOT_NODE_NAME ) {
 				return;
 			}
 
@@ -452,11 +521,13 @@ namespace MyCAMEditor
 		// cam edit action
 		void CAMEditError( CAMEditErrorCode errorCode )
 		{
+			// TODO: complete the implementation
 			throw new NotImplementedException();
 		}
 
 		void CAMEditSuccess()
 		{
+			// TODO: complete the implementation
 			throw new NotImplementedException();
 		}
 	}
